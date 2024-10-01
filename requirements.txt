@@ -18,6 +18,6 @@ pytest-xdist==3.6.1 # Vulnerabilities: None
 pytz==2024.2 # From 2024.1 | Vulnerabilities: None
 ruff==0.6.8 # From 0.6.3 | Vulnerabilities: None
 toml==0.10.2 # Vulnerabilities: None
-tox==4.20.0 # From 4.18.0 | Vulnerabilities: None
+tox==4.21.0 # From 4.18.0 | Vulnerabilities: None
 twine==5.1.1 # Vulnerabilities: None
 wheel==0.44.0 # Vulnerabilities: None
