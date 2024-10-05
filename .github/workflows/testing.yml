@@ -1,14 +1,17 @@
 name: Testing
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
   workflow_dispatch:
 
 jobs:
   build:
-    
+
     runs-on: ubuntu-latest
-    
+
     strategy:
       max-parallel: 10
       matrix:

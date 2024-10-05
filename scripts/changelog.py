@@ -6,7 +6,7 @@ import pytz
 import asyncio
 
 async def get_github_releases():
-    url = f"https://api.github.com/repos/devsetgo/dsg-calver/releases"
+    url = f"https://api.github.com/repos/devsetgo/bumpcalver/releases"
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
         response.raise_for_status()  # Raise an exception if the request was unsuccessful

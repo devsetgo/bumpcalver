@@ -1,40 +1,19 @@
 
-site_name: 'DevSetGo Calver Library'
+site_name: 'BumpCalver Library'
 # Project information
 site_description: 'Simple Calendar Versioning Library'
 site_author: 'Mike Ryan'
-# site_url: 'https://squidfunk.github.io/mkdocs-material/'
-# Repository
-repo_name: 'devsetgo/dsg-calver'
-repo_url: 'https://github.com/devsetgo/overwrite_description	'
+repo_name: 'devsetgo/bumpcalver'
+repo_url: 'https://github.com/devsetgo/bumpcalver'
 
 # Copyright
-copyright: 'Copyright &copy; 2016 - 2024 Mike Ryan'
+copyright: 'Copyright &copy; 2024 - 2025 Mike Ryan'
 
 nav:
     - Introduction: 'index.md'
     - QuickStart: 'quickstart.md'
-    - Common Functions:
-      - Logging: 'common_functions/logging.md'
-      - File Functions: 'common_functions/file_functions.md'
-      - Folder Functions: 'common_functions/folder_functions.md'
-      - RegEx Functions: 'common_functions/regex.md'
-      - Calendar Functions: 'common_functions/calendar_functions.md'
-    - FastAPI Functions:
-      - HTTP Codes: 'fastapi/http_codes.md'
-      - System Health: 'fastapi/system_health_endpoints.md'
-    - Database Functions:
-      - Base Schema: 'database/base_schema.md'
-      - Database Configuration: 'database/database_configuration.md'
-      - Async Database Setup: 'database/async_database_setup.md'
-      - Database Operations: 'database/database_operations.md'
-
-    - Recipes:
-      - FastAPI: 'recipes/fastapi.md'
-      - Async Database: 'recipes/asyncDatabase.md'
-      - Logging: 'recipes/loggingExample.md'
-      - Patterns: 'recipes/patterns.md'
-      - EmailValidation: 'recipes/emailValidation.md'
+    - Timezones: 'timezones.md'
+    - Modules: 'models.md'
     - About:
       - About: 'about.md'
       - Contributing: 'contribute.md'

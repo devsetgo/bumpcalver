@@ -1,6 +1,6 @@
 # Variables
 REPONAME = bumpcalver
-APP_VERSION = 2024-09-27-007
+APP_VERSION = 2024-10-04-001
 PYTHON = python3
 PIP = $(PYTHON) -m pip
 PYTEST = $(PYTHON) -m pytest
@@ -30,14 +30,8 @@ black: ## Reformat Python code to follow the Black code style
 	black $(TESTS_PATH)
 	black $(EXAMPLE_PATH)
 
-bump-minor: ## Bump the minor version number x.1.0
-	bump2version minor
-
-bump-release: ## Bump the release version number x.x.x-beta.1
-	bump2version release
-
-bump-patch: ## Bump the patch version number x.x.1
-	bump2version patch
+bump-ver: ## Bump calver version
+	bumpcalver --build
 
 cleanup: isort ruff autoflake ## Run isort, ruff, autoflake
 
@@ -52,11 +46,11 @@ create-docs: ## Build and deploy the project's documentation
 create-docs-local: ## Build and deploy the project's documentation
 	python3 scripts/changelog.py
 	mkdocs build
-	cp /workspaces/devsetgo_lib/README.md /workspaces/devsetgo_lib/docs/index.md
-	cp /workspaces/devsetgo_lib/CONTRIBUTING.md /workspaces/devsetgo_lib/docs/contribute.md
+	cp /workspaces/$(REPONAME)/README.md /workspaces/$(REPONAME)/docs/index.md
+	cp /workspaces/$(REPONAME)/CONTRIBUTING.md /workspaces/$(REPONAME)/docs/contribute.md
 
-flake8: ## Run flake8 to check Python code for PEP8 compliance
-	flake8 --tee . > htmlcov/_flake8Report.txt
+# flake8: ## Run flake8 to check Python code for PEP8 compliance
+# 	flake8 --tee . > htmlcov/_flake8Report.txt
 
 help:  ## Display this help message
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
@@ -73,17 +67,14 @@ isort: ## Sort imports in Python code
 	isort $(TESTS_PATH)
 	isort $(EXAMPLE_PATH)
 
-
-speedtest: ## Run a speed test
-	if [ ! -f speedtest/http_request.so ]; then gcc -shared -o speedtest/http_request.so speedtest/http_request.c -lcurl -fPIC; fi
-	python3 speedtest/loop.py
-
 test: ## Run the project's tests
 	pre-commit run -a
 	pytest
 	sed -i 's|<source>/workspaces/$(REPONAME)</source>|<source>/github/workspace</source>|' /workspaces/$(REPONAME)/coverage.xml
 	genbadge coverage -i /workspaces/$(REPONAME)/coverage.xml
-	flake8 --tee . > htmlcov/_flake8Report.txt
+# flake8 src tests examples | tee htmlcov/_flake8Report.txt
+
+tests: test ## Run the project's tests
 
 
 build: ## Build the project
@@ -93,54 +84,3 @@ ruff: ## Format Python code with Ruff
 	ruff check --fix --exit-non-zero-on-fix --show-fixes $(SERVICE_PATH)
 	ruff check --fix --exit-non-zero-on-fix --show-fixes $(TESTS_PATH)
 	ruff check --fix --exit-non-zero-on-fix --show-fixes $(EXAMPLE_PATH)
-
-
-ex-fastapi: ## Run the example fast application
-	uvicorn examples.fastapi_example:app --port ${PORT} --reload  --log-level $(LOG_LEVEL)
-	# uvicorn examples.fastapi_example:app --port ${PORT} --workers ${WORKER}  --log-level $(LOG_LEVEL)
-
-ex-log: ## Run the example logging script
-	cp /workspaces/devsetgo_lib/examples/log_example.py /workspaces/devsetgo_lib/ex.py
-	python3 ex.py
-	rm /workspaces/devsetgo_lib/ex.py
-
-
-ex-cal: ## Run the example calendar script
-	cp /workspaces/devsetgo_lib/examples/cal_example.py /workspaces/devsetgo_lib/ex.py
-	python3 ex.py
-	rm /workspaces/devsetgo_lib/ex.py
-
-ex-csv: ## Run the example calendar script
-	cp /workspaces/devsetgo_lib/examples/csv_example.py /workspaces/devsetgo_lib/ex.py
-	python3 ex.py
-	rm /workspaces/devsetgo_lib/ex.py
-
-ex-json: ## Run the example calendar script
-	cp /workspaces/devsetgo_lib/examples/json_example.py /workspaces/devsetgo_lib/ex.py
-	python3 ex.py
-	rm /workspaces/devsetgo_lib/ex.py
-
-ex-pattern: ## Run the example calendar script
-	cp /workspaces/devsetgo_lib/examples/pattern_example.py /workspaces/devsetgo_lib/ex.py
-	python3 ex.py
-	rm /workspaces/devsetgo_lib/ex.py
-
-ex-text: ## Run the example calendar script
-	cp /workspaces/devsetgo_lib/examples/text_example.py /workspaces/devsetgo_lib/ex.py
-	python3 ex.py
-	rm /workspaces/devsetgo_lib/ex.py
-
-ex-email: ## Run the example calendar script
-	cp /workspaces/devsetgo_lib/examples/validate_emails.py /workspaces/devsetgo_lib/ex.py
-	python3 ex.py
-	rm /workspaces/devsetgo_lib/ex.py
-
-ex-all: ## Run all the examples, but fastapi
-
-	make ex-log
-	make ex-cal
-	make ex-csv
-	make ex-json
-	make ex-pattern
-	make ex-text
-	make ex-email

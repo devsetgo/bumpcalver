@@ -1,35 +1,22 @@
 [build-system]
-requires = ["hatchling>=1.16.0"]
+requires = [ "hatchling>=1.16.0",]
 build-backend = "hatchling.build"
 
 [project]
 name = "bumpcalver"
-version = "2024-09-27-007"
+version = "2024-10-04-001"
 requires-python = ">=3.10"
 description = "A CLI tool for calendar-based version bumping"
-keywords = [
-    "python",
-    "library",
-    "calendar versioning",
-    "calver",
-    "versioning",
-    "cli"
-]
+keywords = [ "python", "library", "calendar versioning", "calver", "versioning", "cli",]
 readme = "README.md"
-authors = [{ name = "Mike Ryan", email = "mikeryan56@gmail.com" }]
-license = { file = "LICENSE" }
-classifiers = [
-    # Add your classifiers here
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-]
-dependencies = [
-    "click>=8.0",
-    "toml>=0.10.2",
-]
+classifiers = [ "License :: OSI Approved :: MIT License", "Programming Language :: Python :: 3", "Programming Language :: Python :: 3.10", "Programming Language :: Python :: 3.11", "Programming Language :: Python :: 3.12",]
+dependencies = [ "click>=8.0", "toml>=0.10.2", "PyYaml>=6.0.2",]
+[[project.authors]]
+name = "Mike Ryan"
+email = "mikeryan56@gmail.com"
+
+[project.license]
+file = "LICENSE"
 
 [project.urls]
 Homepage = "https://github.com/devsetgo/bumpcalver"
@@ -40,89 +27,40 @@ Repository = "https://github.com/devsetgo/bumpcalver"
 bumpcalver = "bumpcalver.cli:main"
 
 [tool.hatch]
-sources = [{path = "src", type = "directory"}]
-
-[tool.hatch.build]
-exclude = [
-    "*.json",
-    "pkg/_compat.py",
-]
+[[tool.hatch.sources]]
+path = "src"
+type = "directory"
 
 [tool.bumpcalver]
 version_format = "{current_date}-{build_count:03}"
 timezone = "America/New_York"
 git_tag = true
-auto_commit = false
-
-
+auto_commit = true
 [[tool.bumpcalver.file]]
-path = "examples/p.py"
+path = "src/bumpcalver/__init__.py"
+file_type = "python"
 variable = "__version__"
 
 [[tool.bumpcalver.file]]
-path = "src/bumpcalver/__init__.py"
+path = "examples/p.py"
+file_type = "python"
 variable = "__version__"
 
 [[tool.bumpcalver.file]]
 path = "pyproject.toml"
-variable = "version"
+file_type = "toml"
+variable = "project.version"
 
-[[tool.bumpcalver.file]]
-path = "makefile"
-pattern = '''APP_VERSION\s*=\s*(.*)'''
-
-
-# Include other tool configurations (e.g., [tool.ruff], [tool.flake8], etc.)
 [tool.ruff]
 line-length = 100
 indent-width = 4
 unsafe-fixes = true
 target-version = "py312"
-src = ["bumpcalver", "tests"]
-exclude = ["unreleased/*", "scripts/*", "coverage.xml", "coverage-badge.svg"]
-
-[tool.ruff.lint]
-select = [
-    "C",  # mccabe rules
-    "F",  # pyflakes rules
-    "E",  # pycodestyle error rules
-    "W",  # pycodestyle warning rules
-    "B",  # flake8-bugbear rules
-]
-ignore = [
-    "C901",  # max-complexity-10
-    "E501",  # line-too-long
-    "B017",
-    "B904",
-    "B008",
-    "I",  # isort rules
-]
-
-[tool.ruff.format]
-indent-style = "space"
-quote-style = "single"
-
-[tool.flake8]
-max-line-length = 100
-max-doc-length = 100
-ignore = ["E302", "E501", "E303"]
-exclude = [
-    ".git",
-    "__pycache__",
-    "docs",
-    "build",
-    "tests",
-    "_venv",
-    "htmlcov",
-    "scripts",
-    ".pytest_cache",
-    ".vscode",
-    "dist",
-    "*.egg-info",
-]
+src = [ "bumpcalver", "tests",]
+exclude = [ "unreleased/*", "scripts/*", "coverage.xml", "coverage-badge.svg",]
 
 [tool.isort]
-src_paths = ["bumpcalver", "tests"]
+src_paths = [ "bumpcalver", "tests",]
 force_single_line = false
 multi_line_output = 3
 include_trailing_comma = true
@@ -130,28 +68,26 @@ force_grid_wrap = 0
 use_parentheses = true
 line_length = 100
 
+[tool.hatch.build]
+exclude = [ "*.json", "pkg/_compat.py",]
+
+[tool.ruff.lint]
+select = [ "C", "F", "E", "W", "B",]
+ignore = [ "C901", "E501", "B017", "B904", "B008", "I",]
+
+[tool.ruff.format]
+indent-style = "space"
+quote-style = "single"
+
 [tool.coverage.run]
-source = ["bumpcalver"]
-omit = ["setup.py", "_venv/*", "tests/*", "examples/*"]
+source = [ "bumpcalver",]
+omit = [ "setup.py", "_venv/*", "tests/*", "examples/*",]
 
 [tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "if __name__",
-    "def main",
-    "import_sqlalchemy",
-]
+exclude_lines = [ "pragma: no cover", "if __name__", "def main", "import_sqlalchemy",]
 
 [tool.pytest.ini_options]
-norecursedirs = ["/tests"]
-testpaths = ["tests"]
-python_files = ["test_*.py", "*_test.py"]
-addopts = [
-    "--cov=./",
-    "--cov-report=html",
-    "--cov-report=xml",
-    "-ra",
-    "--strict-markers",
-    "--tb=short",
-    "-p", "pytester",
-]
+norecursedirs = [ "/tests",]
+testpaths = [ "tests",]
+python_files = [ "test_*.py", "*_test.py",]
+addopts = [ "--cov=./", "--cov-report=html", "--cov-report=xml", "-ra", "--strict-markers", "--tb=short", "-p", "pytester",]
