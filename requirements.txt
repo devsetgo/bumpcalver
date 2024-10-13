@@ -1,23 +1,26 @@
 autoflake==2.3.1 # Vulnerabilities: None
 autopep8==2.3.1 # Vulnerabilities: None
-black==24.8.0 # Vulnerabilities: None
+black==24.10.0 # Vulnerabilities: None
+build==1.2.2.post1 # From none | Vulnerabilities: None
 click==8.1.7 # Vulnerabilities: None
 flake8==7.1.1 # Vulnerabilities: None
 genbadge[all]==1.1.1 # Vulnerabilities: None
 hatchling==1.25.0 # Vulnerabilities: None
-mkdocs-material==9.5.38 # From 9.5.33 | Vulnerabilities: None
-mkdocs-print-site-plugin==2.6.0 # From 2.5.0 | Vulnerabilities: None
-mkdocstrings[python,shell]==0.26.1 # From 0.25.2 | Vulnerabilities: None
+httpx==0.27.2 # Vulnerabilities: None
+mkdocs-material==9.5.40 # Vulnerabilities: None
+mkdocs-print-site-plugin==2.6.0 # Vulnerabilities: None
+mkdocstrings[python,shell]==0.26.2 # Vulnerabilities: None
 packaging==24.1 # Vulnerabilities: None
-pre-commit==3.8.0 # Vulnerabilities: None
-pylint==3.3.1 # From 3.2.6 | Vulnerabilities: None
-pytest==8.3.3 # From 8.3.2 | Vulnerabilities: None
+pre-commit==4.0.1 # Vulnerabilities: None
+pylint==3.3.1 # Vulnerabilities: None
+pytest==8.3.3 # Vulnerabilities: None
 pytest-cov==5.0.0 # Vulnerabilities: None
+pytest-mock==3.14.0 # Vulnerabilities: None
 pytest-runner==6.0.1 # Vulnerabilities: None
 pytest-xdist==3.6.1 # Vulnerabilities: None
-pytz==2024.2 # From 2024.1 | Vulnerabilities: None
-ruff==0.6.8 # From 0.6.3 | Vulnerabilities: None
+PyYAML==6.0.2 # Vulnerabilities: None
+ruff==0.6.9 # Vulnerabilities: None
 toml==0.10.2 # Vulnerabilities: None
-tox==4.20.0 # From 4.18.0 | Vulnerabilities: None
+tox==4.21.2 # Vulnerabilities: None
 twine==5.1.1 # Vulnerabilities: None
 wheel==0.44.0 # Vulnerabilities: None

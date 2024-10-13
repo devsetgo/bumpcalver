@@ -1,0 +1,17 @@
+[configuration]
+version = "2024-10-13"
+
+[configuration.application]
+name = "ExampleApp"
+description = "This is an example application configuration file."
+
+[configuration.database]
+host = "localhost"
+port = 5432
+username = "user"
+password = "password"
+
+[configuration.features]
+feature_a = true
+feature_b = false
+feature_c = true

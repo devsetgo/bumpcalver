@@ -1,0 +1,18 @@
+{
+  "version": "2024-10-13",
+  "application": {
+    "name": "ExampleApp",
+    "description": "This is an example application configuration file."
+  },
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "username": "user",
+    "password": "password"
+  },
+  "features": {
+    "feature_a": true,
+    "feature_b": false,
+    "feature_c": true
+  }
+}

@@ -1,7 +1,7 @@
 # About
-DevSetGo Library is a collection of tools and utilities to help developers with their projects. It has been primarily developed to help with the development of the [DevSetGo.com](https://www.devsetgo.com) website and other projects in my personal and professional life. It is a work in progress and will be updated as needed.
+BumpCalver Library is a collection of tools and utilities designed to help developers with calendar-based versioning for their projects. It has been primarily developed to streamline the versioning process by automating the generation of version strings based on the current date and build count. This library aims to reduce the amount of boilerplate code and manual effort required for version management.
 
-The driving force behind the library is to limit the amount of boilerplate code that I (Mike Ryan) have to write for each project. Copying code from one project to another causes issues to get fixed in one project, but not always get updated in others. This library is an attempt to fix that issue and make it easier to maintain code across multiple projects.
+The driving force behind the library is to provide a consistent and automated approach to versioning, ensuring that all projects maintain up-to-date version information without manual intervention. This helps in avoiding issues where version updates are applied to one project but not to others, making it easier to maintain code across multiple projects.
 
 The library is written in Python and is available on PyPi. It is open source and available on GitHub. Feel free to use it in your projects and contribute to the library.
 
