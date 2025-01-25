@@ -2,7 +2,7 @@ autoflake==2.3.1 # Vulnerabilities: None
 autopep8==2.3.1 # Vulnerabilities: None
 black==24.10.0 # Vulnerabilities: None
 build==1.2.2.post1 # Vulnerabilities: None
-click==8.1.7 # Vulnerabilities: None
+click==8.1.8 # Vulnerabilities: None
 flake8==7.1.1 # Vulnerabilities: None
 genbadge[all]==1.1.1 # Vulnerabilities: None
 hatchling==1.26.3 # From 1.25.0 | Vulnerabilities: None
