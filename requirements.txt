@@ -11,7 +11,7 @@ mkdocs-material==9.5.49 # From 9.5.40 | Vulnerabilities: None
 mkdocs-print-site-plugin==2.6.0 # Vulnerabilities: None
 mkdocstrings[python,shell]==0.27.0 # From 0.26.2 | Vulnerabilities: None
 packaging==24.2 # From 24.1 | Vulnerabilities: None
-pre-commit==4.0.1 # Vulnerabilities: None
+pre-commit==4.1.0 # Vulnerabilities: None
 pylint==3.3.3 # From 3.3.1 | Vulnerabilities: None
 pytest==8.3.4 # From 8.3.3 | Vulnerabilities: None
 pytest-cov==6.0.0 # From 5.0.0 | Vulnerabilities: None
