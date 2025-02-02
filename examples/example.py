@@ -1,4 +1,4 @@
-__version__ = "2024-12-14-001"
+__version__ = "2025.02.02"
 from datetime import datetime
 from zoneinfo import ZoneInfo, available_timezones
 
