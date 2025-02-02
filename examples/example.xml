@@ -1,5 +1,5 @@
 <configuration>
-    <version>2024-12-14-001</version>
+    <version>2025.02.02</version>
     <application>
         <name>ExampleApp</name>
         <description>This is an example application configuration file.</description>
