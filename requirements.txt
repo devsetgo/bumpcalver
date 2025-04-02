@@ -8,7 +8,7 @@ genbadge[all]==1.1.2 # Vulnerabilities: None
 hatchling==1.27.0 # From 1.25.0 | Vulnerabilities: None
 httpx==0.28.1 # From 0.27.2 | Vulnerabilities: None
 mkdocs-material==9.6.11 # From 9.5.40 | Vulnerabilities: None
-mkdocs-print-site-plugin==2.6.0 # Vulnerabilities: None
+mkdocs-print-site-plugin==2.7.2 # Vulnerabilities: None
 mkdocstrings[python,shell]==0.28.2 # From 0.26.2 | Vulnerabilities: None
 packaging==24.2 # From 24.1 | Vulnerabilities: None
 pre-commit==4.1.0 # Vulnerabilities: None
