@@ -26,7 +26,7 @@ SonarCloud:
 # BumpCalver CLI Documentation
 
 ## Note
-This project should be consider in beta and is not yet ready for production use.
+This project should be consider in beta as it could have bugs due to being only a few months old.
 
 ## Overview
 
