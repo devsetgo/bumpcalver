@@ -26,7 +26,7 @@ SonarCloud:
 # BumpCalver CLI Documentation
 
 ## Note
-This project should be consider in beta and is not yet ready for production use.
+This project should be consider in beta as it could have bugs due to being only a few months old.
 
 ## Overview
 
@@ -39,11 +39,8 @@ The **BumpCalver CLI** is a command-line interface for calendar-based version bu
 
 - [Installation](#installation)
 - [Getting Started](#getting-started)
-- [Configuration](#configuration)
-  - [Example Configuration](#example-configuration)
 - [Command-Line Usage](#command-line-usage)
   - [Options](#options)
-- [Examples](#examples)
 - [Error Handling](#error-handling)
 - [Support](#support)
 

@@ -50,6 +50,9 @@ jobs:
           pip install -r requirements.txt
 
       - name: Generate changelog
+        run: python3 scripts/update_docs.py
+
+      - name: Generate changelog
         run: python3 scripts/changelog.py
 
       - name: Build MkDocs site

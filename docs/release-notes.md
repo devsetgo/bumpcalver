@@ -4,6 +4,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## Latest Changes
+### <span style='color:blue'>Fix of Python Version</span> ([2024.12.14.1](https://github.com/devsetgo/bumpcalver/releases/tag/2024.12.14.1))
+
+#### What's Changed
+* bump version (#25) @devsetgo
+* working on trusted publishing (#24) @devsetgo
+* Bump of Version 24.12.06-001 (#23) @devsetgo
+* Enhancing Date Formatting Capability (#22) @devsetgo
+* Adding BumpCalver.toml option (#16) @devsetgo
+* pip(deps): bump ruff from 0.7.1 to 0.7.2 (#15) @dependabot
+* pip(deps): bump mkdocs-material from 9.5.40 to 9.5.43 (#11) @dependabot
+* pip(deps): bump ruff from 0.6.9 to 0.7.1 (#12) @dependabot
+* pip(deps): bump tox from 4.21.2 to 4.23.2 (#13) @dependabot
+* pip(deps): bump pytest-cov from 5.0.0 to 6.0.0 (#14) @dependabot
+
+
+Published Date: 2024 December 14, 20:10
+
+### <span style='color:blue'>Enhancing Date Formatting Capabilities</span> ([24.12.06-001-x](https://github.com/devsetgo/bumpcalver/releases/tag/24.12.06-001-x))
+
+#### What's Changed
+* working on trusted publishing (#24) @devsetgo
+
+
+Published Date: 2024 December 14, 20:03
+
+### <span style='color:blue'>Enhancing Date Formatting Capabilites</span> ([24.12.06-001](https://github.com/devsetgo/bumpcalver/releases/tag/24.12.06-001))
+
+#### What's Changed
+* Changing version to xx.xx.xx-build.
+* Bump of Version 24.12.06-001 (#23) @devsetgo
+* Enhancing Date Formatting Capability (#22) @devsetgo
+
+
+
+Published Date: 2024 December 06, 23:11
+
 ### <span style='color:blue'>BumpCalver.toml Option</span> ([2024-11-08](https://github.com/devsetgo/bumpcalver/releases/tag/2024-11-08))
 
 #### What's Changed
@@ -52,3 +88,4 @@ Published Date: 2024 October 20, 15:35
 **Full Changelog**: https://github.com/devsetgo/bumpcalver/commits/2024.10.18
 
 Published Date: 2024 October 18, 18:42
+

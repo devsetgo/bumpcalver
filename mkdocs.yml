@@ -1,4 +1,3 @@
-
 site_name: 'BumpCalver Library'
 # Project information
 site_description: 'Simple Calendar Versioning Library'
@@ -14,6 +13,9 @@ nav:
     - QuickStart: 'quickstart.md'
     - Timezones: 'timezones.md'
     # - Modules: 'models.md'
+    - Examples:
+      - Configuration: 'examples/configuration.md'
+      - Filelayout: 'examples/filelayout.md'
     - About:
       - About: 'about.md'
       - Contributing: 'contribute.md'
@@ -29,13 +31,6 @@ theme:
     - navigation.top
   name: 'material'
   palette:
-    # Toggle light mode
-    - scheme: default
-      primary: indigo
-      accent: indigo
-      toggle:
-        icon: material/toggle-switch
-        name: Switch to light mode
     # Toggle dark mode
     - scheme: slate
       primary: blue
@@ -43,6 +38,13 @@ theme:
       toggle:
         icon: material/toggle-switch-off-outline
         name: Switch to dark mode
+    # Toggle light mode
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
   language: en
 plugins:
   - search:
