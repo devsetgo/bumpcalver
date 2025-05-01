@@ -10,7 +10,7 @@ httpx==0.28.1 # Vulnerabilities: None
 mkdocs-material==9.6.11 # From 9.5.47 | Vulnerabilities: None
 mkdocs-print-site-plugin==2.7.2 # From 2.6.0 | Vulnerabilities: None
 mkdocstrings[python,shell]==0.29.1 # From 0.27.0 | Vulnerabilities: None
-packaging==24.2 # Vulnerabilities: None
+packaging==25.0 # Vulnerabilities: None
 pre-commit==4.2.0 # From 4.0.1 | Vulnerabilities: None
 pylint==3.3.6 # From 3.3.2 | Vulnerabilities: None
 pytest==8.3.5 # From 8.3.4 | Vulnerabilities: None
