@@ -1,5 +1,10 @@
 [
   {
+    "version": "dev",
+    "title": "Development Version",
+    "aliases": []
+  },
+  {
     "version": "2025.08.01",
     "title": "2025.08.01",
     "aliases": [
