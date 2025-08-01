@@ -7,7 +7,7 @@ flake8==7.3.0 # From 7.2.0 | Vulnerabilities: None
 genbadge[all]==1.1.2 # Vulnerabilities: None
 hatchling==1.27.0 # Vulnerabilities: None
 httpx==0.28.1 # Vulnerabilities: None
-mkdocs-material==9.6.15 # From 9.6.14 | Vulnerabilities: None
+mkdocs-material==9.6.16 # From 9.6.14 | Vulnerabilities: None
 mkdocs-print-site-plugin==2.7.3 # Vulnerabilities: None
 mkdocstrings[python,shell]==0.29.1 # Vulnerabilities: None
 packaging==25.0 # Vulnerabilities: None
