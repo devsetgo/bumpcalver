@@ -14,6 +14,9 @@ from src.bumpcalver.handlers import (
     TomlVersionHandler,
     XmlVersionHandler,
     YamlVersionHandler,
+    PropertiesVersionHandler,
+    EnvVersionHandler,
+    SetupCfgVersionHandler,
     get_version_handler,
     update_version_in_files,
 )
@@ -723,3 +726,471 @@ def test_update_version_in_files_no_file_type(capsys):
         update_version_in_files(new_version, file_configs)
     except ValueError as e:
         assert str(e) == "Unsupported file type: "
+
+
+# Tests for PropertiesVersionHandler
+def test_properties_handler_read_version(monkeypatch):
+    """Test reading version from a properties file."""
+    handler = PropertiesVersionHandler()
+    properties_content = """sonar.projectKey=devsetgo_bumpcalver
+sonar.organization=devsetgo
+sonar.projectName=bumpcalver
+sonar.projectVersion=2024-09-27-007
+sonar.language=python
+sonar.sources=src
+"""
+    mock_open = mock.mock_open(read_data=properties_content)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    version = handler.read_version("sonar-project.properties", "sonar.projectVersion")
+    assert version == "2024-09-27-007"
+
+
+def test_properties_handler_update_version(monkeypatch):
+    """Test updating version in a properties file."""
+    handler = PropertiesVersionHandler()
+    properties_content = """sonar.projectKey=devsetgo_bumpcalver
+sonar.organization=devsetgo
+sonar.projectName=bumpcalver
+sonar.projectVersion=2024-09-27-007
+sonar.language=python
+sonar.sources=src
+"""
+    mock_open = mock.mock_open(read_data=properties_content)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler.update_version("sonar-project.properties", "sonar.projectVersion", "2025-08-01-001")
+    assert result is True
+
+    handle = mock_open()
+    handle.writelines.assert_called_once()
+    written_lines = handle.writelines.call_args[0][0]
+    # Check that the version line was updated
+    version_line_found = any("sonar.projectVersion=2025-08-01-001" in line for line in written_lines)
+    assert version_line_found
+
+
+def test_properties_handler_read_version_not_found(monkeypatch, capsys):
+    """Test reading a non-existent property."""
+    handler = PropertiesVersionHandler()
+    properties_content = """sonar.projectKey=devsetgo_bumpcalver
+sonar.organization=devsetgo
+"""
+    mock_open = mock.mock_open(read_data=properties_content)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    version = handler.read_version("sonar-project.properties", "sonar.projectVersion")
+    assert version is None
+
+
+def test_properties_handler_update_version_not_found(monkeypatch, capsys):
+    """Test updating a non-existent property."""
+    handler = PropertiesVersionHandler()
+    properties_content = """sonar.projectKey=devsetgo_bumpcalver
+sonar.organization=devsetgo
+"""
+    mock_open = mock.mock_open(read_data=properties_content)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler.update_version("sonar-project.properties", "sonar.projectVersion", "2025-08-01-001")
+    assert result is False
+
+    captured = capsys.readouterr()
+    assert "Property 'sonar.projectVersion' not found in sonar-project.properties" in captured.out
+
+
+def test_properties_handler_read_version_exception(monkeypatch, capsys):
+    """Test exception handling during read operation."""
+    handler = PropertiesVersionHandler()
+
+    def mock_open(*args, **kwargs):
+        raise IOError("Unable to open file")
+
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    version = handler.read_version("sonar-project.properties", "sonar.projectVersion")
+    assert version is None
+
+    captured = capsys.readouterr()
+    assert "Error reading sonar-project.properties: Unable to open file" in captured.out
+
+
+def test_properties_handler_update_version_exception(monkeypatch, capsys):
+    """Test exception handling during update operation."""
+    handler = PropertiesVersionHandler()
+
+    def mock_open(*args, **kwargs):
+        raise IOError("Unable to open file")
+
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler.update_version("sonar-project.properties", "sonar.projectVersion", "2025-08-01-001")
+    assert result is False
+
+    captured = capsys.readouterr()
+    assert "Error updating sonar-project.properties: Unable to open file" in captured.out
+
+
+# Tests for EnvVersionHandler
+def test_env_handler_read_version(monkeypatch):
+    """Test reading version from a .env file."""
+    handler = EnvVersionHandler()
+    env_content = """# Environment variables
+DEBUG=true
+VERSION=1.0.0
+DATABASE_URL=postgresql://localhost/mydb
+"""
+    mock_open = mock.mock_open(read_data=env_content)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    version = handler.read_version(".env", "VERSION")
+    assert version == "1.0.0"
+
+
+def test_env_handler_read_version_with_quotes(monkeypatch):
+    """Test reading version from a .env file with quotes."""
+    handler = EnvVersionHandler()
+    env_content = """VERSION="1.0.0"
+API_KEY='secret123'
+"""
+    mock_open = mock.mock_open(read_data=env_content)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    version = handler.read_version(".env", "VERSION")
+    assert version == "1.0.0"
+
+
+def test_env_handler_update_version(monkeypatch):
+    """Test updating version in a .env file."""
+    handler = EnvVersionHandler()
+    env_content = """# Environment variables
+DEBUG=true
+VERSION=1.0.0
+DATABASE_URL=postgresql://localhost/mydb
+"""
+    mock_open = mock.mock_open(read_data=env_content)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler.update_version(".env", "VERSION", "2025-08-01-001")
+    assert result is True
+
+    handle = mock_open()
+    handle.writelines.assert_called_once()
+    written_lines = handle.writelines.call_args[0][0]
+    # Check that the version line was updated
+    version_line_found = any("VERSION=2025-08-01-001" in line for line in written_lines)
+    assert version_line_found
+
+
+def test_env_handler_read_version_not_found(monkeypatch):
+    """Test reading a non-existent environment variable."""
+    handler = EnvVersionHandler()
+    env_content = """DEBUG=true
+DATABASE_URL=postgresql://localhost/mydb
+"""
+    mock_open = mock.mock_open(read_data=env_content)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    version = handler.read_version(".env", "VERSION")
+    assert version is None
+
+
+def test_env_handler_update_version_not_found(monkeypatch, capsys):
+    """Test updating a non-existent environment variable."""
+    handler = EnvVersionHandler()
+    env_content = """DEBUG=true
+DATABASE_URL=postgresql://localhost/mydb
+"""
+    mock_open = mock.mock_open(read_data=env_content)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler.update_version(".env", "VERSION", "2025-08-01-001")
+    assert result is False
+
+    captured = capsys.readouterr()
+    assert "Environment variable 'VERSION' not found in .env" in captured.out
+
+
+def test_env_handler_read_version_exception(monkeypatch, capsys):
+    """Test exception handling during read operation."""
+    handler = EnvVersionHandler()
+
+    def mock_open(*args, **kwargs):
+        raise IOError("Unable to open file")
+
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    version = handler.read_version(".env", "VERSION")
+    assert version is None
+
+    captured = capsys.readouterr()
+    assert "Error reading .env: Unable to open file" in captured.out
+
+
+def test_env_handler_update_version_exception(monkeypatch, capsys):
+    """Test exception handling during update operation."""
+    handler = EnvVersionHandler()
+
+    def mock_open(*args, **kwargs):
+        raise IOError("Unable to open file")
+
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler.update_version(".env", "VERSION", "2025-08-01-001")
+    assert result is False
+
+    captured = capsys.readouterr()
+    assert "Error updating .env: Unable to open file" in captured.out
+
+
+# Tests for SetupCfgVersionHandler
+def test_setup_cfg_handler_read_version(monkeypatch):
+    """Test reading version from a setup.cfg file."""
+    handler = SetupCfgVersionHandler()
+
+    # Mock configparser
+    mock_config = mock.Mock()
+    mock_config.sections.return_value = ['metadata', 'options']
+    mock_config.__contains__ = lambda self, key: key == 'metadata'
+    mock_config.__getitem__ = lambda self, key: {'version': '0.1.0'} if key == 'metadata' else {}
+
+    mock_configparser = mock.Mock()
+    mock_configparser.ConfigParser.return_value = mock_config
+
+    monkeypatch.setattr("configparser.ConfigParser", mock_configparser.ConfigParser)
+
+    version = handler.read_version("setup.cfg", "metadata.version")
+    assert version == "0.1.0"
+
+
+def test_setup_cfg_handler_read_version_simple_key(monkeypatch):
+    """Test reading version from setup.cfg using simple key (no dot notation)."""
+    handler = SetupCfgVersionHandler()
+
+    # Mock configparser
+    mock_section = {'version': '0.1.0', 'name': 'test'}
+    mock_config = mock.Mock()
+    mock_config.sections.return_value = ['metadata']
+    mock_config.__getitem__ = lambda self, key: mock_section if key == 'metadata' else {}
+
+    mock_configparser = mock.Mock()
+    mock_configparser.ConfigParser.return_value = mock_config
+
+    monkeypatch.setattr("configparser.ConfigParser", mock_configparser.ConfigParser)
+
+    version = handler.read_version("setup.cfg", "version")
+    assert version == "0.1.0"
+
+
+def test_setup_cfg_handler_update_version(monkeypatch):
+    """Test updating version in a setup.cfg file."""
+    handler = SetupCfgVersionHandler()
+
+    # Mock configparser
+    mock_section = {'version': '0.1.0'}
+    mock_config = mock.Mock()
+    mock_config.sections.return_value = ['metadata']
+    mock_config.__contains__ = lambda self, key: key == 'metadata'
+    mock_config.__getitem__ = lambda self, key: mock_section if key == 'metadata' else {}
+    mock_config.read = mock.Mock()
+    mock_config.write = mock.Mock()
+
+    mock_configparser = mock.Mock()
+    mock_configparser.ConfigParser.return_value = mock_config
+
+    monkeypatch.setattr("configparser.ConfigParser", mock_configparser.ConfigParser)
+
+    mock_open = mock.mock_open()
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler.update_version("setup.cfg", "metadata.version", "2025-08-01-001")
+    assert result is True
+
+    # Verify the version was set
+    assert mock_section['version'] == "2025-08-01-001"
+    mock_config.write.assert_called_once()
+
+
+def test_setup_cfg_handler_read_version_not_found(monkeypatch):
+    """Test reading a non-existent configuration key."""
+    handler = SetupCfgVersionHandler()
+
+    # Mock configparser
+    mock_config = mock.Mock()
+    mock_config.sections.return_value = ['metadata']
+    mock_config.__contains__ = lambda self, key: False
+    mock_config.__getitem__ = lambda self, key: {}
+
+    mock_configparser = mock.Mock()
+    mock_configparser.ConfigParser.return_value = mock_config
+
+    monkeypatch.setattr("configparser.ConfigParser", mock_configparser.ConfigParser)
+
+    version = handler.read_version("setup.cfg", "metadata.version")
+    assert version is None
+
+
+def test_setup_cfg_handler_update_version_create_section(monkeypatch):
+    """Test updating version when section doesn't exist."""
+    handler = SetupCfgVersionHandler()
+
+    # Mock configparser
+    mock_config = mock.Mock()
+    mock_config.sections.return_value = []
+    mock_config.__contains__ = lambda self, key: False
+    mock_config.add_section = mock.Mock()
+    mock_config.__getitem__ = lambda self, key: {}
+    mock_config.read = mock.Mock()
+    mock_config.write = mock.Mock()
+
+    mock_configparser = mock.Mock()
+    mock_configparser.ConfigParser.return_value = mock_config
+
+    monkeypatch.setattr("configparser.ConfigParser", mock_configparser.ConfigParser)
+
+    mock_open = mock.mock_open()
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler.update_version("setup.cfg", "metadata.version", "2025-08-01-001")
+    assert result is True
+
+    mock_config.add_section.assert_called_with('metadata')
+
+
+def test_setup_cfg_handler_read_version_exception(monkeypatch, capsys):
+    """Test exception handling during read operation."""
+    handler = SetupCfgVersionHandler()
+
+    def mock_configparser():
+        raise ImportError("configparser not available")
+
+    monkeypatch.setattr("configparser.ConfigParser", mock_configparser)
+
+    version = handler.read_version("setup.cfg", "metadata.version")
+    assert version is None
+
+    captured = capsys.readouterr()
+    assert "Error reading setup.cfg:" in captured.out
+
+
+def test_setup_cfg_handler_update_version_exception(monkeypatch, capsys):
+    """Test exception handling during update operation."""
+    handler = SetupCfgVersionHandler()
+
+    def mock_configparser():
+        raise ImportError("configparser not available")
+
+    monkeypatch.setattr("configparser.ConfigParser", mock_configparser)
+
+    result = handler.update_version("setup.cfg", "metadata.version", "2025-08-01-001")
+    assert result is False
+
+    captured = capsys.readouterr()
+    assert "Error updating setup.cfg:" in captured.out
+
+
+def test_setup_cfg_handler_update_version_simple_key_found(monkeypatch):
+    """Test updating version using simple key that exists in a section."""
+    handler = SetupCfgVersionHandler()
+
+    # Mock configparser - version exists in metadata section
+    mock_section = {'version': '0.1.0', 'name': 'test'}
+    mock_config = mock.Mock()
+    mock_config.sections.return_value = ['metadata', 'options']
+    mock_config.__contains__ = lambda self, key: False  # No dot notation
+    mock_config.__getitem__ = lambda self, key: mock_section if key == 'metadata' else {}
+    mock_config.read = mock.Mock()
+    mock_config.write = mock.Mock()
+
+    mock_configparser = mock.Mock()
+    mock_configparser.ConfigParser.return_value = mock_config
+
+    monkeypatch.setattr("configparser.ConfigParser", mock_configparser.ConfigParser)
+
+    mock_open = mock.mock_open()
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler.update_version("setup.cfg", "version", "2025-08-01-001")
+    assert result is True
+
+    # Verify the version was set
+    assert mock_section['version'] == "2025-08-01-001"
+    mock_config.write.assert_called_once()
+
+
+def test_setup_cfg_handler_update_version_simple_key_not_found_add_to_metadata(monkeypatch):
+    """Test updating version using simple key that doesn't exist - add to metadata section."""
+    handler = SetupCfgVersionHandler()
+
+    # Mock configparser - version doesn't exist in any section, metadata section exists
+    mock_metadata_section = {'name': 'test'}
+    mock_config = mock.Mock()
+    mock_config.sections.return_value = ['metadata', 'options']
+    mock_config.__contains__ = lambda self, key: key == 'metadata'  # metadata exists
+    mock_config.__getitem__ = lambda self, key: mock_metadata_section if key == 'metadata' else {}
+    mock_config.read = mock.Mock()
+    mock_config.write = mock.Mock()
+
+    mock_configparser = mock.Mock()
+    mock_configparser.ConfigParser.return_value = mock_config
+
+    monkeypatch.setattr("configparser.ConfigParser", mock_configparser.ConfigParser)
+
+    mock_open = mock.mock_open()
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler.update_version("setup.cfg", "version", "2025-08-01-001")
+    assert result is True
+
+    # Verify the version was added to metadata section
+    assert mock_metadata_section['version'] == "2025-08-01-001"
+    mock_config.write.assert_called_once()
+
+
+def test_setup_cfg_handler_update_version_simple_key_no_metadata_section(monkeypatch):
+    """Test updating version using simple key when metadata section doesn't exist."""
+    handler = SetupCfgVersionHandler()
+
+    # Mock configparser - no metadata section exists
+    mock_metadata_section = {}
+    mock_config = mock.Mock()
+    mock_config.sections.return_value = ['options']
+    mock_config.__contains__ = lambda self, key: False  # metadata doesn't exist
+    mock_config.__getitem__ = lambda self, key: mock_metadata_section if key == 'metadata' else {}
+    mock_config.add_section = mock.Mock()
+    mock_config.read = mock.Mock()
+    mock_config.write = mock.Mock()
+
+    mock_configparser = mock.Mock()
+    mock_configparser.ConfigParser.return_value = mock_config
+
+    monkeypatch.setattr("configparser.ConfigParser", mock_configparser.ConfigParser)
+
+    mock_open = mock.mock_open()
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler.update_version("setup.cfg", "version", "2025-08-01-001")
+    assert result is True
+
+    # Verify metadata section was created and version was added
+    mock_config.add_section.assert_called_with('metadata')
+    assert mock_metadata_section['version'] == "2025-08-01-001"
+    mock_config.write.assert_called_once()
+
+
+def test_get_version_handler_properties():
+    """Test getting properties version handler."""
+    handler = get_version_handler("properties")
+    assert isinstance(handler, PropertiesVersionHandler)
+
+
+def test_get_version_handler_env():
+    """Test getting env version handler."""
+    handler = get_version_handler("env")
+    assert isinstance(handler, EnvVersionHandler)
+
+
+def test_get_version_handler_setup_cfg():
+    """Test getting setup.cfg version handler."""
+    handler = get_version_handler("setup.cfg")
+    assert isinstance(handler, SetupCfgVersionHandler)

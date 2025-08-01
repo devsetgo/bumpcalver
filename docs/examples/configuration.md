@@ -53,6 +53,24 @@ file_type = "python"
 variable = "__version__"
 version_standard = "python"
 
+[[tool.bumpcalver.file]]
+path = "sonar-project.properties"
+file_type = "properties"
+variable = "sonar.projectVersion"
+version_standard = "default"
+
+[[tool.bumpcalver.file]]
+path = ".env"
+file_type = "env"
+variable = "VERSION"
+version_standard = "default"
+
+[[tool.bumpcalver.file]]
+path = "setup.cfg"
+file_type = "setup.cfg"
+variable = "metadata.version"
+version_standard = "python"
+
 
 ```
 
@@ -96,5 +114,23 @@ version_standard = "default"
 path = "examples/p.py"
 file_type = "python"
 variable = "__version__"
+version_standard = "python"
+
+[[file]]
+path = "sonar-project.properties"
+file_type = "properties"
+variable = "sonar.projectVersion"
+version_standard = "default"
+
+[[file]]
+path = ".env"
+file_type = "env"
+variable = "VERSION"
+version_standard = "default"
+
+[[file]]
+path = "setup.cfg"
+file_type = "setup.cfg"
+variable = "metadata.version"
 version_standard = "python"
 ```

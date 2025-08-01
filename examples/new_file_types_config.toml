@@ -1,0 +1,54 @@
+"""
+Example configuration for using the new file type handlers.
+
+This example shows how to configure bumpcalver to update versions in:
+- sonar-project.properties files
+- .env files  
+- setup.cfg files
+
+Add this configuration to your pyproject.toml file under [tool.bumpcalver]
+"""
+
+# Example pyproject.toml configuration:
+[tool.bumpcalver]
+version_format = "{current_date}-{build_count:03}"
+date_format = "%Y-%m-%d"
+timezone = "America/New_York"
+git_tag = true
+auto_commit = true
+
+# Properties file (e.g., sonar-project.properties)
+[[tool.bumpcalver.file]]
+path = "sonar-project.properties"
+file_type = "properties"
+variable = "sonar.projectVersion"
+
+# Environment file
+[[tool.bumpcalver.file]]
+path = ".env"
+file_type = "env"
+variable = "VERSION"
+
+# Setup.cfg file
+[[tool.bumpcalver.file]]
+path = "setup.cfg"
+file_type = "setup.cfg"
+variable = "metadata.version"
+
+# You can also specify simple keys without dot notation for setup.cfg
+[[tool.bumpcalver.file]]
+path = "setup.cfg"
+file_type = "setup.cfg"
+variable = "version"  # Will search all sections for this key
+
+# Example Python file (existing functionality)
+[[tool.bumpcalver.file]]
+path = "src/myproject/__init__.py"
+file_type = "python"
+variable = "__version__"
+
+# Example usage:
+# bumpcalver --build                    # Updates all configured files with new build version
+# bumpcalver --build --beta             # Adds .beta suffix
+# bumpcalver --build --git-tag          # Also creates git tag
+# bumpcalver --build --auto-commit      # Commits changes and creates git tag
