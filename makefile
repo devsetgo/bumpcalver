@@ -65,6 +65,10 @@ serve-docs: ## Serve all documentation versions locally
 list-docs: ## List all deployed documentation versions
 	python3 scripts/deploy_docs.py list
 
+migrate-legacy-docs: ## Migrate legacy documentation to version 2025.4.12.1 (run once)
+	@echo "🚀 Migrating legacy documentation..."
+	@python3 scripts/migrate_legacy_docs.py
+
 set-default-version: ## Set the default version for documentation (requires VERSION parameter)
 	mike set-default $(VERSION)
 
