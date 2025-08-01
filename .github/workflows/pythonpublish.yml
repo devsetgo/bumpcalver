@@ -4,40 +4,44 @@ on:
   workflow_dispatch:
   release:
     types: [published]
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch all history for mike to work properly
+        
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.x'
+        
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install setuptools build
-    # pip install setuptools build twine
-    # - name: Build and publish
-    #   env:
-    #     TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-    #     TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      # run: |
-      #   python -m build
-      #   twine upload dist/*
+        pip install setuptools build mike
+        pip install -r requirements.txt
+        
     - name: Build package
       run: python -m build
+      
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         password: ${{ secrets.PYPI_API_TOKEN }}
-  build:
-    name: Deploy docs
-    runs-on: ubuntu-latest
 
+  deploy-docs:
+    name: Deploy versioned documentation
+    runs-on: ubuntu-latest
+    needs: deploy  # Wait for PyPI deployment to complete
+    
     steps:
-      - name: Checkout main
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for mike to work properly
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -48,44 +52,39 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install mike
 
-      - name: Generate changelog
-        run: python3 scripts/update_docs.py
-
-      - name: Generate changelog
-        run: python3 scripts/changelog.py
-
-      - name: Build MkDocs site
-        run: mkdocs build
-
-      - name: Copy README to docs/index.md
-        run: cp README.md docs/index.md
-
-      - name: Copy CONTRIBUTING to docs/contribute.md
-        run: cp CONTRIBUTING.md docs/contribute.md
-
-      - name: Copy CHANGELOG to docs/release-notes.md
-        run: cp CHANGELOG.md docs/release-notes.md
-
-      - name: Configure git
+      - name: Configure Git user
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Stash changes
-        run: git stash --include-untracked
-
-      - name: Pull latest gh-pages
+      - name: Get release version
+        id: get_version
         run: |
-          git fetch origin gh-pages
-          git checkout gh-pages
-          git pull origin gh-pages
-          git checkout -
+          # Get version from GitHub release tag
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Release version: $VERSION"
 
-      - name: Apply stash
-        run: git stash pop
+      - name: Prepare documentation files
+        run: |
+          python3 scripts/update_docs.py
+          python3 scripts/changelog.py
+          cp README.md docs/index.md
+          cp CONTRIBUTING.md docs/contribute.md
+          cp CHANGELOG.md docs/release-notes.md
 
-      - name: Deploy to GitHub Pages
-        run: mkdocs gh-deploy --force
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Deploy documentation with mike
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          echo "Deploying documentation for version: $VERSION"
+          
+          # Deploy the specific version with 'latest' and 'stable' aliases
+          python3 scripts/deploy_docs.py deploy \
+            --version "$VERSION" \
+            --aliases latest stable \
+            --title "Release $VERSION" \
+            --push
+          
+          echo "Documentation deployed for version $VERSION"
