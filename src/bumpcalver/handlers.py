@@ -1,13 +1,13 @@
 """
 Version handlers for BumpCalver.
 
-This module provides a comprehensive set of handlers for reading and updating version strings 
-across different file formats commonly used in software development projects. The module is 
-designed with extensibility and type safety in mind, following the Abstract Base Class pattern 
+This module provides a comprehensive set of handlers for reading and updating version strings
+across different file formats commonly used in software development projects. The module is
+designed with extensibility and type safety in mind, following the Abstract Base Class pattern
 to ensure consistent interfaces across all handler implementations.
 
-The handlers support various file formats including configuration files, source code files, 
-container definitions, and build scripts. Each handler is optimized for its specific file format 
+The handlers support various file formats including configuration files, source code files,
+container definitions, and build scripts. Each handler is optimized for its specific file format
 and provides robust error handling, encoding support, and version formatting capabilities.
 
 Architecture:
@@ -39,42 +39,42 @@ Classes:
     VersionHandler: Abstract base class defining the handler interface. Provides common
         formatting methods and establishes the contract for read_version and update_version
         operations. All concrete handlers inherit from this class.
-        
+
     PythonVersionHandler: Specialized handler for Python source files. Uses regex patterns
         to locate and update variable assignments. Supports single and double quoted strings
         with proper escaping. Handles encoding detection and preserves file formatting.
-        
+
     TomlVersionHandler: Handler for TOML configuration files using the tomli library.
         Supports nested key access via dot notation (e.g., "tool.poetry.version").
         Preserves TOML structure and formatting while updating specific values.
-        
+
     YamlVersionHandler: Handler for YAML files using the PyYAML library. Supports nested
         dictionary access and maintains YAML formatting. Handles both simple and complex
         YAML structures with proper type preservation.
-        
+
     JsonVersionHandler: Handler for JSON files with built-in json module support.
         Maintains JSON formatting with proper indentation. Supports nested object
         access and preserves data types during updates.
-        
+
     XmlVersionHandler: Handler for XML files using ElementTree. Supports XPath-like
         element selection and updates. Preserves XML structure and encoding declarations.
-        
+
     DockerfileVersionHandler: Specialized handler for Docker container definitions.
         Supports both ARG and ENV directives with proper syntax validation.
         Handles multi-stage builds and preserves Dockerfile formatting.
-        
+
     MakefileVersionHandler: Handler for GNU Make build scripts. Supports variable
         assignments with both = and := operators. Preserves makefile structure
         and comment blocks.
-        
+
     PropertiesVersionHandler: Handler for Java-style properties files. Supports
         key=value syntax with comment preservation. Handles special characters
         and encoding properly.
-        
+
     EnvVersionHandler: Handler for environment variable files. Supports quoted
         and unquoted values with proper escaping. Preserves comments and file
         structure while updating specific variables.
-        
+
     SetupCfgVersionHandler: Handler for Python setup.cfg files using configparser.
         Supports INI-style sections with dot notation access (e.g., "metadata.version").
         Preserves section structure and comments.
@@ -83,27 +83,27 @@ Functions:
     get_version_handler(file_type: str) -> VersionHandler:
         Factory function that returns the appropriate handler instance for a given
         file type. Raises ValueError for unsupported file types.
-        
+
         Args:
             file_type: String identifier for the file format
-            
+
         Returns:
             Configured handler instance for the specified format
-            
+
         Raises:
             ValueError: If the file type is not supported
-            
+
     update_version_in_files(new_version: str, file_configs: List[Dict[str, Any]]) -> List[str]:
         Batch update function that processes multiple files with different configurations.
         Provides transactional-like behavior with detailed success/failure reporting.
-        
+
         Args:
             new_version: The version string to apply to all configured files
             file_configs: List of file configuration dictionaries
-            
+
         Returns:
             List of successfully updated file paths
-            
+
         Configuration Format:
             Each file_config dictionary should contain:
             - path (str): Absolute or relative path to the file
@@ -126,17 +126,17 @@ Usage Examples:
         >>> handler = PythonVersionHandler()
         >>> current_version = handler.read_version("src/mypackage/__init__.py", "__version__")
         >>> success = handler.update_version("src/mypackage/__init__.py", "__version__", "2024.01.15")
-        
+
     TOML file with nested keys:
         >>> handler = TomlVersionHandler()
         >>> version = handler.read_version("pyproject.toml", "tool.poetry.version")
         >>> handler.update_version("pyproject.toml", "tool.poetry.version", "2024.01.15")
-        
+
     Dockerfile with ARG directive:
         >>> handler = DockerfileVersionHandler()
         >>> version = handler.read_version("Dockerfile", "VERSION", directive="ARG")
         >>> handler.update_version("Dockerfile", "VERSION", "2024.01.15", directive="ARG")
-        
+
     Batch processing multiple files:
         >>> file_configs = [
         ...     {"path": "version.py", "file_type": "python", "variable": "__version__"},
@@ -145,19 +145,19 @@ Usage Examples:
         ... ]
         >>> updated_files = update_version_in_files("2024.01.15", file_configs)
         >>> print(f"Updated {len(updated_files)} files successfully")
-        
+
     Version formatting with standards:
         >>> handler = TomlVersionHandler()
         >>> handler.update_version(
-        ...     "pyproject.toml", 
-        ...     "tool.poetry.version", 
-        ...     "2024-01-15", 
+        ...     "pyproject.toml",
+        ...     "tool.poetry.version",
+        ...     "2024-01-15",
         ...     version_standard="python"
         ... )  # Converts to PEP 440 format: "2024.1.15"
 
 Dependencies:
     - toml: For TOML file parsing and generation
-    - yaml: For YAML file parsing and generation  
+    - yaml: For YAML file parsing and generation
     - xml.etree.ElementTree: For XML file processing (standard library)
     - json: For JSON file processing (standard library)
     - re: For regex pattern matching (standard library)

@@ -85,7 +85,7 @@ For manual deployment, follow these steps:
    bumpcalver --build
    ```
 
-2. **Deploy documentation**: 
+2. **Deploy documentation**:
    ```bash
    make create-docs
    ```
@@ -143,7 +143,7 @@ The documentation includes an automatic version selector that:
 The documentation will be available at:
 - `https://yoursite.com/` - Default version (usually `latest`)
 - `https://yoursite.com/latest/` - Latest release
-- `https://yoursite.com/stable/` - Stable release  
+- `https://yoursite.com/stable/` - Stable release
 - `https://yoursite.com/dev/` - Development version
 - `https://yoursite.com/2025.08.01/` - Specific version
 

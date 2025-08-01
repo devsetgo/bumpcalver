@@ -117,4 +117,3 @@ Published Date: 2024 October 20, 15:35
 **Full Changelog**: https://github.com/devsetgo/bumpcalver/commits/2024.10.18
 
 Published Date: 2024 October 18, 18:42
-

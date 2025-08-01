@@ -25,7 +25,7 @@ The version selector dropdown is located in the header navigation, allowing user
 # Deploy current version locally (no push)
 make create-docs-local
 
-# Deploy as development version 
+# Deploy as development version
 make create-docs-dev
 
 # Serve documentation locally on port 8001

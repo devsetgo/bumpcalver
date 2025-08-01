@@ -8,7 +8,7 @@
 make create-docs                 # Push to remote
 make create-docs-local          # Local only
 
-# Deploy development version  
+# Deploy development version
 make create-docs-dev            # Push dev version
 
 # Deploy specific version
@@ -70,7 +70,7 @@ python3 scripts/deploy_docs.py deploy --version 2025.08.01 --push
 
 ### With GitHub Actions
 - `dev` branch → `dev` documentation
-- `main` branch → `latest` documentation  
+- `main` branch → `latest` documentation
 - Git tags → versioned + `stable` documentation
 
 ### With MkDocs Material Theme
