@@ -1,0 +1,2 @@
+[console_scripts]
+genbadge = genbadge.main:genbadge

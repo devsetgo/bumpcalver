@@ -1,0 +1,46 @@
+Script started on 2025-04-12 20:27:46+00:00 [TERM="xterm-256color" TTY="/dev/pts/1" COLUMNS="188" LINES="17"]
+[?2004h[0;32mvscode [0m➜ [1;34m/workspaces/bumpcalver [0;36m([1;31mdev[0;36m) [0m$ ._[K[Ksurce _[K[K[K[K[K[Kource _)[Kvenv/bin/activate
+[?2004l[?2004h[0;32mvscode [0m➜ [1;34m/workspaces/bumpcalver [0;36m([1;31mdev[0;36m) [0m$ source _venv/bin/activate
+[?2004l[?2004h[0;32mvscode [0m➜ [1;34m/workspaces/bumpcalver [0;36m([1;31mdev[0;36m) [0m$ [7mpython -m pip install -e[27mpython -m pip install -e src/bumpcalver/
+[?2004lDefaulting to user installation because normal site-packages is not writeable
+Obtaining file:///workspaces/bumpcalver/src/bumpcalver
+[31mERROR: file:///workspaces/bumpcalver/src/bumpcalver does not appear to be a Python project: neither 'setup.py' nor 'pyproject.toml' found.[0m[31m
+[0m[?2004h[0;32mvscode [1;31m➜ [1;34m/workspaces/bumpcalver [0;36m([1;31mdev[0;36m) [0m$ python -m pip install -e src/bumpcalver/[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K- [Ke .
+[?2004lDefaulting to user installation because normal site-packages is not writeable
+Obtaining file:///workspaces/bumpcalver
+  Installing build dependencies ... [?25l- \ | / - done
+[?25h  Checking if build backend supports build_editable ... [?25ldone
+[?25h  Getting requirements to build editable ... [?25ldone
+[?25h  Installing backend dependencies ... [?25l- \ done
+[?25h  Preparing editable metadata (pyproject.toml) ... [?25ldone
+[?25hRequirement already satisfied: click>=8.0 in /home/vscode/.local/lib/python3.12/site-packages (from bumpcalver==2025.2.2) (8.1.7)
+Requirement already satisfied: pyyaml>=6.0.2 in /home/vscode/.local/lib/python3.12/site-packages (from bumpcalver==2025.2.2) (6.0.2)
+Requirement already satisfied: toml>=0.10.2 in /home/vscode/.local/lib/python3.12/site-packages (from bumpcalver==2025.2.2) (0.10.2)
+Building wheels for collected packages: bumpcalver
+  Building editable for bumpcalver (pyproject.toml) ... [?25ldone
+[?25h  Created wheel for bumpcalver: filename=bumpcalver-2025.2.2-py3-none-any.whl size=5942 sha256=dee58c099d0ef88fb5064dfb3c229c2c673baa6f8dd541e6ed8c65d678b9ae88
+  Stored in directory: /tmp/pip-ephem-wheel-cache-7knsoffv/wheels/81/08/4a/8787a7082516bb59d0cf4db82530fa9c0b2800b3aa7b1615f0
+Successfully built bumpcalver
+Installing collected packages: bumpcalver
+Successfully installed bumpcalver-2025.2.2
+[?2004h[0;32mvscode [0m➜ [1;34m/workspaces/bumpcalver [0;36m([1;31mdev[0;36m) [0m$ python -m pip install -e .src/bumpcalver/[15Psource _venv/bin/activate[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[Kmake bump
+[?2004lbumpcalver --build
+Original path: makefile -> Converted path: makefile
+Original path: pyproject.toml -> Converted path: pyproject.toml
+Original path: src/bumpcalver/__init__.py -> Converted path: src/bumpcalver/__init__.py
+Original path: examples/makefile -> Converted path: examples/makefile
+Original path: examples/dockerfile -> Converted path: examples/dockerfile
+Original path: examples/dockerfile -> Converted path: examples/dockerfile
+Original path: examples/example.py -> Converted path: examples/example.py
+Original path: examples/pyproject.toml -> Converted path: examples/pyproject.toml
+Original path: examples/example.xml -> Converted path: examples/example.xml
+Original path: examples/example.json -> Converted path: examples/example.json
+Original path: examples/example.yaml -> Converted path: examples/example.yaml
+Original path: examples/example.toml -> Converted path: examples/example.toml
+Build option is set. Calling get_build_version.
+Version '2025.02.02' does not match expected format.
+Version '2025.02.02' does not match expected format.
+Calling update_version_in_files with version: 2025.04.12-001
+Updated /workspaces/bumpcalver/makefile
+Updated /workspaces/bumpcalver/pyproject.toml
+Up
