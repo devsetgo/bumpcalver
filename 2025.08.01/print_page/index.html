@@ -93,6 +93,10 @@
       
     </div>
     
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
     
       
 
@@ -651,6 +655,29 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mike-quickref/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Reference
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -898,6 +925,15 @@
   <a href="#versioning" class="md-nav__link">
     <span class="md-ellipsis">
       5.1 Versioning
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mike-quickref" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2 Quick Reference
     </span>
   </a>
   
@@ -4895,7 +4931,135 @@ make<span class="w"> </span>create-docs-local
 <li><strong>Consistent versioning</strong>: Uses the same version format across project and docs</li>
 <li><strong>Automated workflow</strong>: Version bumps trigger documentation updates</li>
 </ol>
-<p>This ensures that documentation versions always match the project versions.</p></section></section>
+<p>This ensures that documentation versions always match the project versions.</p></section><section class="print-page" id="mike-quickref" heading-number="5.2"><h1 id="mike-quickref-mike-documentation-versioning-quick-reference">Mike Documentation Versioning - Quick Reference<a class="headerlink" href="#mike-quickref-mike-documentation-versioning-quick-reference" title="Permanent link">&para;</a></h1>
+<h2 id="mike-quickref-quick-commands">Quick Commands<a class="headerlink" href="#mike-quickref-quick-commands" title="Permanent link">&para;</a></h2>
+<h3 id="mike-quickref-deploy-documentation">Deploy Documentation<a class="headerlink" href="#mike-quickref-deploy-documentation" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Deploy current version (auto-detected)</span>
+make<span class="w"> </span>create-docs<span class="w">                 </span><span class="c1"># Push to remote</span>
+make<span class="w"> </span>create-docs-local<span class="w">          </span><span class="c1"># Local only</span>
+
+<span class="c1"># Deploy development version  </span>
+make<span class="w"> </span>create-docs-dev<span class="w">            </span><span class="c1"># Push dev version</span>
+
+<span class="c1"># Deploy specific version</span>
+python3<span class="w"> </span>scripts/deploy_docs.py<span class="w"> </span>deploy<span class="w"> </span>--version<span class="w"> </span><span class="m">2025</span>.08.01<span class="w"> </span>--aliases<span class="w"> </span>latest<span class="w"> </span>stable<span class="w"> </span>--push
+</code></pre></div>
+<h3 id="mike-quickref-manage-versions">Manage Versions<a class="headerlink" href="#mike-quickref-manage-versions" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># List all versions</span>
+make<span class="w"> </span>list-docs
+
+<span class="c1"># Serve locally (all versions)</span>
+make<span class="w"> </span>serve-docs
+
+<span class="c1"># Delete version</span>
+make<span class="w"> </span>delete-version<span class="w"> </span><span class="nv">VERSION</span><span class="o">=</span><span class="m">2025</span>.07.01
+
+<span class="c1"># Set default version</span>
+make<span class="w"> </span>set-default-version<span class="w"> </span><span class="nv">VERSION</span><span class="o">=</span>latest
+</code></pre></div>
+<h3 id="mike-quickref-advanced-usage">Advanced Usage<a class="headerlink" href="#mike-quickref-advanced-usage" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Deploy with custom title</span>
+python3<span class="w"> </span>scripts/deploy_docs.py<span class="w"> </span>deploy<span class="w"> </span>--version<span class="w"> </span><span class="m">2025</span>.08.01<span class="w"> </span>--title<span class="w"> </span><span class="s2">&quot;August 2025 Release&quot;</span><span class="w"> </span>--push
+
+<span class="c1"># Deploy dev version with custom name</span>
+python3<span class="w"> </span>scripts/deploy_docs.py<span class="w"> </span>deploy<span class="w"> </span>--dev<span class="w"> </span>--version<span class="w"> </span>staging<span class="w"> </span>--push
+
+<span class="c1"># Deploy without aliases</span>
+python3<span class="w"> </span>scripts/deploy_docs.py<span class="w"> </span>deploy<span class="w"> </span>--version<span class="w"> </span><span class="m">2025</span>.08.01<span class="w"> </span>--push
+</code></pre></div>
+<h2 id="mike-quickref-version-strategy">Version Strategy<a class="headerlink" href="#mike-quickref-version-strategy" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Version Type</th>
+<th>Format</th>
+<th>Example</th>
+<th>When to Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Release</td>
+<td>YYYY.MM.DD</td>
+<td>2025.08.01</td>
+<td>Tagged releases</td>
+</tr>
+<tr>
+<td>Development</td>
+<td>dev</td>
+<td>dev</td>
+<td>Active development</td>
+</tr>
+<tr>
+<td>Staging</td>
+<td>staging</td>
+<td>staging</td>
+<td>Pre-release testing</td>
+</tr>
+<tr>
+<td>Aliases</td>
+<td>latest/stable</td>
+<td>latest</td>
+<td>User-friendly URLs</td>
+</tr>
+</tbody>
+</table>
+<h2 id="mike-quickref-url-structure">URL Structure<a class="headerlink" href="#mike-quickref-url-structure" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Points To</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/</code></td>
+<td>Default version</td>
+<td>Usually <code>latest</code></td>
+</tr>
+<tr>
+<td><code>/latest/</code></td>
+<td>Latest release</td>
+<td>Most recent version</td>
+</tr>
+<tr>
+<td><code>/stable/</code></td>
+<td>Stable release</td>
+<td>Production-ready</td>
+</tr>
+<tr>
+<td><code>/dev/</code></td>
+<td>Development</td>
+<td>Bleeding edge</td>
+</tr>
+<tr>
+<td><code>/2025.08.01/</code></td>
+<td>Specific version</td>
+<td>Permanent link</td>
+</tr>
+</tbody>
+</table>
+<h2 id="mike-quickref-integration-points">Integration Points<a class="headerlink" href="#mike-quickref-integration-points" title="Permanent link">&para;</a></h2>
+<h3 id="mike-quickref-with-bumpcalver">With BumpCalver<a class="headerlink" href="#mike-quickref-with-bumpcalver" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Auto-detects version from <code>makefile</code>, <code>pyproject.toml</code>, <code>__init__.py</code></li>
+<li>Consistent versioning across project and docs</li>
+<li>Automated workflow on version bumps</li>
+</ul>
+<h3 id="mike-quickref-with-github-actions">With GitHub Actions<a class="headerlink" href="#mike-quickref-with-github-actions" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>dev</code> branch → <code>dev</code> documentation</li>
+<li><code>main</code> branch → <code>latest</code> documentation  </li>
+<li>Git tags → versioned + <code>stable</code> documentation</li>
+</ul>
+<h3 id="mike-quickref-with-mkdocs-material-theme">With MkDocs Material Theme<a class="headerlink" href="#mike-quickref-with-mkdocs-material-theme" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Automatic version selector in navigation</li>
+<li>Responsive design across versions</li>
+<li>Search within specific versions</li>
+</ul></section></section>
                     <section class='print-page md-section' id='section-6' heading-number='6'>
                         <h1>About<a class='headerlink' href='#section-6' title='Permanent link'></a>
                         </h1>
@@ -5107,6 +5271,20 @@ make<span class="w"> </span>create-docs-local
                 .print-site-enumerate-headings #versioning h5:before { content: '5.1.' counter(counter-versioning-2) '.' counter(counter-versioning-3) '.' counter(counter-versioning-4) '.' counter(counter-versioning-5) ' ' }
                 .print-site-enumerate-headings #versioning h5 {  counter-increment: counter-versioning-5 }
             
+.print-site-enumerate-headings #mike-quickref > h1:before { content: '5.2 ' }
+
+                .print-site-enumerate-headings #mike-quickref h2:before { content: '5.2.' counter(counter-mike-quickref-2) ' ' }
+                .print-site-enumerate-headings #mike-quickref h2 {  counter-reset: counter-mike-quickref-3  counter-mike-quickref-4  counter-mike-quickref-5 ;  counter-increment: counter-mike-quickref-2 }
+            
+                .print-site-enumerate-headings #mike-quickref h3:before { content: '5.2.' counter(counter-mike-quickref-2) '.' counter(counter-mike-quickref-3) ' ' }
+                .print-site-enumerate-headings #mike-quickref h3 {  counter-reset: counter-mike-quickref-4  counter-mike-quickref-5 ;  counter-increment: counter-mike-quickref-3 }
+            
+                .print-site-enumerate-headings #mike-quickref h4:before { content: '5.2.' counter(counter-mike-quickref-2) '.' counter(counter-mike-quickref-3) '.' counter(counter-mike-quickref-4) ' ' }
+                .print-site-enumerate-headings #mike-quickref h4 {  counter-reset: counter-mike-quickref-5 ;  counter-increment: counter-mike-quickref-4 }
+            
+                .print-site-enumerate-headings #mike-quickref h5:before { content: '5.2.' counter(counter-mike-quickref-2) '.' counter(counter-mike-quickref-3) '.' counter(counter-mike-quickref-4) '.' counter(counter-mike-quickref-5) ' ' }
+                .print-site-enumerate-headings #mike-quickref h5 {  counter-increment: counter-mike-quickref-5 }
+            
 .print-site-enumerate-headings #section-6 > h1:before { content: '6 ' }
 .print-site-enumerate-headings #about > h1:before { content: '6.1 ' }
 
@@ -5237,7 +5415,7 @@ make<span class="w"> </span>create-docs-local
     
     
       
-      <script id="__config" type="application/json">{"base": "/", "features": ["navigation.tabs", "navigation.instant", "navigation.tabs.sticky", "toc.integrate", "toc.follow", "navigation.top"], "search": "../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "/", "features": ["navigation.tabs", "navigation.instant", "navigation.tabs.sticky", "toc.integrate", "toc.follow", "navigation.top"], "search": "../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
       <script src="../assets/javascripts/bundle.56ea9cef.min.js"></script>
