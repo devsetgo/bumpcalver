@@ -6,12 +6,11 @@ Your BumpCalVer documentation has been successfully migrated to use Mike for ver
 
 ### 📊 Current Version Structure
 
-Your documentation now has **4 versions** available:
+Your documentation now has **1 version** available:
 
-1. **2025.4.12.1** - Your last released version (migrated from legacy docs)
-2. **2025.07.01** - July 2025 Release
-3. **2025.08.01** - August 2025 Release (current latest)
-4. **dev** - Development Version
+1. **2025.4.12.1** - Your last released version (migrated from legacy docs) [latest, stable]
+
+All test versions have been cleaned up, leaving only your legitimate release.
 
 ### 🔗 Access Your Documentation
 
