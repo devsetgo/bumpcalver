@@ -9,7 +9,7 @@ hatchling==1.27.0 # Vulnerabilities: None
 httpx==0.28.1 # Vulnerabilities: None
 mkdocs-material==9.6.15 # From 9.6.14 | Vulnerabilities: None
 mkdocs-print-site-plugin==2.7.3 # Vulnerabilities: None
-mkdocstrings[python,shell]==0.29.1 # Vulnerabilities: None
+mkdocstrings[python,shell]==0.30.0 # Vulnerabilities: None
 packaging==25.0 # Vulnerabilities: None
 pre-commit==4.2.0 # Vulnerabilities: None
 pylint==3.3.7 # Vulnerabilities: None
