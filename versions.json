@@ -1,12 +1,5 @@
 [
   {
-    "version": "2025.08.01",
-    "title": "2025.08.01",
-    "aliases": [
-      "latest"
-    ]
-  },
-  {
     "version": "2025.07.01",
     "title": "July 2025 Release",
     "aliases": []
