@@ -2,6 +2,9 @@
   {
     "version": "2025.4.12.1",
     "title": "Release 2025.4.12.1",
-    "aliases": []
+    "aliases": [
+      "latest",
+      "stable"
+    ]
   }
 ]
