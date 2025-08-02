@@ -14,6 +14,9 @@ from src.bumpcalver.handlers import (
     TomlVersionHandler,
     XmlVersionHandler,
     YamlVersionHandler,
+    PropertiesVersionHandler,
+    EnvVersionHandler,
+    SetupCfgVersionHandler,
     get_version_handler,
     update_version_in_files,
 )
@@ -723,3 +726,888 @@ def test_update_version_in_files_no_file_type(capsys):
         update_version_in_files(new_version, file_configs)
     except ValueError as e:
         assert str(e) == "Unsupported file type: "
+
+
+# Tests for PropertiesVersionHandler
+def test_properties_handler_read_version(monkeypatch):
+    """Test reading version from a properties file."""
+    handler = PropertiesVersionHandler()
+    properties_content = """sonar.projectKey=devsetgo_bumpcalver
+sonar.organization=devsetgo
+sonar.projectName=bumpcalver
+sonar.projectVersion=2024-09-27-007
+sonar.language=python
+sonar.sources=src
+"""
+    mock_open = mock.mock_open(read_data=properties_content)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    version = handler.read_version("sonar-project.properties", "sonar.projectVersion")
+    assert version == "2024-09-27-007"
+
+
+def test_properties_handler_update_version(monkeypatch):
+    """Test updating version in a properties file."""
+    handler = PropertiesVersionHandler()
+    properties_content = """sonar.projectKey=devsetgo_bumpcalver
+sonar.organization=devsetgo
+sonar.projectName=bumpcalver
+sonar.projectVersion=2024-09-27-007
+sonar.language=python
+sonar.sources=src
+"""
+    mock_open = mock.mock_open(read_data=properties_content)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler.update_version("sonar-project.properties", "sonar.projectVersion", "2025-08-01-001")
+    assert result is True
+
+    handle = mock_open()
+    handle.writelines.assert_called_once()
+    written_lines = handle.writelines.call_args[0][0]
+    # Check that the version line was updated
+    version_line_found = any("sonar.projectVersion=2025-08-01-001" in line for line in written_lines)
+    assert version_line_found
+
+
+def test_properties_handler_read_version_not_found(monkeypatch, capsys):
+    """Test reading a non-existent property."""
+    handler = PropertiesVersionHandler()
+    properties_content = """sonar.projectKey=devsetgo_bumpcalver
+sonar.organization=devsetgo
+"""
+    mock_open = mock.mock_open(read_data=properties_content)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    version = handler.read_version("sonar-project.properties", "sonar.projectVersion")
+    assert version is None
+
+
+def test_properties_handler_update_version_not_found(monkeypatch, capsys):
+    """Test updating a non-existent property."""
+    handler = PropertiesVersionHandler()
+    properties_content = """sonar.projectKey=devsetgo_bumpcalver
+sonar.organization=devsetgo
+"""
+    mock_open = mock.mock_open(read_data=properties_content)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler.update_version("sonar-project.properties", "sonar.projectVersion", "2025-08-01-001")
+    assert result is False
+
+    captured = capsys.readouterr()
+    assert "Property 'sonar.projectVersion' not found in sonar-project.properties" in captured.out
+
+
+def test_properties_handler_read_version_exception(monkeypatch, capsys):
+    """Test exception handling during read operation."""
+    handler = PropertiesVersionHandler()
+
+    def mock_open(*args, **kwargs):
+        raise IOError("Unable to open file")
+
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    version = handler.read_version("sonar-project.properties", "sonar.projectVersion")
+    assert version is None
+
+    captured = capsys.readouterr()
+    assert "Error reading sonar-project.properties: Unable to open file" in captured.out
+
+
+def test_properties_handler_update_version_exception(monkeypatch, capsys):
+    """Test exception handling during update operation."""
+    handler = PropertiesVersionHandler()
+
+    def mock_open(*args, **kwargs):
+        raise IOError("Unable to open file")
+
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler.update_version("sonar-project.properties", "sonar.projectVersion", "2025-08-01-001")
+    assert result is False
+
+    captured = capsys.readouterr()
+    assert "Error updating sonar-project.properties: Unable to open file" in captured.out
+
+
+# Tests for EnvVersionHandler
+def test_env_handler_read_version(monkeypatch):
+    """Test reading version from a .env file."""
+    handler = EnvVersionHandler()
+    env_content = """# Environment variables
+DEBUG=true
+VERSION=1.0.0
+DATABASE_URL=postgresql://localhost/mydb
+"""
+    mock_open = mock.mock_open(read_data=env_content)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    version = handler.read_version(".env", "VERSION")
+    assert version == "1.0.0"
+
+
+def test_env_handler_read_version_with_quotes(monkeypatch):
+    """Test reading version from a .env file with quotes."""
+    handler = EnvVersionHandler()
+    env_content = """VERSION="1.0.0"
+API_KEY='secret123'
+"""
+    mock_open = mock.mock_open(read_data=env_content)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    version = handler.read_version(".env", "VERSION")
+    assert version == "1.0.0"
+
+
+def test_env_handler_update_version(monkeypatch):
+    """Test updating version in a .env file."""
+    handler = EnvVersionHandler()
+    env_content = """# Environment variables
+DEBUG=true
+VERSION=1.0.0
+DATABASE_URL=postgresql://localhost/mydb
+"""
+    mock_open = mock.mock_open(read_data=env_content)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler.update_version(".env", "VERSION", "2025-08-01-001")
+    assert result is True
+
+    handle = mock_open()
+    handle.writelines.assert_called_once()
+    written_lines = handle.writelines.call_args[0][0]
+    # Check that the version line was updated
+    version_line_found = any("VERSION=2025-08-01-001" in line for line in written_lines)
+    assert version_line_found
+
+
+def test_env_handler_read_version_not_found(monkeypatch):
+    """Test reading a non-existent environment variable."""
+    handler = EnvVersionHandler()
+    env_content = """DEBUG=true
+DATABASE_URL=postgresql://localhost/mydb
+"""
+    mock_open = mock.mock_open(read_data=env_content)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    version = handler.read_version(".env", "VERSION")
+    assert version is None
+
+
+def test_env_handler_update_version_not_found(monkeypatch, capsys):
+    """Test updating a non-existent environment variable."""
+    handler = EnvVersionHandler()
+    env_content = """DEBUG=true
+DATABASE_URL=postgresql://localhost/mydb
+"""
+    mock_open = mock.mock_open(read_data=env_content)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler.update_version(".env", "VERSION", "2025-08-01-001")
+    assert result is False
+
+    captured = capsys.readouterr()
+    assert "Environment variable 'VERSION' not found in .env" in captured.out
+
+
+def test_env_handler_read_version_exception(monkeypatch, capsys):
+    """Test exception handling during read operation."""
+    handler = EnvVersionHandler()
+
+    def mock_open(*args, **kwargs):
+        raise IOError("Unable to open file")
+
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    version = handler.read_version(".env", "VERSION")
+    assert version is None
+
+    captured = capsys.readouterr()
+    assert "Error reading .env: Unable to open file" in captured.out
+
+
+def test_env_handler_update_version_exception(monkeypatch, capsys):
+    """Test exception handling during update operation."""
+    handler = EnvVersionHandler()
+
+    def mock_open(*args, **kwargs):
+        raise IOError("Unable to open file")
+
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler.update_version(".env", "VERSION", "2025-08-01-001")
+    assert result is False
+
+    captured = capsys.readouterr()
+    assert "Error updating .env: Unable to open file" in captured.out
+
+
+# Tests for SetupCfgVersionHandler
+def test_setup_cfg_handler_read_version(monkeypatch):
+    """Test reading version from a setup.cfg file."""
+    handler = SetupCfgVersionHandler()
+
+    # Mock configparser
+    mock_config = mock.Mock()
+    mock_config.sections.return_value = ['metadata', 'options']
+    mock_config.__contains__ = lambda self, key: key == 'metadata'
+    mock_config.__getitem__ = lambda self, key: {'version': '0.1.0'} if key == 'metadata' else {}
+
+    mock_configparser = mock.Mock()
+    mock_configparser.ConfigParser.return_value = mock_config
+
+    monkeypatch.setattr("configparser.ConfigParser", mock_configparser.ConfigParser)
+
+    version = handler.read_version("setup.cfg", "metadata.version")
+    assert version == "0.1.0"
+
+
+def test_setup_cfg_handler_read_version_simple_key(monkeypatch):
+    """Test reading version from setup.cfg using simple key (no dot notation)."""
+    handler = SetupCfgVersionHandler()
+
+    # Mock configparser
+    mock_section = {'version': '0.1.0', 'name': 'test'}
+    mock_config = mock.Mock()
+    mock_config.sections.return_value = ['metadata']
+    mock_config.__getitem__ = lambda self, key: mock_section if key == 'metadata' else {}
+
+    mock_configparser = mock.Mock()
+    mock_configparser.ConfigParser.return_value = mock_config
+
+    monkeypatch.setattr("configparser.ConfigParser", mock_configparser.ConfigParser)
+
+    version = handler.read_version("setup.cfg", "version")
+    assert version == "0.1.0"
+
+
+def test_setup_cfg_handler_update_version(monkeypatch):
+    """Test updating version in a setup.cfg file."""
+    handler = SetupCfgVersionHandler()
+
+    # Mock configparser
+    mock_section = {'version': '0.1.0'}
+    mock_config = mock.Mock()
+    mock_config.sections.return_value = ['metadata']
+    mock_config.__contains__ = lambda self, key: key == 'metadata'
+    mock_config.__getitem__ = lambda self, key: mock_section if key == 'metadata' else {}
+    mock_config.read = mock.Mock()
+    mock_config.write = mock.Mock()
+
+    mock_configparser = mock.Mock()
+    mock_configparser.ConfigParser.return_value = mock_config
+
+    monkeypatch.setattr("configparser.ConfigParser", mock_configparser.ConfigParser)
+
+    mock_open = mock.mock_open()
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler.update_version("setup.cfg", "metadata.version", "2025-08-01-001")
+    assert result is True
+
+    # Verify the version was set
+    assert mock_section['version'] == "2025-08-01-001"
+    mock_config.write.assert_called_once()
+
+
+def test_setup_cfg_handler_read_version_not_found(monkeypatch):
+    """Test reading a non-existent configuration key."""
+    handler = SetupCfgVersionHandler()
+
+    # Mock configparser
+    mock_config = mock.Mock()
+    mock_config.sections.return_value = ['metadata']
+    mock_config.__contains__ = lambda self, key: False
+    mock_config.__getitem__ = lambda self, key: {}
+
+    mock_configparser = mock.Mock()
+    mock_configparser.ConfigParser.return_value = mock_config
+
+    monkeypatch.setattr("configparser.ConfigParser", mock_configparser.ConfigParser)
+
+    version = handler.read_version("setup.cfg", "metadata.version")
+    assert version is None
+
+
+def test_setup_cfg_handler_update_version_create_section(monkeypatch):
+    """Test updating version when section doesn't exist."""
+    handler = SetupCfgVersionHandler()
+
+    # Mock configparser
+    mock_config = mock.Mock()
+    mock_config.sections.return_value = []
+    mock_config.__contains__ = lambda self, key: False
+    mock_config.add_section = mock.Mock()
+    mock_config.__getitem__ = lambda self, key: {}
+    mock_config.read = mock.Mock()
+    mock_config.write = mock.Mock()
+
+    mock_configparser = mock.Mock()
+    mock_configparser.ConfigParser.return_value = mock_config
+
+    monkeypatch.setattr("configparser.ConfigParser", mock_configparser.ConfigParser)
+
+    mock_open = mock.mock_open()
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler.update_version("setup.cfg", "metadata.version", "2025-08-01-001")
+    assert result is True
+
+    mock_config.add_section.assert_called_with('metadata')
+
+
+def test_setup_cfg_handler_read_version_exception(monkeypatch, capsys):
+    """Test exception handling during read operation."""
+    handler = SetupCfgVersionHandler()
+
+    def mock_configparser():
+        raise ImportError("configparser not available")
+
+    monkeypatch.setattr("configparser.ConfigParser", mock_configparser)
+
+    version = handler.read_version("setup.cfg", "metadata.version")
+    assert version is None
+
+    captured = capsys.readouterr()
+    assert "Error reading setup.cfg:" in captured.out
+
+
+def test_setup_cfg_handler_update_version_exception(monkeypatch, capsys):
+    """Test exception handling during update operation."""
+    handler = SetupCfgVersionHandler()
+
+    def mock_configparser():
+        raise ImportError("configparser not available")
+
+    monkeypatch.setattr("configparser.ConfigParser", mock_configparser)
+
+    result = handler.update_version("setup.cfg", "metadata.version", "2025-08-01-001")
+    assert result is False
+
+    captured = capsys.readouterr()
+    assert "Error updating setup.cfg:" in captured.out
+
+
+def test_setup_cfg_handler_update_version_simple_key_found(monkeypatch):
+    """Test updating version using simple key that exists in a section."""
+    handler = SetupCfgVersionHandler()
+
+    # Mock configparser - version exists in metadata section
+    mock_section = {'version': '0.1.0', 'name': 'test'}
+    mock_config = mock.Mock()
+    mock_config.sections.return_value = ['metadata', 'options']
+    mock_config.__contains__ = lambda self, key: False  # No dot notation
+    mock_config.__getitem__ = lambda self, key: mock_section if key == 'metadata' else {}
+    mock_config.read = mock.Mock()
+    mock_config.write = mock.Mock()
+
+    mock_configparser = mock.Mock()
+    mock_configparser.ConfigParser.return_value = mock_config
+
+    monkeypatch.setattr("configparser.ConfigParser", mock_configparser.ConfigParser)
+
+    mock_open = mock.mock_open()
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler.update_version("setup.cfg", "version", "2025-08-01-001")
+    assert result is True
+
+    # Verify the version was set
+    assert mock_section['version'] == "2025-08-01-001"
+    mock_config.write.assert_called_once()
+
+
+def test_setup_cfg_handler_update_version_simple_key_not_found_add_to_metadata(monkeypatch):
+    """Test updating version using simple key that doesn't exist - add to metadata section."""
+    handler = SetupCfgVersionHandler()
+
+    # Mock configparser - version doesn't exist in any section, metadata section exists
+    mock_metadata_section = {'name': 'test'}
+    mock_config = mock.Mock()
+    mock_config.sections.return_value = ['metadata', 'options']
+    mock_config.__contains__ = lambda self, key: key == 'metadata'  # metadata exists
+    mock_config.__getitem__ = lambda self, key: mock_metadata_section if key == 'metadata' else {}
+    mock_config.read = mock.Mock()
+    mock_config.write = mock.Mock()
+
+    mock_configparser = mock.Mock()
+    mock_configparser.ConfigParser.return_value = mock_config
+
+    monkeypatch.setattr("configparser.ConfigParser", mock_configparser.ConfigParser)
+
+    mock_open = mock.mock_open()
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler.update_version("setup.cfg", "version", "2025-08-01-001")
+    assert result is True
+
+    # Verify the version was added to metadata section
+    assert mock_metadata_section['version'] == "2025-08-01-001"
+    mock_config.write.assert_called_once()
+
+
+def test_setup_cfg_handler_update_version_simple_key_no_metadata_section(monkeypatch):
+    """Test updating version using simple key when metadata section doesn't exist."""
+    handler = SetupCfgVersionHandler()
+
+    # Mock configparser - no metadata section exists
+    mock_metadata_section = {}
+    mock_config = mock.Mock()
+    mock_config.sections.return_value = ['options']
+    mock_config.__contains__ = lambda self, key: False  # metadata doesn't exist
+    mock_config.__getitem__ = lambda self, key: mock_metadata_section if key == 'metadata' else {}
+    mock_config.add_section = mock.Mock()
+    mock_config.read = mock.Mock()
+    mock_config.write = mock.Mock()
+
+    mock_configparser = mock.Mock()
+    mock_configparser.ConfigParser.return_value = mock_config
+
+    monkeypatch.setattr("configparser.ConfigParser", mock_configparser.ConfigParser)
+
+    mock_open = mock.mock_open()
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler.update_version("setup.cfg", "version", "2025-08-01-001")
+    assert result is True
+
+    # Verify metadata section was created and version was added
+    mock_config.add_section.assert_called_with('metadata')
+    assert mock_metadata_section['version'] == "2025-08-01-001"
+    mock_config.write.assert_called_once()
+
+
+def test_setup_cfg_handler_update_dot_notation_variable():
+    """Test _update_dot_notation_variable helper method."""
+    import configparser
+    from src.bumpcalver.handlers import SetupCfgVersionHandler
+
+    handler = SetupCfgVersionHandler()
+    config = configparser.ConfigParser()
+
+    # Test with existing section
+    config.add_section('metadata')
+    result = handler._update_dot_notation_variable(config, "metadata.version", "1.0.0")
+    assert result is True
+    assert config['metadata']['version'] == "1.0.0"
+
+    # Test with non-existing section
+    result = handler._update_dot_notation_variable(config, "tool.version", "2.0.0")
+    assert result is True
+    assert config['tool']['version'] == "2.0.0"
+
+
+def test_setup_cfg_handler_update_simple_variable():
+    """Test _update_simple_variable helper method."""
+    import configparser
+    from src.bumpcalver.handlers import SetupCfgVersionHandler
+
+    handler = SetupCfgVersionHandler()
+    config = configparser.ConfigParser()
+
+    # Test with existing variable in existing section - should return True
+    config.add_section('metadata')
+    config['metadata']['version'] = "0.1.0"
+    result = handler._update_simple_variable(config, "version", "1.0.0")
+    assert result is True  # Found and updated existing variable
+    assert config['metadata']['version'] == "1.0.0"
+
+    # Test with non-existing variable - should return False but still create the variable
+    config2 = configparser.ConfigParser()
+    config2.add_section('options')
+    result = handler._update_simple_variable(config2, "version", "2.0.0")
+    assert result is False  # Variable was not found, so it was created
+    assert config2['metadata']['version'] == "2.0.0"  # But variable was still created
+def test_get_version_handler_properties():
+    """Test getting properties version handler."""
+    handler = get_version_handler("properties")
+    assert isinstance(handler, PropertiesVersionHandler)
+
+
+def test_get_version_handler_env():
+    """Test getting env version handler."""
+    handler = get_version_handler("env")
+    assert isinstance(handler, EnvVersionHandler)
+
+
+def test_get_version_handler_setup_cfg():
+    """Test getting setup.cfg version handler."""
+    handler = get_version_handler("setup.cfg")
+    assert isinstance(handler, SetupCfgVersionHandler)
+
+
+# Tests for VersionHandler helper methods
+def test_version_handler_read_file_safe_success(monkeypatch):
+    """Test _read_file_safe method with successful file read."""
+    from src.bumpcalver.handlers import VersionHandler
+
+    # Create a concrete implementation for testing
+    class TestHandler(VersionHandler):
+        def read_version(self, file_path: str, variable: str, **kwargs):
+            pass
+        def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
+            pass
+
+    handler = TestHandler()
+    file_content = "test content"
+    mock_open = mock.mock_open(read_data=file_content)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler._read_file_safe("test_file.txt")
+    assert result == "test content"
+
+
+def test_version_handler_read_file_safe_exception(monkeypatch, capsys):
+    """Test _read_file_safe method with file read exception."""
+    from src.bumpcalver.handlers import VersionHandler
+
+    # Create a concrete implementation for testing
+    class TestHandler(VersionHandler):
+        def read_version(self, file_path: str, variable: str, **kwargs):
+            pass
+        def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
+            pass
+
+    handler = TestHandler()
+
+    def mock_open(*args, **kwargs):
+        raise IOError("Unable to open file")
+
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler._read_file_safe("nonexistent_file.txt")
+    assert result is None
+
+    captured = capsys.readouterr()
+    assert "Error reading version from nonexistent_file.txt: Unable to open file" in captured.out
+
+
+def test_version_handler_write_file_safe_success(monkeypatch, capsys):
+    """Test _write_file_safe method with successful file write."""
+    from src.bumpcalver.handlers import VersionHandler
+
+    # Create a concrete implementation for testing
+    class TestHandler(VersionHandler):
+        def read_version(self, file_path: str, variable: str, **kwargs):
+            pass
+        def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
+            pass
+
+    handler = TestHandler()
+    mock_open = mock.mock_open()
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler._write_file_safe("test_file.txt", "test content")
+    assert result is True
+
+    mock_open.assert_called_once_with("test_file.txt", "w", encoding="utf-8")
+    handle = mock_open()
+    handle.write.assert_called_once_with("test content")
+
+    captured = capsys.readouterr()
+    assert "Updated test_file.txt" in captured.out
+
+
+def test_version_handler_write_file_safe_exception(monkeypatch, capsys):
+    """Test _write_file_safe method with file write exception."""
+    from src.bumpcalver.handlers import VersionHandler
+
+    # Create a concrete implementation for testing
+    class TestHandler(VersionHandler):
+        def read_version(self, file_path: str, variable: str, **kwargs):
+            pass
+        def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
+            pass
+
+    handler = TestHandler()
+
+    def mock_open(*args, **kwargs):
+        raise IOError("Unable to write file")
+
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    result = handler._write_file_safe("readonly_file.txt", "test content")
+    assert result is False
+
+    captured = capsys.readouterr()
+    assert "Error updating readonly_file.txt: Unable to write file" in captured.out
+
+
+def test_version_handler_format_version_with_standard():
+    """Test _format_version_with_standard method."""
+    from src.bumpcalver.handlers import VersionHandler
+
+    # Create a concrete implementation for testing
+    class TestHandler(VersionHandler):
+        def read_version(self, file_path: str, variable: str, **kwargs):
+            pass
+        def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
+            pass
+
+    handler = TestHandler()
+
+    # Test default standard
+    result = handler._format_version_with_standard("2024-01-15")
+    assert result == "2024-01-15"
+
+    # Test python standard
+    result = handler._format_version_with_standard("2024-01-15", version_standard="python")
+    assert result == "2024.1.15"  # PEP 440 format
+
+    # Test with custom kwargs
+    result = handler._format_version_with_standard("2024-01-15", version_standard="default", other_param="test")
+    assert result == "2024-01-15"
+
+
+def test_version_handler_find_key_value_in_lines():
+    """Test _find_key_value_in_lines method."""
+    from src.bumpcalver.handlers import VersionHandler
+
+    # Create a concrete implementation for testing
+    class TestHandler(VersionHandler):
+        def read_version(self, file_path: str, variable: str, **kwargs):
+            pass
+        def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
+            pass
+
+    handler = TestHandler()
+
+    lines = [
+        "# Comment line",
+        "DEBUG=true",
+        "VERSION=1.0.0",
+        "",
+        "DATABASE_URL=postgresql://localhost/mydb",
+        "# Another comment"
+    ]
+
+    # Test finding existing variable
+    result = handler._find_key_value_in_lines(lines, "VERSION")
+    assert result == 2
+
+    # Test finding first variable
+    result = handler._find_key_value_in_lines(lines, "DEBUG")
+    assert result == 1
+
+    # Test finding last variable
+    result = handler._find_key_value_in_lines(lines, "DATABASE_URL")
+    assert result == 4
+
+    # Test non-existent variable
+    result = handler._find_key_value_in_lines(lines, "NONEXISTENT")
+    assert result is None
+
+    # Test empty lines
+    result = handler._find_key_value_in_lines([], "VERSION")
+    assert result is None
+
+
+def test_version_handler_log_variable_not_found(capsys):
+    """Test _log_variable_not_found method."""
+    from src.bumpcalver.handlers import VersionHandler
+
+    # Create a concrete implementation for testing
+    class TestHandler(VersionHandler):
+        def read_version(self, file_path: str, variable: str, **kwargs):
+            pass
+        def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
+            pass
+
+    handler = TestHandler()
+
+    # Test without prefix
+    handler._log_variable_not_found("VERSION", "test_file.txt")
+    captured = capsys.readouterr()
+    assert "Variable 'VERSION' not found in test_file.txt" in captured.out
+
+    # Test with prefix
+    handler._log_variable_not_found("VERSION", "test_file.txt", "ARG")
+    captured = capsys.readouterr()
+    assert "ARG Variable 'VERSION' not found in test_file.txt" in captured.out
+
+
+def test_version_handler_log_success_update(capsys):
+    """Test _log_success_update method."""
+    from src.bumpcalver.handlers import VersionHandler
+
+    # Create a concrete implementation for testing
+    class TestHandler(VersionHandler):
+        def read_version(self, file_path: str, variable: str, **kwargs):
+            pass
+        def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
+            pass
+
+    handler = TestHandler()
+
+    # Test without extra info
+    handler._log_success_update("test_file.txt")
+    captured = capsys.readouterr()
+    assert "Updated test_file.txt" in captured.out
+
+    # Test with extra info
+    handler._log_success_update("test_file.txt", "VERSION variable")
+    captured = capsys.readouterr()
+    assert "Updated VERSION variable in test_file.txt" in captured.out
+
+
+def test_version_handler_handle_read_operation_success():
+    """Test _handle_read_operation method with successful operation."""
+    from src.bumpcalver.handlers import VersionHandler
+
+    # Create a concrete implementation for testing
+    class TestHandler(VersionHandler):
+        def read_version(self, file_path: str, variable: str, **kwargs):
+            pass
+        def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
+            pass
+
+    handler = TestHandler()
+
+    def operation_func():
+        return "1.0.0"
+
+    result = handler._handle_read_operation("test_file.txt", operation_func, "VERSION")
+    assert result == "1.0.0"
+
+
+def test_version_handler_handle_read_operation_exception(capsys):
+    """Test _handle_read_operation method with exception."""
+    from src.bumpcalver.handlers import VersionHandler
+
+    # Create a concrete implementation for testing
+    class TestHandler(VersionHandler):
+        def read_version(self, file_path: str, variable: str, **kwargs):
+            pass
+        def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
+            pass
+
+    handler = TestHandler()
+
+    def operation_func():
+        raise IOError("File operation failed")
+
+    result = handler._handle_read_operation("test_file.txt", operation_func, "VERSION")
+    assert result is None
+
+    captured = capsys.readouterr()
+    assert "Error reading version from test_file.txt: File operation failed" in captured.out
+
+
+def test_version_handler_handle_regex_update_success(monkeypatch, capsys):
+    """Test _handle_regex_update method with successful update."""
+    import re
+    from src.bumpcalver.handlers import VersionHandler
+
+    # Create a concrete implementation for testing
+    class TestHandler(VersionHandler):
+        def read_version(self, file_path: str, variable: str, **kwargs):
+            pass
+        def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
+            pass
+
+    handler = TestHandler()
+    file_content = "VERSION=1.0.0"
+    mock_open = mock.mock_open(read_data=file_content)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    pattern = re.compile(r'VERSION=(.+)')
+
+    def replacement_func(match):
+        return "VERSION=2.0.0"
+
+    result = handler._handle_regex_update("test_file.txt", pattern, replacement_func, "2.0.0", "VERSION")
+    assert result is True
+
+    captured = capsys.readouterr()
+    assert "Updated test_file.txt" in captured.out
+
+
+def test_version_handler_handle_regex_update_no_match(monkeypatch, capsys):
+    """Test _handle_regex_update method with no pattern match."""
+    import re
+    from src.bumpcalver.handlers import VersionHandler
+
+    # Create a concrete implementation for testing
+    class TestHandler(VersionHandler):
+        def read_version(self, file_path: str, variable: str, **kwargs):
+            pass
+        def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
+            pass
+
+    handler = TestHandler()
+    file_content = "DEBUG=true"
+    mock_open = mock.mock_open(read_data=file_content)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    pattern = re.compile(r'VERSION=(.+)')
+
+    def replacement_func(match):
+        return "VERSION=2.0.0"
+
+    result = handler._handle_regex_update("test_file.txt", pattern, replacement_func, "2.0.0", "VERSION")
+    assert result is False
+
+    captured = capsys.readouterr()
+    assert "Variable 'VERSION' not found in test_file.txt" in captured.out
+
+
+def test_version_handler_handle_regex_update_custom_message(monkeypatch, capsys):
+    """Test _handle_regex_update method with custom not found message."""
+    import re
+    from src.bumpcalver.handlers import VersionHandler
+
+    # Create a concrete implementation for testing
+    class TestHandler(VersionHandler):
+        def read_version(self, file_path: str, variable: str, **kwargs):
+            pass
+        def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
+            pass
+
+    handler = TestHandler()
+    file_content = "DEBUG=true"
+    mock_open = mock.mock_open(read_data=file_content)
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    pattern = re.compile(r'VERSION=(.+)')
+
+    def replacement_func(match):
+        return "VERSION=2.0.0"
+
+    custom_message = "Custom variable not found message"
+    result = handler._handle_regex_update("test_file.txt", pattern, replacement_func, "2.0.0", "VERSION", custom_message)
+    assert result is False
+
+    captured = capsys.readouterr()
+    assert custom_message in captured.out
+
+
+def test_version_handler_handle_regex_update_read_exception(monkeypatch, capsys):
+    """Test _handle_regex_update method with file read exception."""
+    import re
+    from src.bumpcalver.handlers import VersionHandler
+
+    # Create a concrete implementation for testing
+    class TestHandler(VersionHandler):
+        def read_version(self, file_path: str, variable: str, **kwargs):
+            pass
+        def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
+            pass
+
+    handler = TestHandler()
+
+    def mock_open(*args, **kwargs):
+        raise IOError("Unable to read file")
+
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    pattern = re.compile(r'VERSION=(.+)')
+
+    def replacement_func(match):
+        return "VERSION=2.0.0"
+
+    result = handler._handle_regex_update("test_file.txt", pattern, replacement_func, "2.0.0", "VERSION")
+    assert result is False
+
+    captured = capsys.readouterr()
+    assert "Error updating test_file.txt: Unable to read file" in captured.out

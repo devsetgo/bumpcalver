@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "bumpcalver"
-version = "2025.7.3.1"
+version = "2025.8.2.1"
 requires-python = ">=3.9"
 description = "A CLI tool for calendar-based version bumping"
 keywords = [ "python", "library", "calendar versioning", "calver", "versioning", "cli",]
@@ -110,6 +110,26 @@ path = "examples/example.toml"
 file_type = "toml"
 variable = "configuration.version"
 version_standard = "standard"
+
+[[tool.bumpcalver.file]]
+path = "sonar-project.properties"
+file_type = "properties"
+variable = "sonar.projectVersion"
+
+[[tool.bumpcalver.file]]
+path = "examples/sonar-project.properties"
+file_type = "properties"
+variable = "sonar.projectVersion"
+
+[[tool.bumpcalver.file]]
+path = "examples/.env"
+file_type = "env"
+variable = "VERSION"
+
+[[tool.bumpcalver.file]]
+path = "examples/setup.cfg"
+file_type = "setup.cfg"
+variable = "metadata.version"
 
 [tool.ruff]
 line-length = 100

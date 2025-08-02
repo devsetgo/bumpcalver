@@ -1,6 +1,6 @@
 # Variables
 REPONAME = bumpcalver
-APP_VERSION = 2025-07-03-001
+APP_VERSION = 2025.08.02-001
 PYTHON = python3
 PIP = $(PYTHON) -m pip
 PYTEST = $(PYTHON) -m pytest
@@ -18,7 +18,7 @@ LOG_LEVEL = debug
 REQUIREMENTS_PATH = requirements.txt
 # DEV_REQUIREMENTS_PATH = requirements/dev.txt
 
-.PHONY: autoflake black cleanup create-docs flake8 help install isort run-example run-example-dev speedtest test
+.PHONY: autoflake black cleanup create-docs create-docs-local create-docs-dev serve-docs list-docs set-default-version delete-version flake8 help install isort run-example run-example-dev speedtest test
 
 autoflake: ## Remove unused imports and unused variables from Python code
 	autoflake --in-place --remove-all-unused-imports  --ignore-init-module-imports --remove-unused-variables -r $(SERVICE_PATH)
@@ -35,22 +35,45 @@ bump: ## Bump calver version
 
 cleanup: isort ruff autoflake ## Run isort, ruff, autoflake
 
-create-docs: ## Build and deploy the project's documentation
+create-docs: ## Build and deploy the project's documentation with versioning
 	python3 scripts/update_docs.py
 	python3 scripts/changelog.py
 	cp /workspaces/$(REPONAME)/README.md /workspaces/$(REPONAME)/docs/index.md
 	cp /workspaces/$(REPONAME)/CONTRIBUTING.md /workspaces/$(REPONAME)/docs/contribute.md
 	cp /workspaces/$(REPONAME)/CHANGELOG.md /workspaces/$(REPONAME)/docs/release-notes.md
-	mkdocs build
-	mkdocs gh-deploy
+	python3 scripts/deploy_docs.py deploy --push
 
-create-docs-local: ## Build and deploy the project's documentation
+create-docs-local: ## Build and deploy the project's documentation locally with versioning
 	python3 scripts/update_docs.py
 	python3 scripts/changelog.py
 	cp /workspaces/$(REPONAME)/README.md /workspaces/$(REPONAME)/docs/index.md
 	cp /workspaces/$(REPONAME)/CONTRIBUTING.md /workspaces/$(REPONAME)/docs/contribute.md
 	cp /workspaces/$(REPONAME)/CHANGELOG.md /workspaces/$(REPONAME)/docs/release-notes.md
-	mkdocs build
+	python3 scripts/deploy_docs.py deploy
+
+create-docs-dev: ## Build and deploy a development version of the documentation
+	python3 scripts/update_docs.py
+	python3 scripts/changelog.py
+	cp /workspaces/$(REPONAME)/README.md /workspaces/$(REPONAME)/docs/index.md
+	cp /workspaces/$(REPONAME)/CONTRIBUTING.md /workspaces/$(REPONAME)/docs/contribute.md
+	cp /workspaces/$(REPONAME)/CHANGELOG.md /workspaces/$(REPONAME)/docs/release-notes.md
+	python3 scripts/deploy_docs.py deploy --dev --version dev --push
+
+serve-docs: ## Serve all documentation versions locally
+	python3 scripts/deploy_docs.py serve
+
+list-docs: ## List all deployed documentation versions
+	python3 scripts/deploy_docs.py list
+
+migrate-legacy-docs: ## Migrate legacy documentation to version 2025.4.12.1 (run once)
+	@echo "🚀 Migrating legacy documentation..."
+	@python3 scripts/migrate_legacy_docs.py
+
+set-default-version: ## Set the default version for documentation (requires VERSION parameter)
+	mike set-default $(VERSION)
+
+delete-version: ## Delete a specific documentation version (requires VERSION parameter)
+	python3 scripts/deploy_docs.py delete --version $(VERSION)
 # flake8: ## Run flake8 to check Python code for PEP8 compliance
 # 	flake8 --tee . > htmlcov/_flake8Report.txt
 
@@ -72,9 +95,9 @@ isort: ## Sort imports in Python code
 test: ## Run the project's tests
 	pre-commit run -a
 	pytest
-	sed -i 's|<source>/workspaces/$(REPONAME)</source>|<source>/github/workspace</source>|' /workspaces/$(REPONAME)/coverage.xml
-	genbadge coverage -i /workspaces/$(REPONAME)/coverage.xml
-	genbadge tests -i /workspaces/$(REPONAME)/report.xml
+	sed -i 's|<source>.*</source>|<source>$(REPONAME)</source>|' coverage.xml
+	genbadge coverage -i coverage.xml
+	genbadge tests -i report.xml
 # flake8 src tests examples | tee htmlcov/_flake8Report.txt
 
 tests: test ## Run the project's tests

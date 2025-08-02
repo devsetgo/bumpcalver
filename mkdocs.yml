@@ -16,6 +16,9 @@ nav:
     - Examples:
       - Configuration: 'examples/configuration.md'
       - Filelayout: 'examples/filelayout.md'
+    - Documentation:
+      - Versioning: 'versioning.md'
+      - Quick Reference: 'mike-quickref.md'
     - About:
       - About: 'about.md'
       - Contributing: 'contribute.md'
@@ -51,6 +54,15 @@ plugins:
       separator: '[\s\-\.]+'
       lang:
         - en
+  - mike:
+      # Version management configuration
+      alias_type: symlink
+      redirect_template: null
+      deploy_prefix: ''
+      canonical_version: null
+      version_selector: true
+      css_dir: css
+      javascript_dir: js
   - mkdocstrings:
       default_handler: python
       handlers:
@@ -92,6 +104,8 @@ markdown_extensions:
   - toc:
       permalink: true
 extra:
+  version:
+    provider: mike
   social:
     - icon: fontawesome/brands/github-alt
       link: https://github.com/devsetgo
