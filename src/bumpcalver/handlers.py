@@ -1178,7 +1178,7 @@ class SetupCfgVersionHandler(VersionHandler):
             new_version (str): New version to set
 
         Returns:
-            bool: True if updated successfully
+            bool: True if variable was found and updated, False if variable was created in metadata section
         """
         # Search in all sections for the key and update the first match
         for section in config.sections():
@@ -1190,7 +1190,7 @@ class SetupCfgVersionHandler(VersionHandler):
         if 'metadata' not in config:
             config.add_section('metadata')
         config['metadata'][variable] = new_version
-        return True
+        return False  # Variable was not found, so we created it
 
     def update_version(
         self, file_path: str, variable: str, new_version: str, **kwargs
@@ -1215,9 +1215,12 @@ class SetupCfgVersionHandler(VersionHandler):
 
             # Update the variable based on its format
             if "." in variable:
-                updated = self._update_dot_notation_variable(config, variable, new_version)
+                self._update_dot_notation_variable(config, variable, new_version)
+                updated = True
             else:
-                updated = self._update_simple_variable(config, variable, new_version)
+                # For simple variables, we always succeed whether found or created
+                self._update_simple_variable(config, variable, new_version)
+                updated = True
 
             if updated:
                 with open(file_path, "w", encoding="utf-8") as file:

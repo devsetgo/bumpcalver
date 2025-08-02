@@ -1206,21 +1206,19 @@ def test_setup_cfg_handler_update_simple_variable():
     handler = SetupCfgVersionHandler()
     config = configparser.ConfigParser()
 
-    # Test with existing variable in existing section
+    # Test with existing variable in existing section - should return True
     config.add_section('metadata')
     config['metadata']['version'] = "0.1.0"
     result = handler._update_simple_variable(config, "version", "1.0.0")
-    assert result is True
+    assert result is True  # Found and updated existing variable
     assert config['metadata']['version'] == "1.0.0"
 
-    # Test with non-existing variable - should add to metadata section
+    # Test with non-existing variable - should return False but still create the variable
     config2 = configparser.ConfigParser()
     config2.add_section('options')
     result = handler._update_simple_variable(config2, "version", "2.0.0")
-    assert result is True
-    assert config2['metadata']['version'] == "2.0.0"
-
-
+    assert result is False  # Variable was not found, so it was created
+    assert config2['metadata']['version'] == "2.0.0"  # But variable was still created
 def test_get_version_handler_properties():
     """Test getting properties version handler."""
     handler = get_version_handler("properties")
