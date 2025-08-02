@@ -328,6 +328,80 @@ class VersionHandler(ABC):
                     return i
         return None
 
+    def _log_variable_not_found(self, variable: str, file_path: str, prefix: str = "") -> None:
+        """Log a standardized 'variable not found' message.
+
+        Args:
+            variable (str): The variable name that was not found.
+            file_path (str): The file path being searched.
+            prefix (str): Optional prefix for the variable description.
+        """
+        prefix_text = f"{prefix} " if prefix else ""
+        print(f"{prefix_text}Variable '{variable}' not found in {file_path}")
+
+    def _log_success_update(self, file_path: str, extra_info: str = "") -> None:
+        """Log a standardized success message for file updates.
+
+        Args:
+            file_path (str): The file path that was updated.
+            extra_info (str): Optional extra information to include.
+        """
+        if extra_info:
+            print(f"Updated {extra_info} in {file_path}")
+        else:
+            print(f"Updated {file_path}")
+
+    def _handle_regex_update(self, file_path: str, pattern: re.Pattern, replacement_func, new_version: str,
+                           variable: str, not_found_message: str = None) -> bool:
+        """Handle regex-based file updates with standardized error handling.
+
+        Args:
+            file_path (str): Path to the file to update.
+            pattern (re.Pattern): Compiled regex pattern for matching.
+            replacement_func: Function to generate replacement text.
+            new_version (str): The new version string.
+            variable (str): The variable name being updated.
+            not_found_message (str): Custom message when variable not found.
+
+        Returns:
+            bool: True if update successful, False otherwise.
+        """
+        try:
+            with open(file_path, "r", encoding="utf-8") as file:
+                content = file.read()
+        except Exception as e:
+            print(f"Error updating {file_path}: {e}")
+            return False
+
+        new_content, num_subs = pattern.subn(replacement_func, content)
+
+        if num_subs > 0:
+            return self._write_file_safe(file_path, new_content)
+        else:
+            if not_found_message:
+                print(not_found_message)
+            else:
+                self._log_variable_not_found(variable, file_path)
+            return False
+
+    def _handle_read_operation(self, file_path: str, operation_func, variable: str, prefix: str = "") -> Optional[str]:
+        """Handle read operations with standardized error handling.
+
+        Args:
+            file_path (str): Path to the file to read.
+            operation_func: Function that performs the actual read operation.
+            variable (str): The variable name being searched for.
+            prefix (str): Optional prefix for error messages.
+
+        Returns:
+            Optional[str]: The version string if found, None otherwise.
+        """
+        try:
+            return operation_func()
+        except Exception as e:
+            print(f"Error reading version from {file_path}: {e}")
+            return None
+
 
 class PythonVersionHandler(VersionHandler):
     """Handler for reading and updating version strings in Python files.
@@ -360,17 +434,17 @@ class PythonVersionHandler(VersionHandler):
         version_pattern = re.compile(
             rf'^\s*{re.escape(variable)}\s*=\s*["\'](.+?)["\']\s*$', re.MULTILINE
         )
-        try:
+
+        def read_operation():
             with open(file_path, "r", encoding="utf-8") as file:
                 content = file.read()
             match = version_pattern.search(content)
             if match:
                 return match.group(1)
-            print(f"Variable '{variable}' not found in {file_path}")
+            self._log_variable_not_found(variable, file_path)
             return None
-        except Exception as e:
-            print(f"Error reading version from {file_path}: {e}")
-            return None
+
+        return self._handle_read_operation(file_path, read_operation, variable)
 
     def update_version(
         self, file_path: str, variable: str, new_version: str, **kwargs
@@ -393,25 +467,16 @@ class PythonVersionHandler(VersionHandler):
         Raises:
             Exception: If there is an error reading or writing the file.
         """
+        new_version = self._format_version_with_standard(new_version, **kwargs)
         version_pattern = re.compile(
             rf'^(\s*{re.escape(variable)}\s*=\s*)(["\'])(.+?)(["\'])(\s*)$',
             re.MULTILINE,
         )
 
-        content = self._read_file_safe(file_path)
-        if content is None:
-            return False
-
         def replacement(match):
             return f"{match.group(1)}{match.group(2)}{new_version}{match.group(4)}{match.group(5)}"
 
-        new_content, num_subs = version_pattern.subn(replacement, content)
-
-        if num_subs > 0:
-            return self._write_file_safe(file_path, new_content)
-        else:
-            print(f"Variable '{variable}' not found in {file_path}")
-            return False
+        return self._handle_regex_update(file_path, version_pattern, replacement, new_version, variable)
 
 
 class TomlVersionHandler(VersionHandler):
@@ -442,7 +507,7 @@ class TomlVersionHandler(VersionHandler):
         Raises:
             Exception: If there is an error reading the file.
         """
-        try:
+        def read_operation():
             with open(file_path, "r", encoding="utf-8") as file:
                 toml_content = toml.load(file)
             keys = variable.split(".")
@@ -450,12 +515,11 @@ class TomlVersionHandler(VersionHandler):
             for key in keys:
                 temp = temp.get(key)
                 if temp is None:
-                    print(f"Variable '{variable}' not found in {file_path}")
+                    self._log_variable_not_found(variable, file_path)
                     return None
             return temp
-        except Exception as e:
-            print(f"Error reading version from {file_path}: {e}")
-            return None
+
+        return self._handle_read_operation(file_path, read_operation, variable)
 
     def update_version(
         self, file_path: str, variable: str, new_version: str, **kwargs
@@ -535,7 +599,7 @@ class YamlVersionHandler(VersionHandler):
         Raises:
             Exception: If there is an error reading the file.
         """
-        try:
+        def read_operation():
             with open(file_path, "r", encoding="utf-8") as f:
                 data = yaml.safe_load(f)
             keys = variable.split(".")
@@ -543,12 +607,11 @@ class YamlVersionHandler(VersionHandler):
             for key in keys:
                 temp = temp.get(key)
                 if temp is None:
-                    print(f"Variable '{variable}' not found in {file_path}")
+                    self._log_variable_not_found(variable, file_path)
                     return None
             return temp
-        except Exception as e:
-            print(f"Error reading version from {file_path}: {e}")
-            return None
+
+        return self._handle_read_operation(file_path, read_operation, variable)
 
     def update_version(
         self, file_path: str, variable: str, new_version: str, **kwargs
@@ -618,13 +681,12 @@ class JsonVersionHandler(VersionHandler):
         Raises:
             Exception: If there is an error reading the file.
         """
-        try:
+        def read_operation():
             with open(file_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
             return data.get(variable)
-        except Exception as e:
-            print(f"Error reading version from {file_path}: {e}")
-            return None
+
+        return self._handle_read_operation(file_path, read_operation, variable)
 
     def update_version(
         self, file_path: str, variable: str, new_version: str, **kwargs
@@ -689,17 +751,16 @@ class XmlVersionHandler(VersionHandler):
         Raises:
             Exception: If there is an error reading the file.
         """
-        try:
+        def read_operation():
             tree = ET.parse(file_path)
             root = tree.getroot()
             element = root.find(variable)
             if element is not None:
                 return element.text
-            print(f"Variable '{variable}' not found in {file_path}")
+            self._log_variable_not_found(variable, file_path)
             return None
-        except Exception as e:
-            print(f"Error reading version from {file_path}: {e}")
-            return None
+
+        return self._handle_read_operation(file_path, read_operation, variable)
 
     def update_version(
         self, file_path: str, variable: str, new_version: str, **kwargs
@@ -778,7 +839,7 @@ class DockerfileVersionHandler(VersionHandler):
             rf"^\s*{directive}\s+{re.escape(variable)}\s*=\s*(.+?)\s*$", re.MULTILINE
         )
 
-        try:
+        def read_operation():
             with open(file_path, "r", encoding="utf-8") as file:
                 content = file.read()
             match = pattern.search(content)
@@ -786,9 +847,8 @@ class DockerfileVersionHandler(VersionHandler):
                 return match.group(1).strip()
             print(f"No {directive} variable '{variable}' found in {file_path}")
             return None
-        except Exception as e:
-            print(f"Error reading version from {file_path}: {e}")
-            return None
+
+        return self._handle_read_operation(file_path, read_operation, variable)
 
     def update_version(
         self, file_path: str, variable: str, new_version: str, **kwargs
@@ -823,24 +883,16 @@ class DockerfileVersionHandler(VersionHandler):
             rf"(^\s*{directive}\s+{re.escape(variable)}\s*=\s*)(.+?)\s*$", re.MULTILINE
         )
 
-        try:
-            with open(file_path, "r", encoding="utf-8") as file:
-                content = file.read()
-        except Exception as e:
-            print(f"Error updating {file_path}: {e}")
-            return False
-
         def replacement(match):
             return f"{match.group(1)}{new_version}"
 
-        new_content, num_subs = pattern.subn(replacement, content)
-        if num_subs > 0:
-            if self._write_file_safe(file_path, new_content):
-                print(f"Updated {directive} variable '{variable}' in {file_path}")
-                return True
-        else:
-            print(f"No {directive} variable '{variable}' found in {file_path}")
-        return False
+        not_found_message = f"No {directive} variable '{variable}' found in {file_path}"
+        success = self._handle_regex_update(file_path, pattern, replacement, new_version, variable, not_found_message)
+
+        if success:
+            self._log_success_update(file_path, f"{directive} variable '{variable}'")
+
+        return success
 
 
 class MakefileVersionHandler(VersionHandler):
@@ -871,16 +923,15 @@ class MakefileVersionHandler(VersionHandler):
         Raises:
             Exception: If there is an error reading the file.
         """
-        try:
+        def read_operation():
             with open(file_path, "r") as file:
                 for line in file:
                     if line.startswith(variable):
                         return line.split("=")[1].strip()
-            print(f"Variable '{variable}' not found in {file_path}")
+            self._log_variable_not_found(variable, file_path)
             return None
-        except Exception as e:
-            print(f"Error reading version from {file_path}: {e}")
-            return None
+
+        return self._handle_read_operation(file_path, read_operation, variable)
 
     def update_version(
         self, file_path: str, variable: str, new_version: str, **kwargs
@@ -907,23 +958,10 @@ class MakefileVersionHandler(VersionHandler):
             rf"^({re.escape(variable)}\s*[:]?=\s*)(.*)$", re.MULTILINE
         )
 
-        try:
-            with open(file_path, "r", encoding="utf-8") as file:
-                content = file.read()
-        except Exception as e:
-            print(f"Error updating {file_path}: {e}")
-            return False
-
         def replacement(match):
             return f"{match.group(1)}{new_version}"
 
-        new_content, num_subs = version_pattern.subn(replacement, content)
-
-        if num_subs > 0:
-            return self._write_file_safe(file_path, new_content)
-        else:
-            print(f"Variable '{variable}' not found in {file_path}")
-            return False
+        return self._handle_regex_update(file_path, version_pattern, replacement, new_version, variable)
 
 
 class PropertiesVersionHandler(VersionHandler):
