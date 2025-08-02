@@ -20,9 +20,9 @@ from bumpcalver.handlers import get_version_handler
 def get_current_version():
     """Get the current version from multiple sources."""
     version_sources = [
-        {"file": "makefile", "handler": "makefile", "variable": "APP_VERSION"},
-        {"file": "pyproject.toml", "handler": "toml", "variable": "tool.poetry.version"},
+        {"file": "pyproject.toml", "handler": "toml", "variable": "project.version"},
         {"file": "src/bumpcalver/__init__.py", "handler": "python", "variable": "__version__"},
+        {"file": "makefile", "handler": "makefile", "variable": "APP_VERSION"},
     ]
 
     for source in version_sources:
@@ -35,6 +35,15 @@ def get_current_version():
         except Exception as e:
             print(f"Could not read version from {source['file']}: {e}")
             continue
+
+    # If no version found, check if we're in a GitHub Actions environment
+    import os
+    github_ref = os.environ.get('GITHUB_REF', '')
+    if github_ref.startswith('refs/tags/'):
+        version = github_ref.replace('refs/tags/', '').lstrip('v')
+        if version:
+            print(f"Found version {version} from GitHub tag")
+            return version
 
     return None
 
@@ -59,6 +68,12 @@ def deploy_documentation(version, aliases=None, push=False, title=None, is_dev=F
     if aliases is None:
         aliases = []
 
+    print(f"Deploying documentation for version: {version}")
+    print(f"Aliases: {aliases}")
+    print(f"Title: {title}")
+    print(f"Push: {push}")
+    print(f"Is dev: {is_dev}")
+
     # Prepare the deployment command
     cmd = ["mike", "deploy"]
 
@@ -77,14 +92,24 @@ def deploy_documentation(version, aliases=None, push=False, title=None, is_dev=F
         cmd.append("--push")
 
     # Run the deployment
-    run_command(cmd)
+    try:
+        run_command(cmd)
+        print(f"Successfully deployed documentation for version {version}")
+    except Exception as e:
+        print(f"Failed to deploy documentation: {e}")
+        raise
 
     # Set as default if it's the latest release and not dev
     if "latest" in aliases and not is_dev:
-        set_default_cmd = ["mike", "set-default", version]
-        if push:
-            set_default_cmd.append("--push")
-        run_command(set_default_cmd)
+        try:
+            set_default_cmd = ["mike", "set-default", version]
+            if push:
+                set_default_cmd.append("--push")
+            run_command(set_default_cmd)
+            print(f"Set {version} as default version")
+        except Exception as e:
+            print(f"Failed to set default version: {e}")
+            # Don't raise here as the main deployment succeeded
 
 
 def list_versions():
