@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "bumpcalver"
-version = "2025.8.2"
+version = "2025.8.2.2"
 requires-python = ">=3.9"
 description = "A CLI tool for calendar-based version bumping"
 keywords = [ "python", "library", "calendar versioning", "calver", "versioning", "cli",]
@@ -26,20 +26,9 @@ Repository = "https://github.com/devsetgo/bumpcalver"
 [project.scripts]
 bumpcalver = "bumpcalver.cli:main"
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/bumpcalver"]
-
-[tool.hatch.build.targets.sdist]
-include = [
-  "/src",
-  "/README.md", 
-  "/LICENSE",
-  "/pyproject.toml"
-]
-
 [tool.bumpcalver]
 version_format = "{current_date}-{build_count:03}"
-date_format = "%Y.%m.%d"
+date_format = "%Y-%m-%d"
 timezone = "America/New_York"
 git_tag = true
 auto_commit = false
@@ -154,63 +143,6 @@ force_grid_wrap = 0
 use_parentheses = true
 line_length = 100
 
-[tool.hatch.build]
-exclude = [
-  "*.json", 
-  "pkg/_compat.py",
-  # Development and build artifacts
-  "tests/",
-  "htmlcov/",
-  "_venv/",
-  ".venv/",
-  "__pycache__/",
-  "*.pyc",
-  "*.pyo",
-  "*.pyd",
-  ".pytest_cache/",
-  ".coverage",
-  "coverage.xml",
-  "coverage-badge.svg",
-  "tests-badge.svg",
-  "report.xml",
-  "report.html",
-  "htmlcovreport.html",
-  "htmlreport.html",
-  # Documentation builds
-  "docs/",
-  "site/",
-  "latest/",
-  "stable/",
-  "dev/",
-  "v*/",
-  "20*/",
-  "*.*/",
-  ".nojekyll",
-  # Git and development files
-  ".git/",
-  ".github/",
-  ".gitignore",
-  ".gitattributes",
-  # Scripts and examples
-  "scripts/",
-  "examples/",
-  # Configuration files
-  "makefile",
-  "Makefile",
-  ".pylintrc",
-  "sonar-project.properties",
-  "CONTRIBUTING.md",
-  "CHANGELOG.md",
-  "DOCUMENTATION_MIGRATION.md",
-  "mkdocs.yml",
-  # IDE files
-  ".vscode/",
-  ".idea/",
-  "*.swp",
-  "*.swo",
-  "*~"
-]
-
 [tool.ruff.lint]
 select = [ "C", "F", "E", "W", "B",]
 ignore = [ "C901", "E501", "B017", "B904", "B008", "I",]
@@ -218,6 +150,9 @@ ignore = [ "C901", "E501", "B017", "B904", "B008", "I",]
 [tool.ruff.format]
 indent-style = "space"
 quote-style = "single"
+
+[tool.hatch.build]
+exclude = [ "*.json", "pkg/_compat.py", "tests/", "htmlcov/", "_venv/", ".venv/", "__pycache__/", "*.pyc", "*.pyo", "*.pyd", ".pytest_cache/", ".coverage", "coverage.xml", "coverage-badge.svg", "tests-badge.svg", "report.xml", "report.html", "htmlcovreport.html", "htmlreport.html", "docs/", "site/", "latest/", "stable/", "dev/", "v*/", "20*/", "*.*/", ".nojekyll", ".git/", ".github/", ".gitignore", ".gitattributes", "scripts/", "examples/", "makefile", "Makefile", ".pylintrc", "sonar-project.properties", "CONTRIBUTING.md", "CHANGELOG.md", "DOCUMENTATION_MIGRATION.md", "mkdocs.yml", ".vscode/", ".idea/", "*.swp", "*.swo", "*~",]
 
 [tool.coverage.run]
 source = [ "bumpcalver",]
@@ -231,3 +166,9 @@ norecursedirs = [ "/tests",]
 testpaths = [ "tests",]
 python_files = [ "test_*.py", "*_test.py",]
 addopts = [ "--cov=./", "--cov-report=html", "--cov-report=xml", "--junitxml=report.xml", "--html=htmlcov/_test_report.html", "--self-contained-html", "-ra", "--strict-markers", "--tb=short", "-p", "pytester",]
+
+[tool.hatch.build.targets.wheel]
+packages = [ "src/bumpcalver",]
+
+[tool.hatch.build.targets.sdist]
+include = [ "/src", "/README.md", "/LICENSE", "/pyproject.toml",]
