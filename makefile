@@ -1,6 +1,6 @@
 # Variables
 REPONAME = bumpcalver
-APP_VERSION = 2025.08.01
+APP_VERSION = 2025.08.02
 PYTHON = python3
 PIP = $(PYTHON) -m pip
 PYTEST = $(PYTHON) -m pytest
@@ -95,9 +95,9 @@ isort: ## Sort imports in Python code
 test: ## Run the project's tests
 	pre-commit run -a
 	pytest
-	sed -i 's|<source>/workspaces/$(REPONAME)</source>|<source>/github/workspace</source>|' /workspaces/$(REPONAME)/coverage.xml
-	genbadge coverage -i /workspaces/$(REPONAME)/coverage.xml
-	genbadge tests -i /workspaces/$(REPONAME)/report.xml
+	sed -i 's|<source>/workspaces/$(REPONAME)</source>|<source>/github/workspace</source>|; s|<source>/home/mike/$(REPONAME)</source>|<source>/github/workspace</source>|' coverage.xml
+	genbadge coverage -i coverage.xml
+	genbadge tests -i report.xml
 # flake8 src tests examples | tee htmlcov/_flake8Report.txt
 
 tests: test ## Run the project's tests
