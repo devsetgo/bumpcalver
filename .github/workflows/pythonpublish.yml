@@ -36,6 +36,10 @@ jobs:
     name: Deploy versioned documentation
     runs-on: ubuntu-latest
     needs: deploy  # Wait for PyPI deployment to complete
+    permissions:
+      contents: write  # Required for pushing to gh-pages
+      pages: write     # Required for GitHub Pages
+      id-token: write  # Required for GitHub Pages
 
     steps:
       - name: Checkout repository
@@ -58,14 +62,23 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          echo "Git configuration:"
+          git config --list | grep user
+          echo "Current branch:"
+          git branch -a
+          echo "Recent commits:"
+          git log --oneline -5
 
       - name: Get release version
         id: get_version
         run: |
           # Get version from GitHub release tag
-          VERSION=${GITHUB_REF#refs/tags/}
+          RAW_VERSION=${GITHUB_REF#refs/tags/}
+          # Remove 'v' prefix if present
+          VERSION=${RAW_VERSION#v}
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Release version: $VERSION"
+          echo "Raw version from tag: $RAW_VERSION"
+          echo "Cleaned version: $VERSION"
 
       - name: Prepare documentation files
         run: |
@@ -74,17 +87,55 @@ jobs:
           cp README.md docs/index.md
           cp CONTRIBUTING.md docs/contribute.md
           cp CHANGELOG.md docs/release-notes.md
+          echo "Documentation files prepared"
+
+      - name: Check mike setup
+        run: |
+          echo "Mike version:"
+          mike --version
+          echo "Existing documentation versions:"
+          mike list || echo "No existing versions found (this is normal for first deployment)"
+          echo "Git remote:"
+          git remote -v
+          echo "Available branches:"
+          git branch -r
+          echo "Check if gh-pages branch exists:"
+          git show-branch remotes/origin/gh-pages 2>/dev/null || echo "gh-pages branch does not exist yet"
 
       - name: Deploy documentation with mike
         run: |
           VERSION="${{ steps.get_version.outputs.version }}"
           echo "Deploying documentation for version: $VERSION"
 
-          # Deploy the specific version with 'latest' and 'stable' aliases
-          python3 scripts/deploy_docs.py deploy \
+          # Check if version is valid
+          if [ -z "$VERSION" ] || [ "$VERSION" = "refs/tags/" ]; then
+            echo "Error: Invalid version detected: '$VERSION'"
+            echo "GITHUB_REF was: $GITHUB_REF"
+            exit 1
+          fi
+
+          # Try to deploy with push first
+          echo "Attempting to deploy and push documentation..."
+          if python3 scripts/deploy_docs.py deploy \
             --version "$VERSION" \
             --aliases latest stable \
             --title "Release $VERSION" \
-            --push
+            --push; then
+            echo "Documentation deployed and pushed successfully for version $VERSION"
+          else
+            echo "Failed to deploy with push, trying local deployment only..."
+            # Fallback: deploy locally without pushing
+            python3 scripts/deploy_docs.py deploy \
+              --version "$VERSION" \
+              --aliases latest stable \
+              --title "Release $VERSION"
 
-          echo "Documentation deployed for version $VERSION"
+            echo "Local deployment successful, attempting manual push..."
+            # Manual push attempt
+            if git push origin gh-pages; then
+              echo "Manual push successful"
+            else
+              echo "Manual push failed, but local deployment completed"
+              exit 1
+            fi
+          fi
