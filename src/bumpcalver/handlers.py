@@ -260,6 +260,74 @@ class VersionHandler(ABC):
         version = re.sub(r"\b0+(\d)", r"\1", version)
         return version
 
+    def _read_file_safe(self, file_path: str, encoding: str = "utf-8") -> Optional[str]:
+        """Safely read file content with error handling.
+
+        Args:
+            file_path (str): Path to the file to read.
+            encoding (str): File encoding, defaults to utf-8.
+
+        Returns:
+            Optional[str]: File content if successful, None if error.
+        """
+        try:
+            with open(file_path, "r", encoding=encoding) as file:
+                return file.read()
+        except Exception as e:
+            print(f"Error reading version from {file_path}: {e}")
+            return None
+
+    def _write_file_safe(self, file_path: str, content: str, encoding: str = "utf-8") -> bool:
+        """Safely write file content with error handling.
+
+        Args:
+            file_path (str): Path to the file to write.
+            content (str): Content to write.
+            encoding (str): File encoding, defaults to utf-8.
+
+        Returns:
+            bool: True if successful, False if error.
+        """
+        try:
+            with open(file_path, "w", encoding=encoding) as file:
+                file.write(content)
+            print(f"Updated {file_path}")
+            return True
+        except Exception as e:
+            print(f"Error updating {file_path}: {e}")
+            return False
+
+    def _format_version_with_standard(self, new_version: str, **kwargs) -> str:
+        """Apply version formatting based on version_standard kwarg.
+
+        Args:
+            new_version (str): The version to format.
+            **kwargs: Keyword arguments containing version_standard.
+
+        Returns:
+            str: Formatted version string.
+        """
+        version_standard = kwargs.get("version_standard", "default")
+        return self.format_version(new_version, version_standard)
+
+    def _find_key_value_in_lines(self, lines: List[str], variable: str) -> Optional[int]:
+        """Find the line index containing a key=value pair.
+
+        Args:
+            lines (List[str]): List of file lines.
+            variable (str): Variable name to search for.
+
+        Returns:
+            Optional[int]: Line index if found, None otherwise.
+        """
+        for i, line in enumerate(lines):
+            stripped_line = line.strip()
+            if stripped_line and not stripped_line.startswith("#") and "=" in stripped_line:
+                key, _ = stripped_line.split("=", 1)
+                if key.strip() == variable:
+                    return i
+        return None
+
 
 class PythonVersionHandler(VersionHandler):
     """Handler for reading and updating version strings in Python files.
@@ -329,25 +397,20 @@ class PythonVersionHandler(VersionHandler):
             rf'^(\s*{re.escape(variable)}\s*=\s*)(["\'])(.+?)(["\'])(\s*)$',
             re.MULTILINE,
         )
-        try:
-            with open(file_path, "r", encoding="utf-8") as file:
-                content = file.read()
 
-            def replacement(match):
-                return f"{match.group(1)}{match.group(2)}{new_version}{match.group(4)}{match.group(5)}"
+        content = self._read_file_safe(file_path)
+        if content is None:
+            return False
 
-            new_content, num_subs = version_pattern.subn(replacement, content)
+        def replacement(match):
+            return f"{match.group(1)}{match.group(2)}{new_version}{match.group(4)}{match.group(5)}"
 
-            if num_subs > 0:
-                with open(file_path, "w", encoding="utf-8") as file:
-                    file.write(new_content)
-                print(f"Updated {file_path}")
-                return True
-            else:
-                print(f"Variable '{variable}' not found in {file_path}")
-                return False
-        except Exception as e:
-            print(f"Error updating {file_path}: {e}")
+        new_content, num_subs = version_pattern.subn(replacement, content)
+
+        if num_subs > 0:
+            return self._write_file_safe(file_path, new_content)
+        else:
+            print(f"Variable '{variable}' not found in {file_path}")
             return False
 
 
@@ -415,8 +478,7 @@ class TomlVersionHandler(VersionHandler):
         Raises:
             Exception: If there is an error reading or writing the file.
         """
-        version_standard = kwargs.get("version_standard", "default")
-        new_version = self.format_version(new_version, version_standard)
+        new_version = self._format_version_with_standard(new_version, **kwargs)
 
         try:
             with open(file_path, "r", encoding="utf-8") as file:
@@ -509,8 +571,7 @@ class YamlVersionHandler(VersionHandler):
         Raises:
             Exception: If there is an error reading or writing the file.
         """
-        version_standard = kwargs.get("version_standard", "default")
-        new_version = self.format_version(new_version, version_standard)
+        new_version = self._format_version_with_standard(new_version, **kwargs)
 
         try:
             with open(file_path, "r", encoding="utf-8") as f:
@@ -585,8 +646,7 @@ class JsonVersionHandler(VersionHandler):
         Raises:
             Exception: If there is an error reading or writing the file.
         """
-        version_standard = kwargs.get("version_standard", "default")
-        new_version = self.format_version(new_version, version_standard)
+        new_version = self._format_version_with_standard(new_version, **kwargs)
 
         try:
             with open(file_path, "r", encoding="utf-8") as f:
@@ -594,6 +654,7 @@ class JsonVersionHandler(VersionHandler):
             data[variable] = new_version
             with open(file_path, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2)
+            print(f"Updated {file_path}")
             return True
         except Exception as e:
             print(f"Error updating {file_path}: {e}")
@@ -660,8 +721,7 @@ class XmlVersionHandler(VersionHandler):
         Raises:
             Exception: If there is an error reading or writing the file.
         """
-        version_standard = kwargs.get("version_standard", "default")
-        new_version = self.format_version(new_version, version_standard)
+        new_version = self._format_version_with_standard(new_version, **kwargs)
 
         try:
             tree = ET.parse(file_path)
@@ -670,6 +730,7 @@ class XmlVersionHandler(VersionHandler):
             if element is not None:
                 element.text = new_version
                 tree.write(file_path)
+                print(f"Updated {file_path}")
                 return True
             print(f"Variable '{variable}' not found in {file_path}")
             return False
@@ -757,9 +818,7 @@ class DockerfileVersionHandler(VersionHandler):
             )
             return False
 
-        version_standard = kwargs.get("version_standard", "default")
-        new_version = self.format_version(new_version, version_standard)
-
+        new_version = self._format_version_with_standard(new_version, **kwargs)
         pattern = re.compile(
             rf"(^\s*{directive}\s+{re.escape(variable)}\s*=\s*)(.+?)\s*$", re.MULTILINE
         )
@@ -767,22 +826,21 @@ class DockerfileVersionHandler(VersionHandler):
         try:
             with open(file_path, "r", encoding="utf-8") as file:
                 content = file.read()
-
-            def replacement(match):
-                return f"{match.group(1)}{new_version}"
-
-            new_content, num_subs = pattern.subn(replacement, content)
-            if num_subs > 0:
-                with open(file_path, "w", encoding="utf-8") as file:
-                    file.write(new_content)
-                print(f"Updated {directive} variable '{variable}' in {file_path}")
-                return True
-            else:
-                print(f"No {directive} variable '{variable}' found in {file_path}")
-                return False
         except Exception as e:
             print(f"Error updating {file_path}: {e}")
             return False
+
+        def replacement(match):
+            return f"{match.group(1)}{new_version}"
+
+        new_content, num_subs = pattern.subn(replacement, content)
+        if num_subs > 0:
+            if self._write_file_safe(file_path, new_content):
+                print(f"Updated {directive} variable '{variable}' in {file_path}")
+                return True
+        else:
+            print(f"No {directive} variable '{variable}' found in {file_path}")
+        return False
 
 
 class MakefileVersionHandler(VersionHandler):
@@ -844,31 +902,27 @@ class MakefileVersionHandler(VersionHandler):
         Raises:
             Exception: If there is an error reading or writing the file.
         """
-        version_standard = kwargs.get("version_standard", "default")
-        new_version = self.format_version(new_version, version_standard)
-
+        new_version = self._format_version_with_standard(new_version, **kwargs)
         version_pattern = re.compile(
             rf"^({re.escape(variable)}\s*[:]?=\s*)(.*)$", re.MULTILINE
         )
+
         try:
             with open(file_path, "r", encoding="utf-8") as file:
                 content = file.read()
-
-            def replacement(match):
-                return f"{match.group(1)}{new_version}"
-
-            new_content, num_subs = version_pattern.subn(replacement, content)
-
-            if num_subs > 0:
-                with open(file_path, "w", encoding="utf-8") as file:
-                    file.write(new_content)
-                print(f"Updated {file_path}")
-                return True
-            else:
-                print(f"Variable '{variable}' not found in {file_path}")
-                return False
         except Exception as e:
             print(f"Error updating {file_path}: {e}")
+            return False
+
+        def replacement(match):
+            return f"{match.group(1)}{new_version}"
+
+        new_content, num_subs = version_pattern.subn(replacement, content)
+
+        if num_subs > 0:
+            return self._write_file_safe(file_path, new_content)
+        else:
+            print(f"Variable '{variable}' not found in {file_path}")
             return False
 
 
@@ -921,24 +975,18 @@ class PropertiesVersionHandler(VersionHandler):
         Returns:
             bool: True if the version was successfully updated, False otherwise.
         """
-        version_standard = kwargs.get("version_standard", "default")
-        new_version = self.format_version(new_version, version_standard)
+        new_version = self._format_version_with_standard(new_version, **kwargs)
 
         try:
             with open(file_path, "r", encoding="utf-8") as file:
                 lines = file.readlines()
 
-            updated = False
-            for i, line in enumerate(lines):
-                stripped_line = line.strip()
-                if stripped_line and not stripped_line.startswith("#") and "=" in stripped_line:
-                    key, value = stripped_line.split("=", 1)
-                    if key.strip() == variable:
-                        lines[i] = f"{key}={new_version}\n"
-                        updated = True
-                        break
+            line_index = self._find_key_value_in_lines(lines, variable)
+            if line_index is not None:
+                stripped_line = lines[line_index].strip()
+                key, _ = stripped_line.split("=", 1)
+                lines[line_index] = f"{key}={new_version}\n"
 
-            if updated:
                 with open(file_path, "w", encoding="utf-8") as file:
                     file.writelines(lines)
                 print(f"Updated {file_path}")
@@ -1001,24 +1049,18 @@ class EnvVersionHandler(VersionHandler):
         Returns:
             bool: True if the version was successfully updated, False otherwise.
         """
-        version_standard = kwargs.get("version_standard", "default")
-        new_version = self.format_version(new_version, version_standard)
+        new_version = self._format_version_with_standard(new_version, **kwargs)
 
         try:
             with open(file_path, "r", encoding="utf-8") as file:
                 lines = file.readlines()
 
-            updated = False
-            for i, line in enumerate(lines):
-                stripped_line = line.strip()
-                if stripped_line and not stripped_line.startswith("#") and "=" in stripped_line:
-                    key, value = stripped_line.split("=", 1)
-                    if key.strip() == variable:
-                        lines[i] = f"{key}={new_version}\n"
-                        updated = True
-                        break
+            line_index = self._find_key_value_in_lines(lines, variable)
+            if line_index is not None:
+                stripped_line = lines[line_index].strip()
+                key, _ = stripped_line.split("=", 1)
+                lines[line_index] = f"{key}={new_version}\n"
 
-            if updated:
                 with open(file_path, "w", encoding="utf-8") as file:
                     file.writelines(lines)
                 print(f"Updated {file_path}")
@@ -1086,8 +1128,7 @@ class SetupCfgVersionHandler(VersionHandler):
         Returns:
             bool: True if the version was successfully updated, False otherwise.
         """
-        version_standard = kwargs.get("version_standard", "default")
-        new_version = self.format_version(new_version, version_standard)
+        new_version = self._format_version_with_standard(new_version, **kwargs)
 
         try:
             import configparser
