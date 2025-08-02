@@ -1152,6 +1152,46 @@ class SetupCfgVersionHandler(VersionHandler):
             print(f"Error reading {file_path}: {e}")
         return None
 
+    def _update_dot_notation_variable(self, config, variable: str, new_version: str) -> bool:
+        """Update variable using dot notation (e.g., "metadata.version").
+
+        Args:
+            config: ConfigParser instance
+            variable (str): Variable in dot notation format
+            new_version (str): New version to set
+
+        Returns:
+            bool: True if updated successfully
+        """
+        section, key = variable.split(".", 1)
+        if section not in config:
+            config.add_section(section)
+        config[section][key] = new_version
+        return True
+
+    def _update_simple_variable(self, config, variable: str, new_version: str) -> bool:
+        """Update variable by searching all sections.
+
+        Args:
+            config: ConfigParser instance
+            variable (str): Variable name to search for
+            new_version (str): New version to set
+
+        Returns:
+            bool: True if updated successfully
+        """
+        # Search in all sections for the key and update the first match
+        for section in config.sections():
+            if variable in config[section]:
+                config[section][variable] = new_version
+                return True
+
+        # If not found in any section, add to metadata section
+        if 'metadata' not in config:
+            config.add_section('metadata')
+        config['metadata'][variable] = new_version
+        return True
+
     def update_version(
         self, file_path: str, variable: str, new_version: str, **kwargs
     ) -> bool:
@@ -1173,32 +1213,11 @@ class SetupCfgVersionHandler(VersionHandler):
             config = configparser.ConfigParser()
             config.read(file_path)
 
-            updated = False
-            # Handle dot notation like "metadata.version"
+            # Update the variable based on its format
             if "." in variable:
-                section, key = variable.split(".", 1)
-                if section in config:
-                    config[section][key] = new_version
-                    updated = True
-                else:
-                    # Create section if it doesn't exist
-                    config.add_section(section)
-                    config[section][key] = new_version
-                    updated = True
+                updated = self._update_dot_notation_variable(config, variable, new_version)
             else:
-                # Search in all sections for the key and update the first match
-                for section in config.sections():
-                    if variable in config[section]:
-                        config[section][variable] = new_version
-                        updated = True
-                        break
-
-                # If not found in any section, add to metadata section
-                if not updated:
-                    if 'metadata' not in config:
-                        config.add_section('metadata')
-                    config['metadata'][variable] = new_version
-                    updated = True
+                updated = self._update_simple_variable(config, variable, new_version)
 
             if updated:
                 with open(file_path, "w", encoding="utf-8") as file:

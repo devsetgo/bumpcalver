@@ -1178,6 +1178,49 @@ def test_setup_cfg_handler_update_version_simple_key_no_metadata_section(monkeyp
     mock_config.write.assert_called_once()
 
 
+def test_setup_cfg_handler_update_dot_notation_variable():
+    """Test _update_dot_notation_variable helper method."""
+    import configparser
+    from src.bumpcalver.handlers import SetupCfgVersionHandler
+
+    handler = SetupCfgVersionHandler()
+    config = configparser.ConfigParser()
+
+    # Test with existing section
+    config.add_section('metadata')
+    result = handler._update_dot_notation_variable(config, "metadata.version", "1.0.0")
+    assert result is True
+    assert config['metadata']['version'] == "1.0.0"
+
+    # Test with non-existing section
+    result = handler._update_dot_notation_variable(config, "tool.version", "2.0.0")
+    assert result is True
+    assert config['tool']['version'] == "2.0.0"
+
+
+def test_setup_cfg_handler_update_simple_variable():
+    """Test _update_simple_variable helper method."""
+    import configparser
+    from src.bumpcalver.handlers import SetupCfgVersionHandler
+
+    handler = SetupCfgVersionHandler()
+    config = configparser.ConfigParser()
+
+    # Test with existing variable in existing section
+    config.add_section('metadata')
+    config['metadata']['version'] = "0.1.0"
+    result = handler._update_simple_variable(config, "version", "1.0.0")
+    assert result is True
+    assert config['metadata']['version'] == "1.0.0"
+
+    # Test with non-existing variable - should add to metadata section
+    config2 = configparser.ConfigParser()
+    config2.add_section('options')
+    result = handler._update_simple_variable(config2, "version", "2.0.0")
+    assert result is True
+    assert config2['metadata']['version'] == "2.0.0"
+
+
 def test_get_version_handler_properties():
     """Test getting properties version handler."""
     handler = get_version_handler("properties")
