@@ -95,7 +95,7 @@ isort: ## Sort imports in Python code
 test: ## Run the project's tests
 	pre-commit run -a
 	pytest
-	sed -i 's|<source>/workspaces/$(REPONAME)</source>|<source>/github/workspace</source>|; s|<source>/home/mike/$(REPONAME)</source>|<source>/github/workspace</source>|' coverage.xml
+	sed -i 's|<source>/workspaces/$(REPONAME)</source>|<source>/github/workspace</source>|; s|<source>/home/mike/$(REPONAME)</source>|<source>/github/workspace</source>|; s|<source>/src/$(REPONAME)</source>|<source>/github/workspace</source>|' coverage.xml
 	genbadge coverage -i coverage.xml
 	genbadge tests -i report.xml
 # flake8 src tests examples | tee htmlcov/_flake8Report.txt
