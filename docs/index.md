@@ -85,7 +85,7 @@ As an alternative, you can use configuration file named `bumpcalver.toml`. The C
 - `timezone` (string): Timezone for date calculations (e.g., `UTC`, `America/New_York`).
 - `file` (list of tables): Specifies which files to update and how to find the version string.
   - `path` (string): Path to the file to be updated.
-  - `file_type` (string): Type of the file (e.g., `python`, `toml`, `yaml`, `json`, `xml`, `dockerfile`, `makefile`).
+  - `file_type` (string): Type of the file (e.g., `python`, `toml`, `yaml`, `json`, `xml`, `dockerfile`, `makefile`, `properties`, `env`, `setup.cfg`).
   - `variable` (string, optional): The variable name that holds the version string in the file.
   - `pattern` (string, optional): A regex pattern to find the version string.
   - `version_standard` (string, optional): The versioning standard to follow (e.g., `python` for PEP 440).
@@ -131,6 +131,24 @@ path = "examples/p.py"
 file_type = "python"
 variable = "__version__"
 version_standard = "python"
+
+[[tool.bumpcalver.file]]
+path = "sonar-project.properties"
+file_type = "properties"
+variable = "sonar.projectVersion"
+version_standard = "default"
+
+[[tool.bumpcalver.file]]
+path = ".env"
+file_type = "env"
+variable = "VERSION"
+version_standard = "default"
+
+[[tool.bumpcalver.file]]
+path = "setup.cfg"
+file_type = "setup.cfg"
+variable = "metadata.version"
+version_standard = "python"
 ```
 
 ### Date Format Examples
@@ -147,6 +165,34 @@ The `date_format` option allows you to customize the date format used in version
 - `%Y.Q%q` - Full year and quarter (e.g., `2024.Q1`)
 
 Refer to the [Python datetime documentation](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes) for more format codes.
+
+---
+
+## Supported File Types
+
+BumpCalver supports version management for the following file types:
+
+### Core File Types
+- **`python`** - Python files with version variables (e.g., `__version__ = "1.0.0"`)
+- **`toml`** - TOML configuration files (e.g., `pyproject.toml`)
+- **`yaml`** - YAML configuration files
+- **`json`** - JSON configuration files (e.g., `package.json`)
+- **`xml`** - XML configuration files
+
+### Infrastructure Files
+- **`dockerfile`** - Docker files with ARG or ENV variables
+- **`makefile`** - Makefiles with version variables
+
+### Configuration Files
+- **`properties`** - Java-style properties files (e.g., `sonar-project.properties`)
+  - Format: `key=value`
+  - Example: `sonar.projectVersion=2025.02.02`
+- **`env`** - Environment variable files (e.g., `.env`)
+  - Format: `KEY=value` or `KEY="value"`
+  - Example: `VERSION=2025.02.02`
+- **`setup.cfg`** - Python setup configuration files
+  - Supports both dot notation (`metadata.version`) and simple keys (`version`)
+  - Example: `version = 2025.02.02` in `[metadata]` section
 
 ---
 

@@ -1,0 +1,43 @@
+# Mike configuration for BumpCalver documentation
+# This file contains project-specific settings for mike version management
+
+# Version configuration
+# Major.Minor format (e.g., 2025.08, 2025.09)
+# Development versions: dev, staging
+# Special aliases: latest, stable
+
+# Deployment configuration
+remote_branch: gh-pages
+remote_name: origin
+
+# Version ordering priority
+# Semantic versions are ordered automatically
+# Custom versions can be specified here for special ordering
+version_priority:
+  - latest
+  - stable
+  - dev
+
+# Documentation structure
+docs_dir: docs
+site_dir: site
+
+# Theme integration
+# The mike plugin will automatically add version selector to Material theme
+version_selector: true
+
+# Alias configuration
+default_alias_type: symlink  # Options: symlink, copy, redirect
+
+# Custom properties for versions
+version_properties:
+  stable:
+    description: "Stable release version"
+    color: "green"
+  latest:
+    description: "Latest release version"
+    color: "blue"
+  dev:
+    description: "Development version"
+    color: "orange"
+    hidden: false  # Set to true to hide from version selector

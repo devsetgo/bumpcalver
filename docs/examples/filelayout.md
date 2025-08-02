@@ -143,3 +143,63 @@ ARG VERSION=2025.02.02
 CMD ["python", "app.py"]
 
 ```
+
+## Properties File (sonar-project.properties)
+```properties
+sonar.projectKey=devsetgo_bumpcalver
+sonar.organization=devsetgo
+sonar.projectName=bumpcalver
+sonar.projectVersion=2025.02.02
+sonar.language=python
+sonar.sources=src
+sonar.tests=tests
+sonar.python.coverage.reportPaths=coverage.xml
+sonar.python.xunit.reportPath=report.xml
+```
+
+## Environment File (.env)
+```env
+# Application Configuration
+DEBUG=true
+VERSION=2025.02.02
+DATABASE_URL=postgresql://localhost/mydb
+API_KEY=your-secret-api-key
+LOG_LEVEL=info
+PORT=5000
+```
+
+## Setup Configuration (setup.cfg)
+```ini
+[metadata]
+name = example-package
+version = 2025.02.02
+author = Your Name
+author_email = your.email@example.com
+description = A short description of the package
+long_description = file: README.md
+long_description_content_type = text/markdown
+url = https://github.com/yourusername/example-package
+classifiers =
+    Development Status :: 4 - Beta
+    Intended Audience :: Developers
+    License :: OSI Approved :: MIT License
+    Programming Language :: Python :: 3
+    Programming Language :: Python :: 3.9
+    Programming Language :: Python :: 3.10
+    Programming Language :: Python :: 3.11
+
+[options]
+packages = find:
+python_requires = >=3.9
+install_requires =
+    click>=8.0.0
+    toml>=0.10.0
+
+[options.entry_points]
+console_scripts =
+    example-cli = example_package.cli:main
+```
+
+````
+
+```
