@@ -63,53 +63,67 @@ def run_command(command, check=True):
         raise
 
 
-def deploy_documentation(version, aliases=None, push=False, title=None, is_dev=False):
-    """Deploy documentation using mike."""
-    if aliases is None:
-        aliases = []
-
+def deploy_documentation(version, aliases=None, push=False, title=None, is_dev=False, ignore_remote_status=False):
+    """Deploy documentation for a specific version using mike."""
     print(f"Deploying documentation for version: {version}")
-    print(f"Aliases: {aliases}")
-    print(f"Title: {title}")
-    print(f"Push: {push}")
-    print(f"Is dev: {is_dev}")
 
-    # Prepare the deployment command
-    cmd = ["mike", "deploy"]
+    # Validate version format
+    if not version or version.strip() == "":
+        raise ValueError("Version cannot be empty")
 
-    if title:
-        cmd.extend(["--title", title])
-
-    # Add version and aliases
-    cmd.append(version)
-    cmd.extend(aliases)
-
-    # Add flags
-    if aliases and not is_dev:
-        cmd.append("--update-aliases")
-
-    if push:
-        cmd.append("--push")
-
-    # Run the deployment
+    # Ensure we're in the correct directory
+    original_dir = Path.cwd()
+    project_root = Path(__file__).parent.parent
+    
     try:
-        run_command(cmd)
-        print(f"Successfully deployed documentation for version {version}")
-    except Exception as e:
-        print(f"Failed to deploy documentation: {e}")
-        raise
+        # Change to project root for mike deployment
+        import os
+        os.chdir(project_root)
+        
+        # Prepare mike command
+        cmd = ["mike", "deploy"]
 
-    # Set as default if it's the latest release and not dev
-    if "latest" in aliases and not is_dev:
-        try:
-            set_default_cmd = ["mike", "set-default", version]
-            if push:
-                set_default_cmd.append("--push")
-            run_command(set_default_cmd)
-            print(f"Set {version} as default version")
-        except Exception as e:
-            print(f"Failed to set default version: {e}")
-            # Don't raise here as the main deployment succeeded
+        # Add version
+        cmd.append(version)
+
+        # Add aliases if provided
+        if aliases:
+            cmd.extend(aliases)
+
+        # Add title if provided
+        if title:
+            cmd.extend(["--title", title])
+
+        # Add update-aliases flag for non-dev versions
+        if not is_dev:
+            cmd.append("--update-aliases")
+
+        # Add push flag if requested
+        if push:
+            cmd.append("--push")
+
+        # Handle remote status conflicts
+        if ignore_remote_status:
+            cmd.extend(["--ignore-remote-status"])
+
+        print(f"Running command: {' '.join(cmd)}")
+        print(f"Working directory: {os.getcwd()}")
+
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+        print("Documentation deployed successfully!")
+        if result.stdout:
+            print(f"Output: {result.stdout}")
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"Error deploying documentation: {e}")
+        if e.stdout:
+            print(f"Stdout: {e.stdout}")
+        if e.stderr:
+            print(f"Stderr: {e.stderr}")
+        raise
+    finally:
+        # Always return to original directory
+        os.chdir(original_dir)
 
 
 def list_versions():
@@ -143,6 +157,8 @@ def main():
     parser.add_argument("--title", help="Custom title for the version")
     parser.add_argument("--dev", action="store_true",
                        help="Deploy as development version")
+    parser.add_argument("--ignore-remote-status", action="store_true",
+                       help="Ignore remote git status conflicts")
 
     args = parser.parse_args()
 
@@ -166,7 +182,8 @@ def main():
                 aliases=aliases,
                 push=args.push,
                 title=args.title,
-                is_dev=args.dev
+                is_dev=args.dev,
+                ignore_remote_status=args.ignore_remote_status
             )
 
         elif args.action == "list":
