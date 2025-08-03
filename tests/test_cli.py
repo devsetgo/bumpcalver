@@ -5,34 +5,96 @@ from click.testing import CliRunner
 from src.bumpcalver.cli import main
 
 
+@mock.patch('src.bumpcalver.cli.update_version_in_files')
+@mock.patch('src.bumpcalver.cli.get_current_datetime_version')
+@mock.patch('src.bumpcalver.cli.load_config')
+def test_beta_option(mock_load_config, mock_get_current_datetime_version, mock_update_version_in_files):
+    # Mock configuration
+    mock_load_config.return_value = {
+        "version_format": "{current_date}-{build_count:03}",
+        "date_format": "%Y-%m-%d",
+        "file_configs": [{"path": "test.py", "file_type": "python", "variable": "__version__"}],
+        "timezone": "America/New_York",
+        "git_tag": False,
+        "auto_commit": False,
+    }
+    mock_get_current_datetime_version.return_value = "2025-08-03"
+    mock_update_version_in_files.return_value = ["test.py"]
 
-
-def test_beta_option():
     runner = CliRunner()
     result = runner.invoke(main, ["--beta"])
     assert result.exit_code == 0
-    # Add assertions to check the expected behavior when --beta is used
+    # Verify that the version includes beta suffix
+    mock_update_version_in_files.assert_called_once_with("2025-08-03.beta", mock.ANY)
 
 
-def test_rc_option():
+@mock.patch('src.bumpcalver.cli.update_version_in_files')
+@mock.patch('src.bumpcalver.cli.get_current_datetime_version')
+@mock.patch('src.bumpcalver.cli.load_config')
+def test_rc_option(mock_load_config, mock_get_current_datetime_version, mock_update_version_in_files):
+    # Mock configuration
+    mock_load_config.return_value = {
+        "version_format": "{current_date}-{build_count:03}",
+        "date_format": "%Y-%m-%d",
+        "file_configs": [{"path": "test.py", "file_type": "python", "variable": "__version__"}],
+        "timezone": "America/New_York",
+        "git_tag": False,
+        "auto_commit": False,
+    }
+    mock_get_current_datetime_version.return_value = "2025-08-03"
+    mock_update_version_in_files.return_value = ["test.py"]
+
     runner = CliRunner()
     result = runner.invoke(main, ["--rc"])
     assert result.exit_code == 0
-    # Add assertions to check the expected behavior when --rc is used
+    # Verify that the version includes rc suffix
+    mock_update_version_in_files.assert_called_once_with("2025-08-03.rc", mock.ANY)
 
 
-def test_release_option():
+@mock.patch('src.bumpcalver.cli.update_version_in_files')
+@mock.patch('src.bumpcalver.cli.get_current_datetime_version')
+@mock.patch('src.bumpcalver.cli.load_config')
+def test_release_option(mock_load_config, mock_get_current_datetime_version, mock_update_version_in_files):
+    # Mock configuration
+    mock_load_config.return_value = {
+        "version_format": "{current_date}-{build_count:03}",
+        "date_format": "%Y-%m-%d",
+        "file_configs": [{"path": "test.py", "file_type": "python", "variable": "__version__"}],
+        "timezone": "America/New_York",
+        "git_tag": False,
+        "auto_commit": False,
+    }
+    mock_get_current_datetime_version.return_value = "2025-08-03"
+    mock_update_version_in_files.return_value = ["test.py"]
+
     runner = CliRunner()
     result = runner.invoke(main, ["--release"])
     assert result.exit_code == 0
-    # Add assertions to check the expected behavior when --release is used
+    # Verify that the version includes release suffix
+    mock_update_version_in_files.assert_called_once_with("2025-08-03.release", mock.ANY)
 
 
-def test_custom_option():
+@mock.patch('src.bumpcalver.cli.update_version_in_files')
+@mock.patch('src.bumpcalver.cli.get_current_datetime_version')
+@mock.patch('src.bumpcalver.cli.load_config')
+def test_custom_option(mock_load_config, mock_get_current_datetime_version, mock_update_version_in_files):
+    # Mock configuration
+    mock_load_config.return_value = {
+        "version_format": "{current_date}-{build_count:03}",
+        "date_format": "%Y-%m-%d",
+        "file_configs": [{"path": "test.py", "file_type": "python", "variable": "__version__"}],
+        "timezone": "America/New_York",
+        "git_tag": False,
+        "auto_commit": False,
+    }
+    mock_get_current_datetime_version.return_value = "2025-08-03"
+    mock_update_version_in_files.return_value = ["test.py"]
+
     runner = CliRunner()
     result = runner.invoke(main, ["--custom", "1.2.3"])
     assert result.exit_code == 0
-    # Add assertions to check the expected behavior when --custom is used
+    # Verify that the version includes custom suffix
+    mock_update_version_in_files.assert_called_once_with("2025-08-03.1.2.3", mock.ANY)
 
 
 def test_beta_and_rc_options():
@@ -75,7 +137,18 @@ def test_all_options():
     )
 
 
-def test_no_options():
+@mock.patch('src.bumpcalver.cli.load_config')
+def test_no_options(mock_load_config):
+    # Mock configuration with empty file_configs to avoid file operations
+    mock_load_config.return_value = {
+        "version_format": "{current_date}-{build_count:03}",
+        "date_format": "%Y-%m-%d",
+        "file_configs": [],  # Empty to trigger the "No files specified" message
+        "timezone": "America/New_York",
+        "git_tag": False,
+        "auto_commit": False,
+    }
+
     runner = CliRunner()
     result = runner.invoke(main, [])
     assert result.exit_code == 0
