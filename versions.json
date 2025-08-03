@@ -1,12 +1,5 @@
 [
   {
-    "version": "test-cleanup",
-    "title": "Test Cleanup",
-    "aliases": [
-      "latest"
-    ]
-  },
-  {
     "version": "dev",
     "title": "dev",
     "aliases": []
