@@ -18,7 +18,7 @@ LOG_LEVEL = debug
 REQUIREMENTS_PATH = requirements.txt
 # DEV_REQUIREMENTS_PATH = requirements/dev.txt
 
-.PHONY: autoflake black cleanup create-docs create-docs-local create-docs-dev serve-docs list-docs set-default-version delete-version flake8 help install isort run-example run-example-dev speedtest test
+.PHONY: autoflake black cleanup create-docs create-docs-local create-docs-dev serve-docs list-docs sync-docs-branch set-default-version delete-version flake8 help install isort run-example run-example-dev speedtest test
 
 autoflake: ## Remove unused imports and unused variables from Python code
 	autoflake --in-place --remove-all-unused-imports  --ignore-init-module-imports --remove-unused-variables -r $(SERVICE_PATH)
@@ -35,7 +35,14 @@ bump: ## Bump calver version
 
 cleanup: isort ruff autoflake ## Run isort, ruff, autoflake
 
-create-docs: ## Build and deploy the project's documentation with versioning
+sync-docs-branch: ## Sync local gh-pages with remote before deployment
+	@echo "🔄 Syncing gh-pages branch..."
+	@git fetch origin gh-pages
+	@git checkout gh-pages 2>/dev/null || echo "gh-pages branch exists"
+	@git reset --hard origin/gh-pages
+	@git checkout dev
+
+create-docs: sync-docs-branch ## Build and deploy the project's documentation with versioning
 	python3 scripts/update_docs.py
 	python3 scripts/changelog.py
 	cp /workspaces/$(REPONAME)/README.md /workspaces/$(REPONAME)/docs/index.md
@@ -51,7 +58,7 @@ create-docs-local: ## Build and deploy the project's documentation locally with 
 	cp /workspaces/$(REPONAME)/CHANGELOG.md /workspaces/$(REPONAME)/docs/release-notes.md
 	python3 scripts/deploy_docs.py deploy
 
-create-docs-dev: ## Build and deploy a development version of the documentation
+create-docs-dev: sync-docs-branch ## Build and deploy a development version of the documentation
 	python3 scripts/update_docs.py
 	python3 scripts/changelog.py
 	cp /workspaces/$(REPONAME)/README.md /workspaces/$(REPONAME)/docs/index.md

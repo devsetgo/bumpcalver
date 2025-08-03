@@ -63,57 +63,67 @@ def run_command(command, check=True):
         raise
 
 
-def deploy_documentation(
-    version: str = None,
-    aliases: list = None,
-    title: str = None,
-    push: bool = False,
-    is_dev: bool = False,
-    ignore_remote_status: bool = False
-):
-    """Deploy documentation with mike."""
-    if version is None:
-        version = get_current_version()
-        if version is None:
-            raise ValueError("Could not determine version. Please specify manually.")
-
-    if aliases is None:
-        aliases = ["latest"] if not is_dev else []
-
+def deploy_documentation(version, aliases=None, push=False, title=None, is_dev=False, ignore_remote_status=False):
+    """Deploy documentation for a specific version using mike."""
     print(f"Deploying documentation for version: {version}")
-    print(f"Aliases: {aliases}")
-    print(f"Title: {title}")
-    print(f"Push: {push}")
-    print(f"Is dev: {is_dev}")
-    print(f"Ignore remote status: {ignore_remote_status}")
 
-    # Prepare the deployment command
-    cmd = ["mike", "deploy"]
+    # Validate version format
+    if not version or version.strip() == "":
+        raise ValueError("Version cannot be empty")
 
-    if title:
-        cmd.extend(["--title", title])
-
-    # Add version and aliases
-    cmd.append(version)
-    cmd.extend(aliases)
-
-    # Add flags
-    if aliases and not is_dev:
-        cmd.append("--update-aliases")
-
-    if push:
-        cmd.append("--push")
+    # Ensure we're in the correct directory
+    original_dir = Path.cwd()
+    project_root = Path(__file__).parent.parent
     
-    if ignore_remote_status:
-        cmd.append("--ignore-remote-status")
-
-    # Run the deployment
     try:
-        run_command(cmd)
-        print(f"Successfully deployed documentation for version {version}")
-    except Exception as e:
-        print(f"Failed to deploy documentation: {e}")
+        # Change to project root for mike deployment
+        import os
+        os.chdir(project_root)
+        
+        # Prepare mike command
+        cmd = ["mike", "deploy"]
+
+        # Add version
+        cmd.append(version)
+
+        # Add aliases if provided
+        if aliases:
+            cmd.extend(aliases)
+
+        # Add title if provided
+        if title:
+            cmd.extend(["--title", title])
+
+        # Add update-aliases flag for non-dev versions
+        if not is_dev:
+            cmd.append("--update-aliases")
+
+        # Add push flag if requested
+        if push:
+            cmd.append("--push")
+
+        # Handle remote status conflicts
+        if ignore_remote_status:
+            cmd.extend(["--ignore-remote-status"])
+
+        print(f"Running command: {' '.join(cmd)}")
+        print(f"Working directory: {os.getcwd()}")
+
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+        print("Documentation deployed successfully!")
+        if result.stdout:
+            print(f"Output: {result.stdout}")
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"Error deploying documentation: {e}")
+        if e.stdout:
+            print(f"Stdout: {e.stdout}")
+        if e.stderr:
+            print(f"Stderr: {e.stderr}")
         raise
+    finally:
+        # Always return to original directory
+        os.chdir(original_dir)
 
 
 def list_versions():
