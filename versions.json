@@ -1,5 +1,12 @@
 [
   {
+    "version": "test-cleanup",
+    "title": "Test Cleanup",
+    "aliases": [
+      "latest"
+    ]
+  },
+  {
     "version": "dev",
     "title": "dev",
     "aliases": []
@@ -8,8 +15,7 @@
     "version": "2025.8.2.3",
     "title": "Release 2025.8.2.3",
     "aliases": [
-      "stable",
-      "latest"
+      "stable"
     ]
   },
   {
