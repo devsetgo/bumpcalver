@@ -9,3 +9,4 @@ I am a software engineering manager with an eclectic background in various indus
 
 - [DevSetGo.com](https://www.devsetgo.com)
 - [Github](https://github.com/devsetgo)
+- [X.com](https://x.com/MikeRyan353)
