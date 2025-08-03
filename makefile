@@ -41,7 +41,7 @@ create-docs: ## Build and deploy the project's documentation with versioning
 	cp /workspaces/$(REPONAME)/README.md /workspaces/$(REPONAME)/docs/index.md
 	cp /workspaces/$(REPONAME)/CONTRIBUTING.md /workspaces/$(REPONAME)/docs/contribute.md
 	cp /workspaces/$(REPONAME)/CHANGELOG.md /workspaces/$(REPONAME)/docs/release-notes.md
-	python3 scripts/deploy_docs.py deploy --push
+	python3 scripts/deploy_docs.py deploy --push --ignore-remote-status
 
 create-docs-local: ## Build and deploy the project's documentation locally with versioning
 	python3 scripts/update_docs.py
@@ -57,7 +57,7 @@ create-docs-dev: ## Build and deploy a development version of the documentation
 	cp /workspaces/$(REPONAME)/README.md /workspaces/$(REPONAME)/docs/index.md
 	cp /workspaces/$(REPONAME)/CONTRIBUTING.md /workspaces/$(REPONAME)/docs/contribute.md
 	cp /workspaces/$(REPONAME)/CHANGELOG.md /workspaces/$(REPONAME)/docs/release-notes.md
-	python3 scripts/deploy_docs.py deploy --dev --version dev --push
+	python3 scripts/deploy_docs.py deploy --dev --version dev --push --ignore-remote-status
 
 serve-docs: ## Serve all documentation versions locally
 	python3 scripts/deploy_docs.py serve

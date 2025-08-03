@@ -4,6 +4,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## Latest Changes
+### <span style='color:blue'>Fix of release</span> ([v2025.8.2.3](https://github.com/devsetgo/bumpcalver/releases/tag/v2025.8.2.3))
+
+#### What's Changed
+* Verion bump to 2025.8.2.3 (#66) @devsetgo
+* Test Cleanup (#65) @devsetgo
+* Fix of Publishing CICD (#64) @devsetgo
+
+
+Published Date: 2025 August 02, 20:00
+
+### <span style='color:blue'>New File Handlers .ENV, setup.cfg, & sonar-project. Properties</span> ([v2025.8.2.1](https://github.com/devsetgo/bumpcalver/releases/tag/v2025.8.2.1))
+
+#### What's Changed
+* CICD fix and new Handlers (#63) @devsetgo
+* pip(deps): bump tox from 4.27.0 to 4.28.4 (#59) @[dependabot[bot]](https://github.com/apps/dependabot)
+* pip(deps): bump mkdocstrings[python,shell] from 0.29.1 to 0.30.0 (#60) @[dependabot[bot]](https://github.com/apps/dependabot)
+* pip(deps): bump mkdocs-material from 9.6.15 to 9.6.16 (#61) @[dependabot[bot]](https://github.com/apps/dependabot)
+* pip(deps): bump ruff from 0.12.2 to 0.12.7 (#62) @[dependabot[bot]](https://github.com/apps/dependabot)
+* update of requirements (#58) @devsetgo
+* pip(deps): bump ruff from 0.11.11 to 0.11.12 (#52) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Updating Requirements (#51) @devsetgo
+
+
+Published Date: 2025 August 02, 19:14
+
 ### <span style='color:blue'>Improved documentation and update of dependencies</span> ([v2025.4.12.1](https://github.com/devsetgo/bumpcalver/releases/tag/v2025.4.12.1))
 
 #### What's Changed
@@ -117,3 +142,4 @@ Published Date: 2024 October 20, 15:35
 **Full Changelog**: https://github.com/devsetgo/bumpcalver/commits/2024.10.18
 
 Published Date: 2024 October 18, 18:42
+

@@ -63,16 +63,29 @@ def run_command(command, check=True):
         raise
 
 
-def deploy_documentation(version, aliases=None, push=False, title=None, is_dev=False):
-    """Deploy documentation using mike."""
+def deploy_documentation(
+    version: str = None,
+    aliases: list = None,
+    title: str = None,
+    push: bool = False,
+    is_dev: bool = False,
+    ignore_remote_status: bool = False
+):
+    """Deploy documentation with mike."""
+    if version is None:
+        version = get_current_version()
+        if version is None:
+            raise ValueError("Could not determine version. Please specify manually.")
+
     if aliases is None:
-        aliases = []
+        aliases = ["latest"] if not is_dev else []
 
     print(f"Deploying documentation for version: {version}")
     print(f"Aliases: {aliases}")
     print(f"Title: {title}")
     print(f"Push: {push}")
     print(f"Is dev: {is_dev}")
+    print(f"Ignore remote status: {ignore_remote_status}")
 
     # Prepare the deployment command
     cmd = ["mike", "deploy"]
@@ -90,6 +103,9 @@ def deploy_documentation(version, aliases=None, push=False, title=None, is_dev=F
 
     if push:
         cmd.append("--push")
+    
+    if ignore_remote_status:
+        cmd.append("--ignore-remote-status")
 
     # Run the deployment
     try:
@@ -98,18 +114,6 @@ def deploy_documentation(version, aliases=None, push=False, title=None, is_dev=F
     except Exception as e:
         print(f"Failed to deploy documentation: {e}")
         raise
-
-    # Set as default if it's the latest release and not dev
-    if "latest" in aliases and not is_dev:
-        try:
-            set_default_cmd = ["mike", "set-default", version]
-            if push:
-                set_default_cmd.append("--push")
-            run_command(set_default_cmd)
-            print(f"Set {version} as default version")
-        except Exception as e:
-            print(f"Failed to set default version: {e}")
-            # Don't raise here as the main deployment succeeded
 
 
 def list_versions():
@@ -143,6 +147,8 @@ def main():
     parser.add_argument("--title", help="Custom title for the version")
     parser.add_argument("--dev", action="store_true",
                        help="Deploy as development version")
+    parser.add_argument("--ignore-remote-status", action="store_true",
+                       help="Ignore remote git status conflicts")
 
     args = parser.parse_args()
 
@@ -166,7 +172,8 @@ def main():
                 aliases=aliases,
                 push=args.push,
                 title=args.title,
-                is_dev=args.dev
+                is_dev=args.dev,
+                ignore_remote_status=args.ignore_remote_status
             )
 
         elif args.action == "list":
