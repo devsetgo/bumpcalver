@@ -5,6 +5,14 @@
     "aliases": []
   },
   {
+    "version": "2025.8.2.3",
+    "title": "Release 2025.8.2.3",
+    "aliases": [
+      "latest",
+      "stable"
+    ]
+  },
+  {
     "version": "2025.4.12.1",
     "title": "Release 2025.4.12.1",
     "aliases": []
@@ -12,9 +20,6 @@
   {
     "version": "v2025.8.2.1",
     "title": "Release v2025.8.2.1",
-    "aliases": [
-      "latest",
-      "stable"
-    ]
+    "aliases": []
   }
 ]
