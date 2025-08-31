@@ -69,7 +69,7 @@ def test_parse_version_invalid_format(capsys):
     result = parse_version(version)
     assert result is None
     captured = capsys.readouterr()
-    assert "Version 'v1.0.0' does not match expected format." in captured.out
+    assert "Version 'v1.0.0' does not match expected format 'YYYY-MM-DD' or 'YYYY-MM-DD-XXX'." in captured.out
 
 
 def test_get_current_date_valid_timezone():
@@ -163,7 +163,7 @@ def test_get_build_version_version_not_found(monkeypatch, capsys):
 
     captured = capsys.readouterr()
     assert (
-        "Could not read version from dummy_path. Starting new versioning."
+        "File 'dummy_path': Could not read version. Starting new versioning with format 'YYYY-MM-DD-XXX'."
         in captured.out
     )
 
@@ -190,7 +190,7 @@ def test_get_build_version_invalid_version_format(monkeypatch, capsys):
     assert result == "2023-10-11-1"
 
     captured = capsys.readouterr()
-    assert "Version 'v1.0.0' does not match expected format." in captured.out
+    assert "File 'dummy_path': Version 'v1.0.0' does not match expected format 'YYYY-MM-DD' or 'YYYY-MM-DD-XXX'." in captured.out
 
 
 def test_get_build_version_exception_during_read(monkeypatch, capsys):
@@ -215,7 +215,7 @@ def test_get_build_version_exception_during_read(monkeypatch, capsys):
     assert result == "2023-10-11-1"
 
     captured = capsys.readouterr()
-    assert "Error reading version from dummy_path: Read error" in captured.out
+    assert "File 'dummy_path': Error reading version - Read error. Starting new versioning with format 'YYYY-MM-DD-XXX'." in captured.out
 
 
 def test_get_build_version_with_directive(monkeypatch):
