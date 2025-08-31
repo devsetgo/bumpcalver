@@ -90,7 +90,7 @@ def parse_version(version: str) -> Optional[tuple]:
         return date_str, int(count_str)
     else:
         # Print an error message if the version string does not match the expected format
-        print(f"Version '{version}' does not match expected format.")
+        print(f"Version '{version}' does not match expected format 'YYYY-MM-DD' or 'YYYY-MM-DD-XXX'.")
         return None
 
 
@@ -181,13 +181,13 @@ def get_build_version(
                 else:
                     build_count = 1
             else:
-                print(f"Version '{version}' does not match expected format.")
+                print(f"File '{file_path}': Version '{version}' does not match expected format 'YYYY-MM-DD' or 'YYYY-MM-DD-XXX'. Found format appears to be using dots instead of dashes.")
                 build_count = 1
         else:
-            print(f"Could not read version from {file_path}. Starting new versioning.")
+            print(f"File '{file_path}': Could not read version. Starting new versioning with format 'YYYY-MM-DD-XXX'.")
             build_count = 1
     except Exception as e:
-        print(f"Error reading version from {file_path}: {e}")
+        print(f"File '{file_path}': Error reading version - {e}. Starting new versioning with format 'YYYY-MM-DD-XXX'.")
         build_count = 1
 
     # Return the formatted build version string

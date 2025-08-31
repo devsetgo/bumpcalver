@@ -74,12 +74,12 @@ def deploy_documentation(version, aliases=None, push=False, title=None, is_dev=F
     # Ensure we're in the correct directory
     original_dir = Path.cwd()
     project_root = Path(__file__).parent.parent
-    
+
     try:
         # Change to project root for mike deployment
         import os
         os.chdir(project_root)
-        
+
         # Prepare mike command
         cmd = ["mike", "deploy"]
 
