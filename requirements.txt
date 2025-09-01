@@ -16,10 +16,6 @@ pre-commit==4.3.0 # Vulnerabilities: None
 pylint==4.0.2 # From 3.3.7 | Vulnerabilities: None
 pytest==8.4.2 # Vulnerabilities: None
 pytest-cov==7.0.0 # Vulnerabilities: None
-pre-commit==4.3.0 # Vulnerabilities: None
-pylint==3.3.7 # Vulnerabilities: None
-pytest==8.4.1 # Vulnerabilities: None
-pytest-cov==6.2.1 # Vulnerabilities: None
 pytest-html==4.1.1 # Vulnerabilities: None
 pytest-mock==3.15.1 # Vulnerabilities: None
 pytest-runner==6.0.1 # Vulnerabilities: None
@@ -27,6 +23,6 @@ pytest-xdist==3.8.0 # Vulnerabilities: None
 PyYAML==6.0.3 # From 6.0.2 | Vulnerabilities: None
 ruff==0.14.4 # From 0.12.12 | Vulnerabilities: None
 toml==0.10.2 # Vulnerabilities: None
-tox==4.29.0 # From 4.27.0 | Vulnerabilities: None
-twine==6.1.0 # Vulnerabilities: None
+tox==4.32.0 # From 4.30.2 | Vulnerabilities: None
+twine==6.2.0 # From 6.1.0 | Vulnerabilities: None
 wheel==0.45.1 # Vulnerabilities: None
