@@ -16,6 +16,10 @@ pre-commit==4.3.0 # Vulnerabilities: None
 pylint==4.0.2 # From 3.3.7 | Vulnerabilities: None
 pytest==8.4.2 # Vulnerabilities: None
 pytest-cov==7.0.0 # Vulnerabilities: None
+pre-commit==4.3.0 # Vulnerabilities: None
+pylint==3.3.7 # Vulnerabilities: None
+pytest==8.4.1 # Vulnerabilities: None
+pytest-cov==6.2.1 # Vulnerabilities: None
 pytest-html==4.1.1 # Vulnerabilities: None
 pytest-mock==3.15.1 # Vulnerabilities: None
 pytest-runner==6.0.1 # Vulnerabilities: None
