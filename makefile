@@ -117,3 +117,7 @@ ruff: ## Format Python code with Ruff
 	ruff check --fix --exit-non-zero-on-fix --show-fixes $(SERVICE_PATH)
 	ruff check --fix --exit-non-zero-on-fix --show-fixes $(TESTS_PATH)
 	ruff check --fix --exit-non-zero-on-fix --show-fixes $(EXAMPLE_PATH)
+
+rebase: ## Rebase the current branch onto the main branch
+	git fetch origin main
+	git rebase origin/main
