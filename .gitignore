@@ -5,7 +5,7 @@ data/
 myLoggingFolder/
 log/
 
-.bumpcalver/backups/
+.bumpcalver/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
