@@ -81,7 +81,7 @@ When you undo an operation, BumpCalver:
 
 1. **Validates Safety**: Checks if files have been modified since the backup
 2. **Restores Files**: Copies backup files over the current versions
-3. **Undoes Git Operations**: 
+3. **Undoes Git Operations**:
    - Deletes git tags that were created
    - Resets git commits (if they match the recorded commit hash)
 
@@ -220,7 +220,7 @@ bumpcalver --build --git-tag
 
 If undo operations fail, you can manually:
 
-1. **Restore Files**: Copy backup files from `.bumpcalver/backups/` 
+1. **Restore Files**: Copy backup files from `.bumpcalver/backups/`
 2. **Check History**: Review `history.json` for operation details
 3. **Git Operations**: Manually delete tags or reset commits using git commands
 
