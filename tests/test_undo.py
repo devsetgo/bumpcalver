@@ -32,7 +32,9 @@ class TestBackupManager(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.temp_dir = tempfile.mkdtemp()
-        self.backup_manager = BackupManager(backup_dir=self.temp_dir)
+        # Use a temporary history file to ensure test isolation
+        self.history_file = os.path.join(self.temp_dir, "test-history.json")
+        self.backup_manager = BackupManager(backup_dir=self.temp_dir, history_file=self.history_file)
 
     def tearDown(self):
         """Clean up test fixtures."""
