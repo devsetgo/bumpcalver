@@ -1,0 +1,12 @@
+# Test configuration for BumpCalver undo demo
+[tool.bumpcalver]
+version_format = "{current_date}-{build_count:03}"
+date_format = "%Y.%m.%d"
+timezone = "America/New_York"
+git_tag = false
+auto_commit = false
+
+[[tool.bumpcalver.file]]
+path = "demo_version.py"
+file_type = "python"
+variable = "__version__"

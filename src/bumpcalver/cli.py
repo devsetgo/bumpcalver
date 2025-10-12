@@ -3,7 +3,8 @@ BumpCalver CLI.
 
 This module provides a command-line interface for BumpCalver, a tool for calendar-based version bumping.
 It allows users to update version strings in their project's files based on the current date and build count.
-Additionally, it can create Git tags and commit changes automatically.
+Additionally, it can create Git tags and commit changes automatically. The CLI also supports undoing
+version bump operations to restore previous states.
 
 Functions:
     main: The main entry point for the CLI.
@@ -20,17 +21,29 @@ Example:
 
     To bump the version, commit changes, and create a Git tag:
         $ bumpcalver --build --git-tag --auto-commit
+
+    To undo the last version bump:
+        $ bumpcalver --undo
+
+    To list recent operations:
+        $ bumpcalver --list-history
+
+    To undo a specific operation:
+        $ bumpcalver --undo-id <operation_id>
 """
 
 import os
+import subprocess
 import sys
 from typing import Any, Dict, List, Optional
 
 import click
 
+from .backup_utils import BackupManager, backup_files_before_update, generate_operation_id
 from .config import load_config
 from .git_utils import create_git_tag
 from .handlers import update_version_in_files
+from .undo_utils import list_undo_history, undo_last_operation, undo_operation_by_id
 from .utils import default_timezone, get_build_version, get_current_datetime_version
 
 
@@ -52,6 +65,9 @@ from .utils import default_timezone, get_build_version, get_current_datetime_ver
     default=None,
     help="Automatically commit changes when creating a Git tag",
 )
+@click.option("--undo", is_flag=True, help="Undo the last version bump operation")
+@click.option("--undo-id", default=None, help="Undo a specific operation by ID")
+@click.option("--list-history", is_flag=True, help="List recent operations that can be undone")
 def main(
     beta: bool,
     rc: bool,
@@ -61,7 +77,33 @@ def main(
     timezone: Optional[str],
     git_tag: Optional[bool],
     auto_commit: Optional[bool],
+    undo: bool,
+    undo_id: Optional[str],
+    list_history: bool,
 ) -> None:
+    # Check for conflicting undo options with version bump options FIRST
+    version_bump_options = [beta, rc, release, build, bool(custom)]
+    undo_options = [undo, bool(undo_id), list_history]
+
+    if any(version_bump_options) and any(undo_options):
+        raise click.UsageError(
+            "Undo options (--undo, --undo-id, --list-history) cannot be used with version bump options."
+        )
+
+    # Handle undo and history commands
+    if list_history:
+        list_undo_history()
+        return
+
+    if undo:
+        success = undo_last_operation()
+        sys.exit(0 if success else 1)
+
+    if undo_id:
+        success = undo_operation_by_id(undo_id)
+        sys.exit(0 if success else 1)
+
+    # Original version bump logic
     selected_options = [beta, rc, release]
     if custom:
         selected_options.append(True)
@@ -96,6 +138,11 @@ def main(
         file_config["path"] = os.path.join(project_root, file_config["path"])
 
     try:
+        # Create backup manager and backup files before making changes
+        backup_manager = BackupManager()
+        operation_id = generate_operation_id()
+        backups, _ = backup_files_before_update(file_configs, backup_manager)
+
         if build:
             print("Build option is set. Calling get_build_version.")
             init_file_config: Dict[str, Any] = file_configs[0]
@@ -119,10 +166,46 @@ def main(
         files_updated: List[str] = update_version_in_files(new_version, file_configs)
         print(f"Files updated: {files_updated}")
 
+        # Handle git operations and capture information for undo
+        git_commit_hash = None
+        git_tag_name = None
+
         if git_tag:
-            create_git_tag(new_version, files_updated, auto_commit)
+            # Get current commit hash before creating tag
+            try:
+                if auto_commit:
+                    # The create_git_tag function will create a commit, so we need to get the hash afterwards
+                    create_git_tag(new_version, files_updated, auto_commit)
+                    git_commit_hash = subprocess.run(
+                        ["git", "rev-parse", "HEAD"],
+                        capture_output=True,
+                        text=True,
+                        check=True
+                    ).stdout.strip()
+                else:
+                    create_git_tag(new_version, files_updated, auto_commit)
+
+                git_tag_name = new_version
+
+            except subprocess.CalledProcessError:
+                # Git operations failed, but don't fail the whole operation
+                pass
+
+        # Store operation history for undo functionality
+        backup_manager.store_operation_history(
+            operation_id=operation_id,
+            version=new_version,
+            files_updated=files_updated,
+            backups=backups,
+            git_tag=git_tag,
+            git_commit=git_tag and auto_commit,
+            git_commit_hash=git_commit_hash,
+            git_tag_name=git_tag_name
+        )
 
         print(f"Updated version to {new_version} in specified files.")
+        print(f"Operation ID: {operation_id} (use 'bumpcalver --undo' to undo)")
+
     except (ValueError, KeyError) as e:
         print(f"Error generating version: {e}")
         sys.exit(1)
