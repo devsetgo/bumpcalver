@@ -2,6 +2,11 @@
   {
     "version": "untagged-589b297bc65cb889a83f",
     "title": "Release untagged-589b297bc65cb889a83f",
+    "aliases": []
+  },
+  {
+    "version": "2025.10.11.2",
+    "title": "Release 2025.10.11.2",
     "aliases": [
       "stable",
       "latest"
