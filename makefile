@@ -2,7 +2,7 @@
 # Project Variables
 # =============================================================================
 REPONAME = bumpcalver
-APP_VERSION = 2025-08-31-003
+APP_VERSION = 2025-10-11-002
 
 # Python Configuration
 PYTHON = python3

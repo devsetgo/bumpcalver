@@ -1237,6 +1237,42 @@ def test_get_version_handler_setup_cfg():
     assert isinstance(handler, SetupCfgVersionHandler)
 
 
+def test_get_version_handler_toml():
+    """Test getting toml version handler."""
+    handler = get_version_handler("toml")
+    assert isinstance(handler, TomlVersionHandler)
+
+
+def test_get_version_handler_yaml():
+    """Test getting yaml version handler."""
+    handler = get_version_handler("yaml")
+    assert isinstance(handler, YamlVersionHandler)
+
+
+def test_get_version_handler_json():
+    """Test getting json version handler."""
+    handler = get_version_handler("json")
+    assert isinstance(handler, JsonVersionHandler)
+
+
+def test_get_version_handler_xml():
+    """Test getting xml version handler."""
+    handler = get_version_handler("xml")
+    assert isinstance(handler, XmlVersionHandler)
+
+
+def test_get_version_handler_dockerfile():
+    """Test getting dockerfile version handler."""
+    handler = get_version_handler("dockerfile")
+    assert isinstance(handler, DockerfileVersionHandler)
+
+
+def test_get_version_handler_makefile():
+    """Test getting makefile version handler."""
+    handler = get_version_handler("makefile")
+    assert isinstance(handler, MakefileVersionHandler)
+
+
 # Tests for VersionHandler helper methods
 def test_version_handler_read_file_safe_success(monkeypatch):
     """Test _read_file_safe method with successful file read."""
