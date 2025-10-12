@@ -1,5 +1,6 @@
 # tests/test_cli.py
 
+import subprocess
 from unittest import mock
 from click.testing import CliRunner
 from src.bumpcalver.cli import main
@@ -251,3 +252,69 @@ def test_key_error(monkeypatch):
     # Verify the output
     assert result.exit_code == 1
     assert "Error generating version: 'Missing key'" in result.output
+
+
+@mock.patch('src.bumpcalver.cli.subprocess')
+@mock.patch('src.bumpcalver.cli.update_version_in_files')
+@mock.patch('src.bumpcalver.cli.get_current_datetime_version')
+@mock.patch('src.bumpcalver.cli.load_config')
+def test_git_operations_exception_handling(mock_load_config, mock_get_current_datetime_version,
+                                           mock_update_version_in_files, mock_subprocess):
+    """Test CLI handling of git operation exceptions."""
+    # Mock configuration with git operations enabled
+    mock_load_config.return_value = {
+        "version_format": "{current_date}",
+        "date_format": "%Y.%m.%d",
+        "file_configs": [{"path": "test.py", "file_type": "python", "variable": "__version__"}],
+        "timezone": "UTC",
+        "git_tag": True,
+        "auto_commit": True,
+    }
+    mock_get_current_datetime_version.return_value = "2025.01.01"
+    mock_update_version_in_files.return_value = ["test.py"]
+
+    # Mock subprocess to raise CalledProcessError for git operations
+    mock_subprocess.CalledProcessError = subprocess.CalledProcessError
+    mock_subprocess.run.side_effect = subprocess.CalledProcessError(1, "git")
+
+    runner = CliRunner()
+    result = runner.invoke(main, [])
+
+    # Should complete successfully despite git operation failure
+    assert result.exit_code == 0
+
+
+@mock.patch('src.bumpcalver.cli.BackupManager')
+@mock.patch('src.bumpcalver.cli.subprocess.run')
+@mock.patch('src.bumpcalver.cli.update_version_in_files')
+@mock.patch('src.bumpcalver.cli.get_current_datetime_version')
+@mock.patch('src.bumpcalver.cli.load_config')
+def test_git_tag_subprocess_exception(mock_load_config, mock_get_current_datetime_version,
+                                     mock_update_version_in_files, mock_subprocess_run, mock_backup_manager):
+    """Test CLI handling of subprocess CalledProcessError during git tag operations."""
+    # Mock configuration with git tag enabled
+    mock_load_config.return_value = {
+        "version_format": "{current_date}",
+        "date_format": "%Y.%m.%d",
+        "file_configs": [{"path": "test.py", "file_type": "python", "variable": "__version__"}],
+        "timezone": "UTC",
+        "git_tag": True,
+        "auto_commit": False,
+    }
+    mock_get_current_datetime_version.return_value = "2025.01.01"
+    mock_update_version_in_files.return_value = ["test.py"]
+
+    # Mock BackupManager
+    mock_backup_instance = mock_backup_manager.return_value
+    mock_backup_instance.create_backups.return_value = {"test.py": "backup.py"}
+
+    # Mock subprocess.run to raise CalledProcessError for git rev-parse
+    mock_subprocess_run.side_effect = subprocess.CalledProcessError(1, "git rev-parse HEAD")
+
+    runner = CliRunner()
+    result = runner.invoke(main, [])
+
+    # Should complete successfully despite git operation failure (line 186)
+    assert result.exit_code == 0
+    # Verify store_operation_history was called (lines 190-192)
+    mock_backup_instance.store_operation_history.assert_called_once()
