@@ -21,7 +21,7 @@ pytest-mock==3.15.1 # Vulnerabilities: None
 pytest-runner==6.0.1 # Vulnerabilities: None
 pytest-xdist==3.8.0 # Vulnerabilities: None
 PyYAML==6.0.2 # Vulnerabilities: None
-ruff==0.12.12 # From 0.12.2 | Vulnerabilities: None
+ruff==0.14.3 # From 0.12.2 | Vulnerabilities: None
 toml==0.10.2 # Vulnerabilities: None
 tox==4.30.2 # From 4.27.0 | Vulnerabilities: None
 twine==6.1.0 # Vulnerabilities: None
