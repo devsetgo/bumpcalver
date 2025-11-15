@@ -5,7 +5,6 @@ Tests various CalVer patterns to ensure robust parsing and compatibility.
 Based on CalVer specification (https://calver.org) and real-world usage.
 """
 
-import pytest
 from src.bumpcalver.utils import parse_version
 
 
@@ -23,7 +22,7 @@ class TestCalendarVersioningPatterns:
             ("24.342.001", "{current_date}.{build_count:03}", "%y.%j", "24.342", 1),
             ("2024.342.001", "{current_date}.{build_count:03}", "%Y.%j", "2024.342", 1),
         ]
-        
+
         for version, version_format, date_format, expected_date, expected_count in test_cases:
             result = parse_version(version, version_format, date_format)
             assert result is not None, f"Failed to parse {version}"
@@ -37,7 +36,7 @@ class TestCalendarVersioningPatterns:
             ("2024-12-07-001", "{current_date}-{build_count:03}", "%Y-%m-%d", "2024-12-07", 1),
             ("2024-12-07", "{current_date}", "%Y-%m-%d", "2024-12-07", 0),
         ]
-        
+
         for version, version_format, date_format, expected_date, expected_count in test_cases:
             result = parse_version(version, version_format, date_format)
             assert result is not None, f"Failed to parse {version}"
@@ -54,7 +53,7 @@ class TestCalendarVersioningPatterns:
             ("2024.Q4", "{current_date}", "%Y.Q%q", "2024.Q4", 0),
             ("2024.12.07", "{current_date}", "%Y.%m.%d", "2024.12.07", 0),
         ]
-        
+
         for version, version_format, date_format, expected_date, expected_count in test_cases:
             result = parse_version(version, version_format, date_format)
             assert result is not None, f"Failed to parse {version}"
@@ -68,7 +67,7 @@ class TestCalendarVersioningPatterns:
             ("241207.001", "{current_date}.{build_count:03}", "%y%m%d", "241207", 1),
             ("20241207.001", "{current_date}.{build_count:03}", "%Y%m%d", "20241207", 1),
         ]
-        
+
         for version, version_format, date_format, expected_date, expected_count in test_cases:
             result = parse_version(version, version_format, date_format)
             assert result is not None, f"Failed to parse {version}"
@@ -83,7 +82,7 @@ class TestCalendarVersioningPatterns:
             ("2024.12.001.alpha", "{current_date}.{build_count:03}", "%Y.%m", "2024.12", 1),
             ("24.12.001.rc1", "{current_date}.{build_count:03}", "%y.%m", "24.12", 1),
         ]
-        
+
         for version, version_format, date_format, expected_date, expected_count in test_cases:
             result = parse_version(version, version_format, date_format)
             assert result is not None, f"Failed to parse {version}"
@@ -98,7 +97,7 @@ class TestCalendarVersioningPatterns:
             ("1.0.0", "{current_date}.{build_count:03}", "%Y.%m.%d"),   # SemVer format
             ("release-1.0", "{current_date}.{build_count:03}", "%Y.%m.%d"),  # Invalid format
         ]
-        
+
         for version, version_format, date_format in invalid_cases:
             result = parse_version(version, version_format, date_format)
             # These should either fail or fall back to legacy parsing (which should also fail)
@@ -110,7 +109,7 @@ class TestCalendarVersioningPatterns:
         edge_cases = [
             ("24.12.1", "{current_date}.{build_count}", "%y.%m", "24.12", 1),  # Non-padded build count
         ]
-        
+
         for version, version_format, date_format, expected_date, expected_count in edge_cases:
             result = parse_version(version, version_format, date_format)
             if result is not None:  # If it parses, check it's correct
@@ -125,14 +124,14 @@ class TestCalendarVersioningPatterns:
             # Ubuntu-style
             ("24.04", "{current_date}", "%y.%m", "24.04", 0),
             ("24.10", "{current_date}", "%y.%m", "24.10", 0),
-            
+
             # Twisted-style
             ("24.3.0", "{current_date}.{build_count}", "%y.%m", "24.3", 0),  # Actually uses minor.patch, not build count
-            
+
             # VS Code style (YY.M.patch)
             ("24.11.1", "{current_date}.{build_count}", "%y.%m", "24.11", 1),
         ]
-        
+
         for version, version_format, date_format, expected_date, expected_count in real_world_cases:
             result = parse_version(version, version_format, date_format)
             assert result is not None, f"Failed to parse real-world example: {version}"
@@ -148,12 +147,12 @@ class TestCalendarVersioningLimitations:
         """Test mixed separator patterns (currently not supported)."""
         # These patterns are currently NOT supported by our implementation
         # This test documents the limitation
-        
+
         mixed_cases = [
             ("2024-12-07_001", "{current_date}_{build_count:03}", "%Y-%m-%d"),
             ("24.Q4-001", "{current_date}-{build_count:03}", "%y.Q%q"),
         ]
-        
+
         for version, version_format, date_format in mixed_cases:
             result = parse_version(version, version_format, date_format)
             # These may or may not parse correctly - documenting current behavior
@@ -169,7 +168,7 @@ class TestCalendarVersioningLimitations:
             ("2024.12.07.rc.1", "{current_date}.rc.{build_count}", "%Y.%m.%d"),
             ("24.Q4.beta.2", "{current_date}.beta.{build_count}", "%y.Q%q"),
         ]
-        
+
         for version, version_format, date_format in complex_cases:
             result = parse_version(version, version_format, date_format)
             if result is not None:
