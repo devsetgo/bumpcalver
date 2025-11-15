@@ -1,0 +1,1885 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Simple Calendar Versioning Library">
+      
+      
+        <meta name="author" content="Mike Ryan">
+      
+      
+      
+        <link rel="prev" href="../quickstart/">
+      
+      
+        <link rel="next" href="../timezones/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.23">
+    
+    
+      
+        <title>Calendar Versioning Guide - BumpCalver Library</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.84d31ad4.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../css/print-site.css">
+    
+      <link rel="stylesheet" href="../css/print-site-material.css">
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#calendar-versioning-calver-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="BumpCalver Library" class="md-header__button md-logo" aria-label="BumpCalver Library" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            BumpCalver Library
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Calendar Versioning Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/devsetgo/bumpcalver" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    devsetgo/bumpcalver
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Introduction
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../quickstart/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  QuickStart
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Calendar Versioning Guide
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../timezones/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Timezones
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../examples/configuration/" class="md-tabs__link">
+          
+  
+  
+  Examples
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../versioning.md" class="md-tabs__link">
+          
+  
+  
+  Documentation
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../development-guide/" class="md-tabs__link">
+          
+  
+  
+  Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../about/" class="md-tabs__link">
+          
+  
+  
+  About
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../release-notes/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Release Notes
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../print_page/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Print Site
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="BumpCalver Library" class="md-nav__button md-logo" aria-label="BumpCalver Library" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    BumpCalver Library
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/devsetgo/bumpcalver" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    devsetgo/bumpcalver
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Introduction
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    QuickStart
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Calendar Versioning Guide
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Calendar Versioning Guide
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-calendar-versioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      What is Calendar Versioning?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supported-date-format-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      Supported Date Format Patterns
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Supported Date Format Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-year-month-day-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Year-Month-Day Patterns
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Basic Year-Month-Day Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dot-separated-formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dot-Separated Formats
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hyphen-separated-formats-iso-8601" class="md-nav__link">
+    <span class="md-ellipsis">
+      Hyphen-Separated Formats (ISO 8601)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quarter-based-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quarter-Based Patterns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#week-based-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      Week-Based Patterns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#day-of-year-patterns-julian" class="md-nav__link">
+    <span class="md-ellipsis">
+      Day-of-Year Patterns (Julian)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compact-formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compact Formats
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-world-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Real-World Examples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Real-World Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ubuntu-style-lts-and-regular-releases" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ubuntu Style (LTS and Regular Releases)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#microsoft-visual-studio-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Microsoft Visual Studio Code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#python-twisted-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      Python Twisted Framework
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#business-quarterly-releases" class="md-nav__link">
+    <span class="md-ellipsis">
+      Business Quarterly Releases
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daily-build-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      Daily Build System
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#language-specific-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      Language-Specific Support
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Language-Specific Support">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#python-ecosystem" class="md-nav__link">
+    <span class="md-ellipsis">
+      Python Ecosystem
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#javascriptnodejs-ecosystem" class="md-nav__link">
+    <span class="md-ellipsis">
+      JavaScript/Node.js Ecosystem
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker-images" class="md-nav__link">
+    <span class="md-ellipsis">
+      Docker Images
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#make-based-projects" class="md-nav__link">
+    <span class="md-ellipsis">
+      Make-based Projects
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Patterns
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#betaalpha-releases" class="md-nav__link">
+    <span class="md-ellipsis">
+      Beta/Alpha Releases
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mixed-separators-limited-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mixed Separators (Limited Support)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-business-cycles" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom Business Cycles
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#choosing-the-right-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      Choosing the Right Format
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Choosing the Right Format">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#consider-your-release-cycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      Consider Your Release Cycle
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#consider-your-audience" class="md-nav__link">
+    <span class="md-ellipsis">
+      Consider Your Audience
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#consider-your-ecosystem" class="md-nav__link">
+    <span class="md-ellipsis">
+      Consider Your Ecosystem
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Best Practices
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-consistency" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Consistency
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-timezone-awareness" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Timezone Awareness
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-build-count-padding" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Build Count Padding
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Documentation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validation-and-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Validation and Testing
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Validation and Testing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#testing-your-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing Your Format
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Troubleshooting
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Issues
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getting-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      Getting Help
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../timezones/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Timezones
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Examples
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Examples
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Configuration
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/filelayout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Filelayout
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Documentation
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Documentation
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../versioning.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Versioning
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../undo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Undo Functionality
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mike-quickref/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Reference
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Development
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Contributing Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    About
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            About
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../about/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    About
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contribute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Contributing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../release-notes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Release Notes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../print_page/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Print Site
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="calendar-versioning-calver-guide">Calendar Versioning (CalVer) Guide<a class="headerlink" href="#calendar-versioning-calver-guide" title="Permanent link">&para;</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>BumpCalver supports a comprehensive range of calendar versioning patterns based on the <a href="https://calver.org">CalVer specification</a> and real-world industry practices. This guide walks you through the various date formats available and provides practical examples for different use cases.</p>
+<h2 id="what-is-calendar-versioning">What is Calendar Versioning?<a class="headerlink" href="#what-is-calendar-versioning" title="Permanent link">&para;</a></h2>
+<p>Calendar Versioning (CalVer) is a versioning scheme that uses dates as the primary versioning identifier. Unlike Semantic Versioning (SemVer), CalVer provides immediate context about when a release was made, making it ideal for:</p>
+<ul>
+<li><strong>Regular Release Cycles</strong>: Software released on a schedule (Ubuntu, VS Code)</li>
+<li><strong>Date-Sensitive Projects</strong>: When knowing the release date is crucial</li>
+<li><strong>Long-Term Support</strong>: Identifying support lifecycles by date</li>
+<li><strong>Marketing Alignment</strong>: Aligning technical releases with business timelines</li>
+</ul>
+<h2 id="supported-date-format-patterns">Supported Date Format Patterns<a class="headerlink" href="#supported-date-format-patterns" title="Permanent link">&para;</a></h2>
+<h3 id="basic-year-month-day-patterns">Basic Year-Month-Day Patterns<a class="headerlink" href="#basic-year-month-day-patterns" title="Permanent link">&para;</a></h3>
+<p>These are the most common calendar versioning patterns:</p>
+<h4 id="dot-separated-formats">Dot-Separated Formats<a class="headerlink" href="#dot-separated-formats" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Ubuntu-style: Short year with month and day</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%y.%m.%d&quot;</span><span class="w">  </span><span class="c1"># Example: 24.12.07</span>
+
+<span class="c1"># Full year variant</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%Y.%m.%d&quot;</span><span class="w">  </span><span class="c1"># Example: 2024.12.07</span>
+
+<span class="c1"># Month only (common for regular releases)</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%y.%m&quot;</span><span class="w">     </span><span class="c1"># Example: 24.12</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%Y.%m&quot;</span><span class="w">     </span><span class="c1"># Example: 2024.12</span>
+</code></pre></div>
+<h4 id="hyphen-separated-formats-iso-8601">Hyphen-Separated Formats (ISO 8601)<a class="headerlink" href="#hyphen-separated-formats-iso-8601" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># ISO date format</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%Y-%m-%d&quot;</span><span class="w">  </span><span class="c1"># Example: 2024-12-07</span>
+
+<span class="c1"># With build count</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}-{build_count:03}&quot;</span>
+<span class="c1"># Result: 2024-12-07-001</span>
+</code></pre></div>
+<h3 id="quarter-based-patterns">Quarter-Based Patterns<a class="headerlink" href="#quarter-based-patterns" title="Permanent link">&para;</a></h3>
+<p>Perfect for quarterly releases and business cycles:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Short year with quarter</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%y.Q%q&quot;</span><span class="w">    </span><span class="c1"># Example: 24.Q4</span>
+
+<span class="c1"># Full year with quarter</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%Y.Q%q&quot;</span><span class="w">    </span><span class="c1"># Example: 2024.Q4</span>
+
+<span class="c1"># With build count</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}.{build_count:03}&quot;</span>
+<span class="c1"># Result: 24.Q4.001</span>
+</code></pre></div>
+<h3 id="week-based-patterns">Week-Based Patterns<a class="headerlink" href="#week-based-patterns" title="Permanent link">&para;</a></h3>
+<p>Ideal for agile development with weekly releases:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># ISO week numbers</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%y.%V&quot;</span><span class="w">     </span><span class="c1"># Example: 24.49 (week 49)</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%Y.%V&quot;</span><span class="w">     </span><span class="c1"># Example: 2024.49</span>
+
+<span class="c1"># Version with build count</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}.{build_count:03}&quot;</span>
+<span class="c1"># Result: 24.49.001</span>
+</code></pre></div>
+<h3 id="day-of-year-patterns-julian">Day-of-Year Patterns (Julian)<a class="headerlink" href="#day-of-year-patterns-julian" title="Permanent link">&para;</a></h3>
+<p>Common in embedded systems and specialized applications:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Julian day format</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%y.%j&quot;</span><span class="w">     </span><span class="c1"># Example: 24.342 (day 342 of year)</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%Y.%j&quot;</span><span class="w">     </span><span class="c1"># Example: 2024.342</span>
+
+<span class="c1"># Useful for daily builds</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}.{build_count:03}&quot;</span>
+<span class="c1"># Result: 24.342.001</span>
+</code></pre></div>
+<h3 id="compact-formats">Compact Formats<a class="headerlink" href="#compact-formats" title="Permanent link">&para;</a></h3>
+<p>No separators for maximum brevity:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Compact date formats</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%y%m%d&quot;</span><span class="w">    </span><span class="c1"># Example: 241207</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%Y%m%d&quot;</span><span class="w">    </span><span class="c1"># Example: 20241207</span>
+
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}.{build_count:03}&quot;</span>
+<span class="c1"># Result: 241207.001</span>
+</code></pre></div>
+<h2 id="real-world-examples">Real-World Examples<a class="headerlink" href="#real-world-examples" title="Permanent link">&para;</a></h2>
+<h3 id="ubuntu-style-lts-and-regular-releases">Ubuntu Style (LTS and Regular Releases)<a class="headerlink" href="#ubuntu-style-lts-and-regular-releases" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">[tool.bumpcalver]</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}&quot;</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%y.%m&quot;</span>
+<span class="c1"># Examples: 24.04, 24.10, 26.04 (LTS)</span>
+</code></pre></div>
+<h3 id="microsoft-visual-studio-code">Microsoft Visual Studio Code<a class="headerlink" href="#microsoft-visual-studio-code" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">[tool.bumpcalver]</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}.{build_count}&quot;</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%Y.%m&quot;</span>
+<span class="c1"># Examples: 2024.11.1, 2024.11.2</span>
+</code></pre></div>
+<h3 id="python-twisted-framework">Python Twisted Framework<a class="headerlink" href="#python-twisted-framework" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">[tool.bumpcalver]</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}.{build_count}&quot;</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%y.%m&quot;</span>
+<span class="c1"># Examples: 24.3.0, 24.7.0</span>
+</code></pre></div>
+<h3 id="business-quarterly-releases">Business Quarterly Releases<a class="headerlink" href="#business-quarterly-releases" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">[tool.bumpcalver]</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}.{build_count:02}&quot;</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%Y.Q%q&quot;</span>
+<span class="n">timezone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;America/New_York&quot;</span>
+<span class="c1"># Examples: 2024.Q4.01, 2025.Q1.01</span>
+</code></pre></div>
+<h3 id="daily-build-system">Daily Build System<a class="headerlink" href="#daily-build-system" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">[tool.bumpcalver]</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}.{build_count:03}&quot;</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%y.%j&quot;</span>
+<span class="c1"># Examples: 24.342.001, 24.342.002</span>
+</code></pre></div>
+<h2 id="language-specific-support">Language-Specific Support<a class="headerlink" href="#language-specific-support" title="Permanent link">&para;</a></h2>
+<h3 id="python-ecosystem">Python Ecosystem<a class="headerlink" href="#python-ecosystem" title="Permanent link">&para;</a></h3>
+<p>Python packages using CalVer are fully supported with PEP 440 compliance:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[[tool.bumpcalver.file]]</span>
+<span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;pyproject.toml&quot;</span>
+<span class="n">file_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;toml&quot;</span>
+<span class="n">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;project.version&quot;</span>
+<span class="n">version_standard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;python&quot;</span><span class="w">  </span><span class="c1"># Converts hyphens to dots for PEP 440</span>
+</code></pre></div>
+<p><strong>PEP 440 Transformation</strong>:
+- Input: <code>2024-12-07-001</code>
+- Python Output: <code>2024.12.7.1</code></p>
+<p><strong>Popular Python Projects Using CalVer</strong>:
+- <strong>Twisted</strong>: <code>24.3.0</code> (YY.M.patch)
+- <strong>pip</strong>: <code>24.3.1</code> (YY.M.patch)
+- <strong>setuptools</strong>: <code>75.6.0</code> (YY.M.patch)
+- <strong>certifi</strong>: <code>2024.12.14</code> (YYYY.MM.DD)</p>
+<h3 id="javascriptnodejs-ecosystem">JavaScript/Node.js Ecosystem<a class="headerlink" href="#javascriptnodejs-ecosystem" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">[[tool.bumpcalver.file]]</span>
+<span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;package.json&quot;</span>
+<span class="n">file_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;json&quot;</span>
+<span class="n">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;version&quot;</span>
+<span class="n">version_standard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;default&quot;</span>
+</code></pre></div>
+<h3 id="docker-images">Docker Images<a class="headerlink" href="#docker-images" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">[[tool.bumpcalver.file]]</span>
+<span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Dockerfile&quot;</span>
+<span class="n">file_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;dockerfile&quot;</span>
+<span class="n">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;ARG.VERSION&quot;</span>
+<span class="n">version_standard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;default&quot;</span>
+</code></pre></div>
+<h3 id="make-based-projects">Make-based Projects<a class="headerlink" href="#make-based-projects" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">[[tool.bumpcalver.file]]</span>
+<span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Makefile&quot;</span>
+<span class="n">file_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;makefile&quot;</span>
+<span class="n">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;APP_VERSION&quot;</span>
+<span class="n">version_standard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;default&quot;</span>
+</code></pre></div>
+<h2 id="advanced-patterns">Advanced Patterns<a class="headerlink" href="#advanced-patterns" title="Permanent link">&para;</a></h2>
+<h3 id="betaalpha-releases">Beta/Alpha Releases<a class="headerlink" href="#betaalpha-releases" title="Permanent link">&para;</a></h3>
+<p>BumpCalver automatically handles pre-release suffixes:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Create a beta version</span>
+bumpcalver<span class="w"> </span>--build<span class="w"> </span>--beta
+<span class="c1"># Result: 24.Q4.001.beta</span>
+
+<span class="c1"># Create an alpha version</span>
+bumpcalver<span class="w"> </span>--build<span class="w"> </span>--alpha
+<span class="c1"># Result: 24.Q4.001.alpha</span>
+</code></pre></div>
+<h3 id="mixed-separators-limited-support">Mixed Separators (Limited Support)<a class="headerlink" href="#mixed-separators-limited-support" title="Permanent link">&para;</a></h3>
+<p>While not fully supported, simple mixed separators work:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Limited support for mixed separators</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}_{build_count:03}&quot;</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%Y-%m-%d&quot;</span>
+<span class="c1"># May produce: 2024-12-07_001</span>
+</code></pre></div>
+<h3 id="custom-business-cycles">Custom Business Cycles<a class="headerlink" href="#custom-business-cycles" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Financial year quarters (example: July start)</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;FY{current_date}.{build_count:02}&quot;</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%y.Q%q&quot;</span>
+<span class="n">timezone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;America/New_York&quot;</span>
+<span class="c1"># Examples: FY24.Q2.01, FY24.Q3.01</span>
+</code></pre></div>
+<h2 id="choosing-the-right-format">Choosing the Right Format<a class="headerlink" href="#choosing-the-right-format" title="Permanent link">&para;</a></h2>
+<h3 id="consider-your-release-cycle">Consider Your Release Cycle<a class="headerlink" href="#consider-your-release-cycle" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Release Frequency</th>
+<th>Recommended Pattern</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Monthly</strong></td>
+<td><code>%Y.%m</code></td>
+<td><code>2024.12</code></td>
+</tr>
+<tr>
+<td><strong>Quarterly</strong></td>
+<td><code>%y.Q%q</code></td>
+<td><code>24.Q4</code></td>
+</tr>
+<tr>
+<td><strong>Weekly</strong></td>
+<td><code>%y.%V</code></td>
+<td><code>24.49</code></td>
+</tr>
+<tr>
+<td><strong>Daily</strong></td>
+<td><code>%y.%j</code></td>
+<td><code>24.342</code></td>
+</tr>
+<tr>
+<td><strong>Multiple Daily</strong></td>
+<td><code>%y.%m.%d</code></td>
+<td><code>24.12.07</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="consider-your-audience">Consider Your Audience<a class="headerlink" href="#consider-your-audience" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Audience</th>
+<th>Recommended Pattern</th>
+<th>Reasoning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>End Users</strong></td>
+<td><code>%Y.%m</code></td>
+<td>Clear, human-readable</td>
+</tr>
+<tr>
+<td><strong>Developers</strong></td>
+<td><code>%y.%m.%d</code></td>
+<td>Detailed, compact</td>
+</tr>
+<tr>
+<td><strong>Enterprise</strong></td>
+<td><code>%Y.Q%q</code></td>
+<td>Aligns with business quarters</td>
+</tr>
+<tr>
+<td><strong>CI/CD Systems</strong></td>
+<td><code>%y.%j</code></td>
+<td>Daily builds, sequential</td>
+</tr>
+</tbody>
+</table>
+<h3 id="consider-your-ecosystem">Consider Your Ecosystem<a class="headerlink" href="#consider-your-ecosystem" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Language/Platform</th>
+<th>Considerations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Python</strong></td>
+<td>Use <code>version_standard = "python"</code> for PEP 440</td>
+</tr>
+<tr>
+<td><strong>Node.js</strong></td>
+<td>Standard dot notation works well</td>
+</tr>
+<tr>
+<td><strong>Docker</strong></td>
+<td>Short formats recommended for tags</td>
+</tr>
+<tr>
+<td><strong>Git Tags</strong></td>
+<td>Avoid special characters, prefer dots/hyphens</td>
+</tr>
+</tbody>
+</table>
+<h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<h3 id="1-consistency">1. Consistency<a class="headerlink" href="#1-consistency" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Good: Consistent separator usage</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%y.%m.%d&quot;</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}.{build_count:03}&quot;</span>
+
+<span class="c1"># Avoid: Mixed separators</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}-{build_count:03}&quot;</span><span class="w">  </span><span class="c1"># Different separator</span>
+</code></pre></div>
+<h3 id="2-timezone-awareness">2. Timezone Awareness<a class="headerlink" href="#2-timezone-awareness" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Always specify timezone for distributed teams</span>
+<span class="n">timezone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;UTC&quot;</span><span class="w">                    </span><span class="c1"># Global teams</span>
+<span class="n">timezone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;America/New_York&quot;</span><span class="w">       </span><span class="c1"># US East Coast</span>
+<span class="n">timezone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Europe/London&quot;</span><span class="w">          </span><span class="c1"># UK/EU</span>
+</code></pre></div>
+<h3 id="3-build-count-padding">3. Build Count Padding<a class="headerlink" href="#3-build-count-padding" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Good: Consistent width for sorting</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}.{build_count:03}&quot;</span><span class="w">  </span><span class="c1"># 001, 002, 010</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}.{build_count:02}&quot;</span><span class="w">  </span><span class="c1"># 01, 02, 10</span>
+
+<span class="c1"># Avoid: Variable width</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}.{build_count}&quot;</span><span class="w">     </span><span class="c1"># 1, 2, 10 (poor sorting)</span>
+</code></pre></div>
+<h3 id="4-documentation">4. Documentation<a class="headerlink" href="#4-documentation" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Document your versioning strategy</span>
+<span class="k">[tool.bumpcalver]</span>
+<span class="c1"># Strategy: Quarterly releases with weekly build counts</span>
+<span class="c1"># Format: YY.QQ.BBB (Year.Quarter.Build)</span>
+<span class="c1"># Example: 24.Q4.001 = Q4 2024, first build</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}.{build_count:03}&quot;</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%y.Q%q&quot;</span>
+</code></pre></div>
+<h2 id="validation-and-testing">Validation and Testing<a class="headerlink" href="#validation-and-testing" title="Permanent link">&para;</a></h2>
+<p>BumpCalver includes comprehensive validation for calendar versioning patterns:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># The system validates:</span>
+<span class="c1"># ✅ Year components (2-4 digits)</span>
+<span class="c1"># ✅ Date format consistency</span>
+<span class="c1"># ✅ Build count extraction</span>
+<span class="c1"># ✅ Pre-release suffix handling</span>
+<span class="c1"># ❌ Invalid formats (v1.0.0, release-1.0)</span>
+</code></pre></div>
+<h3 id="testing-your-format">Testing Your Format<a class="headerlink" href="#testing-your-format" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Test your configuration without making changes</span>
+bumpcalver<span class="w"> </span>--build<span class="w"> </span>--dry-run
+
+<span class="c1"># Check current version parsing</span>
+bumpcalver<span class="w"> </span>--list-history
+</code></pre></div>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<h3 id="common-issues">Common Issues<a class="headerlink" href="#common-issues" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>Mixed Separators Not Working</strong>
+   <div class="highlight"><pre><span></span><code>Error: Version &#39;2024-12-07_001&#39; does not match format
+Solution: Use consistent separators throughout
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Invalid Year Format</strong>
+   <div class="highlight"><pre><span></span><code>Error: Version &#39;v24.12.001&#39; rejected
+Solution: Remove prefixes, ensure year starts version
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Quarter Format Not Recognized</strong>
+   <div class="highlight"><pre><span></span><code>Error: %q not recognized
+Solution: Use %y.Q%q format, ensure Q is literal
+</code></pre></div></p>
+</li>
+</ol>
+<h3 id="getting-help">Getting Help<a class="headerlink" href="#getting-help" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Check the <a href="../examples/">examples directory</a> for working configurations</li>
+<li>Review the <a href="tests/test_calver_comprehensive.py">test suite</a> for validated patterns</li>
+<li>Open an issue on <a href="https://github.com/devsetgo/bumpcalver/issues">GitHub</a> for support</li>
+</ul>
+<hr />
+<p><em>This guide covers the comprehensive calendar versioning capabilities of BumpCalver. For more specific use cases or custom requirements, please refer to the API documentation or reach out to the community.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2024 - 2025 Mike Ryan
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/devsetgo" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M202.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M496 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://twitter.com/_devsetgo" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M459.4 151.7c.3 4.5.3 9.1.3 13.6 0 138.7-105.6 298.6-298.6 298.6-59.5 0-114.7-17.2-161.1-47.1 8.4 1 16.6 1.3 25.3 1.3 49.1 0 94.2-16.6 130.3-44.8-46.1-1-84.8-31.2-98.1-72.8 6.5 1 13 1.6 19.8 1.6 9.4 0 18.8-1.3 27.6-3.6-48.1-9.7-84.1-52-84.1-103v-1.3c14 7.8 30.2 12.7 47.4 13.3-28.3-18.8-46.8-51-46.8-87.4 0-19.5 5.2-37.4 14.3-53C87.4 130.8 165 172.4 252.1 176.9c-1.6-7.8-2.6-15.9-2.6-24C249.5 95.1 296.3 48 354.4 48c30.2 0 57.5 12.7 76.7 33.1 23.7-4.5 46.5-13.3 66.6-25.3-7.8 24.4-24.4 44.8-46.1 57.8 21.1-2.3 41.6-8.1 60.4-16.2-14.3 20.8-32.2 39.3-52.6 54.3"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.instant", "navigation.tabs.sticky", "toc.integrate", "toc.follow", "navigation.top"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+        <script src="../js/print-site.js"></script>
+      
+    
+  </body>
+</html>

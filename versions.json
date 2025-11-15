@@ -7,10 +7,7 @@
   {
     "version": "2025.10.11.2",
     "title": "Release 2025.10.11.2",
-    "aliases": [
-      "stable",
-      "latest"
-    ]
+    "aliases": []
   },
   {
     "version": "2025.8.2.3",
@@ -21,6 +18,14 @@
     "version": "2025.4.12.1",
     "title": "Release 2025.4.12.1",
     "aliases": []
+  },
+  {
+    "version": "2025-11-14-001",
+    "title": "Release 2025-11-14-001",
+    "aliases": [
+      "stable",
+      "latest"
+    ]
   },
   {
     "version": "v2025.8.2.1",
