@@ -108,7 +108,7 @@ make format
 
 # Individual tools:
 make isort      # Sort imports
-make black      # Code formatting  
+make black      # Code formatting
 make autoflake  # Remove unused imports
 make ruff       # Lint and fix
 
@@ -127,23 +127,23 @@ Example:
 
 ```python
 def parse_version(
-    version: str, 
-    version_format: Optional[str] = None, 
+    version: str,
+    version_format: Optional[str] = None,
     date_format: Optional[str] = None
 ) -> Optional[tuple]:
     """Parse a version string and return date and count components.
-    
+
     This function can parse version strings in various formats based on
     the provided format specifications.
-    
+
     Args:
         version: The version string to parse
         version_format: Format template for the version
         date_format: Date format specification
-        
+
     Returns:
         Tuple of (date_string, build_count) or None if parsing fails
-        
+
     Example:
         >>> parse_version("24.Q4.001", "{current_date}.{build_count:03}", "%y.Q%q")
         ('24.Q4', 1)
@@ -181,17 +181,17 @@ from src.bumpcalver.your_module import your_function
 
 class TestYourFeature:
     """Test suite for your feature."""
-    
+
     def test_basic_functionality(self):
         """Test the basic happy path."""
         result = your_function("input")
         assert result == "expected_output"
-    
+
     def test_edge_cases(self):
         """Test edge cases and error conditions."""
         with pytest.raises(ValueError):
             your_function("invalid_input")
-    
+
     @pytest.mark.parametrize("input_val,expected", [
         ("input1", "output1"),
         ("input2", "output2"),
@@ -215,7 +215,7 @@ def test_your_new_format(self):
         ("version_string", "version_format", "date_format", "expected_date", expected_count),
         # Add multiple test cases
     ]
-    
+
     for version, version_format, date_format, expected_date, expected_count in test_cases:
         result = parse_version(version, version_format, date_format)
         assert result is not None, f"Failed to parse {version}"
@@ -235,11 +235,11 @@ def test_with_temp_files():
     """Test using temporary files."""
     with isolated_test_environment() as temp_dir:
         test_file = create_test_file(
-            temp_dir, 
-            "test_file.py", 
+            temp_dir,
+            "test_file.py",
             '__version__ = "1.0.0"\n'
         )
-        
+
         # Your test logic here
         # Files are automatically cleaned up
 ```
@@ -255,11 +255,11 @@ To add support for a new file format:
 ```python
 class YourFormatHandler(VersionHandler):
     """Handler for your custom file format."""
-    
+
     def read_version(self, file_path: str, variable: str, **kwargs) -> Optional[str]:
         """Read version from your file format."""
         # Implementation
-        
+
     def update_version(self, file_path: str, variable: str, new_version: str, **kwargs) -> bool:
         """Update version in your file format."""
         # Implementation
@@ -365,7 +365,7 @@ docs/
 2. **Write a Clear Title and Description**:
    ```
    Title: Add support for custom quarterly date formats
-   
+
    Description:
    - Adds support for custom quarter formats like %y.Q%q
    - Includes comprehensive tests for quarter parsing
@@ -411,7 +411,7 @@ What should have happened
 What actually happened
 
 ## Environment
-- OS: 
+- OS:
 - Python Version:
 - BumpCalver Version:
 - Configuration: (paste your pyproject.toml section)

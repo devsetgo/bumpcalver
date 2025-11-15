@@ -50,7 +50,7 @@ Perfect for quarterly releases and business cycles:
 # Short year with quarter
 date_format = "%y.Q%q"    # Example: 24.Q4
 
-# Full year with quarter  
+# Full year with quarter
 date_format = "%Y.Q%q"    # Example: 2024.Q4
 
 # With build count
@@ -207,7 +207,7 @@ BumpCalver automatically handles pre-release suffixes:
 bumpcalver --build --beta
 # Result: 24.Q4.001.beta
 
-# Create an alpha version  
+# Create an alpha version
 bumpcalver --build --alpha
 # Result: 24.Q4.001.alpha
 ```
