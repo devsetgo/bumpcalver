@@ -64,24 +64,84 @@ def parse_dot_path(dot_path: str, file_type: str) -> str:
     return dot_path
 
 
-def parse_version(version: str) -> Optional[tuple]:
+def parse_version(version: str, version_format: Optional[str] = None, date_format: Optional[str] = None) -> Optional[tuple]:
     """Parses a version string and returns a tuple of date and count.
 
-    This function parses a version string in the format 'YYYY-MM-DD-XXX' where
-    'YYYY-MM-DD' is the date and 'XXX' is an optional count. It returns a tuple
-    containing the date string and the count as an integer. If the count is not
-    provided, it defaults to 0.
+    This function can parse version strings in various formats. If version_format and date_format
+    are provided, it will use them to dynamically parse the version. Otherwise, it falls back
+    to the legacy 'YYYY-MM-DD-XXX' format for backwards compatibility.
 
     Args:
         version (str): The version string to parse.
+        version_format (str, optional): The format string used to create the version (e.g., "{current_date}.{build_count:03}")
+        date_format (str, optional): The date format string (e.g., "%y.Q%q")
 
     Returns:
         Optional[tuple]: A tuple containing the date string and count, or None if the version string is invalid.
 
-    Example:
-        version_info = parse_version("2023-10-05-001")
+    Examples:
+        version_info = parse_version("2023-10-05-001")  # Legacy format
+        version_info = parse_version("25.Q4.001", "{current_date}.{build_count:03}", "%y.Q%q")  # Custom format
     """
-    # Match the version string against the expected format
+    # If version_format and date_format are provided, use dynamic parsing
+    if version_format and date_format:
+        try:
+            # Basic validation: reject obviously invalid formats
+            if version.startswith('v') or version.startswith('release'):
+                # These are typical non-CalVer patterns
+                return None
+
+            # Remove any beta/alpha suffixes for parsing
+            clean_version = re.sub(r'\.(alpha|beta|rc\d*)$', '', version)
+
+            # For formats that contain {current_date}
+            if "{current_date}" in version_format:
+                # Check if build_count is NOT in the format (format is just date)
+                if "{build_count" not in version_format:
+                    # No build count in format, just return the version as date with count 0
+                    # But validate it looks like a reasonable date
+                    if re.match(r'^\d+[\.\-/]', clean_version):
+                        return clean_version, 0
+                    else:
+                        return None
+
+                # For formats that use dots as separators (like quarter format)
+                elif "." in version_format:
+                    # Split the version format to understand the structure
+                    parts = version_format.split(".")
+                    version_parts = clean_version.split(".")
+
+                    if len(version_parts) >= len(parts):
+                        # For format like "{current_date}.{build_count:03}", expect 3 parts: year, quarter, count
+                        # e.g., "25.Q4.001" -> ["25", "Q4", "001"]
+                        if len(version_parts) >= 3:
+                            # Assume first two parts form the date, last part is count
+                            date_str = f"{version_parts[0]}.{version_parts[1]}"
+                            count_str = version_parts[2]
+
+                            # Validate that the first part looks like a year
+                            if not re.match(r'^\d{2,4}$', version_parts[0]):
+                                return None
+
+                            return date_str, int(count_str)
+                        elif len(version_parts) == 2:
+                            # If only 2 parts, assume second is count
+                            date_str = version_parts[0]
+                            count_str = version_parts[1]
+
+                            # Validate that the first part looks like a year or date
+                            if not re.match(r'^\d{2,4}', version_parts[0]):
+                                return None
+
+                            return date_str, int(count_str)
+
+                # For other formats (e.g., hyphen-separated), fall back to legacy parsing
+                # This ensures that formats with hyphens still get proper validation
+
+        except Exception as e:
+            # If dynamic parsing fails, print debug info and fall through to legacy parsing
+            print(f"Dynamic version parsing failed for '{version}': {e}")
+        # Legacy parsing for backward compatibility - Match the version string against the expected format
     match = re.match(r"^(\d{4}-\d{2}-\d{2})(?:-(\d+))?", version)
     if match:
         # Extract the date string and count from the match groups
@@ -90,7 +150,10 @@ def parse_version(version: str) -> Optional[tuple]:
         return date_str, int(count_str)
     else:
         # Print an error message if the version string does not match the expected format
-        print(f"Version '{version}' does not match expected format 'YYYY-MM-DD' or 'YYYY-MM-DD-XXX'.")
+        if version_format and date_format:
+            print(f"Version '{version}' does not match format '{version_format}' with date format '{date_format}'.")
+        else:
+            print(f"Version '{version}' does not match expected format 'YYYY-MM-DD' or 'YYYY-MM-DD-XXX'.")
         return None
 
 
@@ -171,8 +234,8 @@ def get_build_version(
             version = handler.read_version(file_path, variable)
 
         if version:
-            # Parse the version string
-            parsed_version = parse_version(version)
+            # Parse the version string with the format information
+            parsed_version = parse_version(version, version_format, date_format)
             if parsed_version:
                 last_date, last_count = parsed_version
                 if last_date == current_date:
@@ -181,7 +244,7 @@ def get_build_version(
                 else:
                     build_count = 1
             else:
-                print(f"File '{file_path}': Version '{version}' does not match expected format 'YYYY-MM-DD' or 'YYYY-MM-DD-XXX'. Found format appears to be using dots instead of dashes.")
+                print(f"File '{file_path}': Version '{version}' does not match expected format. Expected format: '{version_format}' with date format: '{date_format}'.")
                 build_count = 1
         else:
             print(f"File '{file_path}': Could not read version. Starting new versioning with format 'YYYY-MM-DD-XXX'.")
