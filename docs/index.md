@@ -205,6 +205,9 @@ Usage: bumpcalver [OPTIONS]
 
 Options:
   --beta                      Use beta versioning.
+  --rc                        Use rc versioning.
+  --release                   Use release versioning.
+  --custom TEXT               Add custom suffix to version.
   --build                     Use build count versioning.
   --timezone TEXT             Timezone for date calculations (default: value
                               from config or America/New_York).
@@ -212,16 +215,32 @@ Options:
   --auto-commit / --no-auto-commit
                               Automatically commit changes when creating a Git
                               tag.
+  --undo                      Undo the last version bump operation.
+  --undo-id TEXT              Undo a specific operation by ID.
+  --list-history              List recent operations that can be undone.
   --help                      Show this message and exit.
 ```
 
-### Options
+### Version Bump Options
 
-- `--beta`: Prefixes the version with `beta-`.
+- `--beta`: Adds `.beta` suffix to the version.
+- `--rc`: Adds `.rc` suffix to the version.
+- `--release`: Adds `.release` suffix to the version.
+- `--custom TEXT`: Adds a custom suffix to the version.
 - `--build`: Increments the build count based on the current date.
 - `--timezone`: Overrides the timezone specified in the configuration.
 - `--git-tag` / `--no-git-tag`: Forces Git tagging on or off, overriding the configuration.
 - `--auto-commit` / `--no-auto-commit`: Forces auto-commit on or off, overriding the configuration.
+
+### Undo Options
+
+BumpCalver includes powerful undo functionality to revert version changes:
+
+- `--undo`: Undo the most recent version bump operation.
+- `--undo-id TEXT`: Undo a specific operation by its unique ID.
+- `--list-history`: Show recent version bump operations that can be undone.
+
+**Note**: Undo options cannot be combined with version bump options.
 
 ---
 
@@ -258,6 +277,60 @@ To bump the version, commit changes, and create a Git tag:
 ```bash
 bumpcalver --build --git-tag --auto-commit
 ```
+
+### Undo Operations
+
+View recent version bump operations:
+
+```bash
+bumpcalver --list-history
+```
+
+Undo the last version bump:
+
+```bash
+bumpcalver --undo
+```
+
+Undo a specific operation by ID:
+
+```bash
+bumpcalver --undo-id 20251012_143015_123
+```
+
+### Safety Net Workflow
+
+Use undo functionality as a safety net during development:
+
+```bash
+# Make experimental version bump
+bumpcalver --custom "experimental"
+
+# Test your changes...
+
+# If tests pass, make official version
+bumpcalver --undo  # Undo experimental version
+bumpcalver --build --git-tag --auto-commit  # Official version
+
+# If tests fail, just undo
+bumpcalver --undo  # Back to original state
+```
+
+For complete undo documentation, see [Undo Docs](https://devsetgo.github.io/bumpcalver/latest/undo.md).
+
+---
+
+## Documentation
+
+For comprehensive information about BumpCalver, check out our documentation:
+
+- **[QuickStart Guide](https://devsetgo.github.io/bumpcalver/latest/quickstart.md)** - Get started with BumpCalver quickly
+- **[Calendar Versioning Guide](https://devsetgo.github.io/bumpcalver/latest/calendar-versioning-guide.md)** - Comprehensive guide to calendar versioning patterns, real-world examples, and best practices
+- **[Development Guide](https://devsetgo.github.io/bumpcalver/latest/development-guide.md)** - How to contribute to the project, development setup, testing procedures, and PR guidelines
+- **[Undo Operations](https://devsetgo.github.io/bumpcalver/latest/undo.md)** - How to revert version changes
+- **[Versioning Strategies](https://devsetgo.github.io/bumpcalver/latest/versioning.md)** - Different approaches to version management
+
+For the full documentation site, visit: [BumpCalver CLI Documentation](https://devsetgo.github.io/bumpcalver/)
 
 ---
 
