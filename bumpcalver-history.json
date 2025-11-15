@@ -1,5 +1,47 @@
 [
   {
+    "operation_id": "20251114_212800_876",
+    "timestamp": "2025-11-14T21:28:00.898184",
+    "version": "2025-11-14-001",
+    "files_updated": [
+      "/home/mike/bumpcalver/makefile",
+      "/home/mike/bumpcalver/pyproject.toml",
+      "/home/mike/bumpcalver/src/bumpcalver/__init__.py",
+      "/home/mike/bumpcalver/examples/makefile",
+      "/home/mike/bumpcalver/examples/dockerfile",
+      "/home/mike/bumpcalver/examples/dockerfile",
+      "/home/mike/bumpcalver/examples/example.py",
+      "/home/mike/bumpcalver/examples/pyproject.toml",
+      "/home/mike/bumpcalver/examples/example.xml",
+      "/home/mike/bumpcalver/examples/example.json",
+      "/home/mike/bumpcalver/examples/example.yaml",
+      "/home/mike/bumpcalver/examples/example.toml",
+      "/home/mike/bumpcalver/sonar-project.properties",
+      "/home/mike/bumpcalver/examples/sonar-project.properties",
+      "/home/mike/bumpcalver/examples/setup.cfg"
+    ],
+    "backups": {
+      "/home/mike/bumpcalver/makefile": "/home/mike/bumpcalver/.bumpcalver/backups/20251114_212800_876_makefile",
+      "/home/mike/bumpcalver/pyproject.toml": "/home/mike/bumpcalver/.bumpcalver/backups/20251114_212800_876_pyproject.toml",
+      "/home/mike/bumpcalver/src/bumpcalver/__init__.py": "/home/mike/bumpcalver/.bumpcalver/backups/20251114_212800_876___init__.py",
+      "/home/mike/bumpcalver/examples/makefile": "/home/mike/bumpcalver/.bumpcalver/backups/20251114_212800_876_makefile",
+      "/home/mike/bumpcalver/examples/dockerfile": "/home/mike/bumpcalver/.bumpcalver/backups/20251114_212800_877_dockerfile",
+      "/home/mike/bumpcalver/examples/example.py": "/home/mike/bumpcalver/.bumpcalver/backups/20251114_212800_877_example.py",
+      "/home/mike/bumpcalver/examples/pyproject.toml": "/home/mike/bumpcalver/.bumpcalver/backups/20251114_212800_877_pyproject.toml",
+      "/home/mike/bumpcalver/examples/example.xml": "/home/mike/bumpcalver/.bumpcalver/backups/20251114_212800_878_example.xml",
+      "/home/mike/bumpcalver/examples/example.json": "/home/mike/bumpcalver/.bumpcalver/backups/20251114_212800_878_example.json",
+      "/home/mike/bumpcalver/examples/example.yaml": "/home/mike/bumpcalver/.bumpcalver/backups/20251114_212800_878_example.yaml",
+      "/home/mike/bumpcalver/examples/example.toml": "/home/mike/bumpcalver/.bumpcalver/backups/20251114_212800_879_example.toml",
+      "/home/mike/bumpcalver/sonar-project.properties": "/home/mike/bumpcalver/.bumpcalver/backups/20251114_212800_879_sonar-project.properties",
+      "/home/mike/bumpcalver/examples/sonar-project.properties": "/home/mike/bumpcalver/.bumpcalver/backups/20251114_212800_879_sonar-project.properties",
+      "/home/mike/bumpcalver/examples/setup.cfg": "/home/mike/bumpcalver/.bumpcalver/backups/20251114_212800_880_setup.cfg"
+    },
+    "git_tag": true,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": "2025-11-14-001"
+  },
+  {
     "operation_id": "test_op",
     "timestamp": "2025-11-15T02:23:20.825934",
     "version": "2025.10.12.001",
@@ -649,20 +691,5 @@
     "git_commit": false,
     "git_commit_hash": null,
     "git_tag_name": null
-  },
-  {
-    "operation_id": "test-123",
-    "timestamp": "2025-11-15T02:02:09.401602",
-    "version": "1.0.0",
-    "files_updated": [
-      "test.py"
-    ],
-    "backups": {
-      "test.py": "backup.py"
-    },
-    "git_tag": true,
-    "git_commit": true,
-    "git_commit_hash": "abc123",
-    "git_tag_name": "v1.0.0"
   }
 ]
