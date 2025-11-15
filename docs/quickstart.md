@@ -116,6 +116,7 @@ This command will:
 ---
 
 #### Create Custom Date Formats
+
 The `date_format` option in the configuration file allows you to customize the date format used in version strings. Here are some examples of how to format dates:
 
 - `%Y.%m.%d` - Full year, month, and day (e.g., `2024.12.25`)
@@ -126,6 +127,8 @@ The `date_format` option in the configuration file allows you to customize the d
 - `%Y.%j` - Full year and day of the year (e.g., `2024.001` for January 1st, 2024)
 - `%Y.%m` - Full year and month (e.g., `2024.12`)
 - `%Y.Q%q` - Full year and quarter (e.g., `2024.Q1`)
+
+For comprehensive information about calendar versioning patterns, real-world examples, and best practices, see our [Calendar Versioning Guide](calendar-versioning-guide.md).
 
 
 ### See Documentation

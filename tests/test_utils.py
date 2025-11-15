@@ -72,6 +72,36 @@ def test_parse_version_invalid_format(capsys):
     assert "Version 'v1.0.0' does not match expected format 'YYYY-MM-DD' or 'YYYY-MM-DD-XXX'." in captured.out
 
 
+def test_parse_version_with_quarter_format():
+    """Test parsing version with custom quarter format."""
+    version = "25.Q4.001"
+    version_format = "{current_date}.{build_count:03}"
+    date_format = "%y.Q%q"
+    expected = ("25.Q4", 1)
+    result = parse_version(version, version_format, date_format)
+    assert result == expected
+
+
+def test_parse_version_with_quarter_format_and_beta():
+    """Test parsing version with custom quarter format and beta suffix."""
+    version = "25.Q4.001.beta"
+    version_format = "{current_date}.{build_count:03}"
+    date_format = "%y.Q%q"
+    expected = ("25.Q4", 1)
+    result = parse_version(version, version_format, date_format)
+    assert result == expected
+
+
+def test_parse_version_with_custom_format_no_count():
+    """Test parsing version with custom format but no build count."""
+    version = "25.Q4"
+    version_format = "{current_date}"
+    date_format = "%y.Q%q"
+    expected = ("25.Q4", 0)
+    result = parse_version(version, version_format, date_format)
+    assert result == expected
+
+
 def test_get_current_date_valid_timezone():
     result = get_current_date("America/New_York")
     assert result is not None
@@ -190,7 +220,7 @@ def test_get_build_version_invalid_version_format(monkeypatch, capsys):
     assert result == "2023-10-11-1"
 
     captured = capsys.readouterr()
-    assert "File 'dummy_path': Version 'v1.0.0' does not match expected format 'YYYY-MM-DD' or 'YYYY-MM-DD-XXX'." in captured.out
+    assert "File 'dummy_path': Version 'v1.0.0' does not match expected format. Expected format: '{current_date}-{build_count}' with date format: '%Y-%m-%d'." in captured.out
 
 
 def test_get_build_version_exception_during_read(monkeypatch, capsys):
