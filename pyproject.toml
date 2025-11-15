@@ -155,7 +155,7 @@ quote-style = "single"
 exclude = [ "*.json", "pkg/_compat.py", "tests/", "htmlcov/", "_venv/", ".venv/", "__pycache__/", "*.pyc", "*.pyo", "*.pyd", ".pytest_cache/", ".coverage", "coverage.xml", "coverage-badge.svg", "tests-badge.svg", "report.xml", "report.html", "htmlcovreport.html", "htmlreport.html", "docs/", "site/", "latest/", "stable/", "dev/", "v*/", "20*/", "*.*/", ".nojekyll", ".git/", ".github/", ".gitignore", ".gitattributes", "scripts/", "examples/", "makefile", "Makefile", ".pylintrc", "sonar-project.properties", "CONTRIBUTING.md", "CHANGELOG.md", "DOCUMENTATION_MIGRATION.md", "mkdocs.yml", ".vscode/", ".idea/", "*.swp", "*.swo", "*~",]
 
 [tool.coverage.run]
-source = [ "bumpcalver",]
+source = [ "src/bumpcalver",]
 omit = [ "setup.py", "_venv/*", "tests/*", "examples/*",]
 
 [tool.coverage.report]
