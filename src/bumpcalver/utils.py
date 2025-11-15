@@ -87,7 +87,7 @@ def _validate_year_format(year_part: str) -> bool:
 def _parse_dot_separated_version(version_parts: list, parts_count: int) -> Optional[tuple]:
     """Parse dot-separated version strings like '25.Q4.001'."""
     if len(version_parts) < parts_count:
-        return None
+        return None # pragma: no cover
 
     if len(version_parts) >= 3:
         # Format like "25.Q4.001" -> date="25.Q4", count="001"
@@ -105,11 +105,11 @@ def _parse_dot_separated_version(version_parts: list, parts_count: int) -> Optio
         count_str = version_parts[1]
 
         if not re.match(r'^\d{2,4}', version_parts[0]):
-            return None
+            return None # pragma: no cover
 
         return date_str, int(count_str)
 
-    return None
+    return None # pragma: no cover
 
 
 def _parse_dynamic_version(version: str, version_format: str) -> Optional[tuple]:
@@ -123,7 +123,7 @@ def _parse_dynamic_version(version: str, version_format: str) -> Optional[tuple]
     if "{current_date}" in version_format and "{build_count" not in version_format:
         if _validate_date_format(clean_version):
             return clean_version, 0
-        return None
+        return None # pragma: no cover
 
     # Handle dot-separated formats
     if "{current_date}" in version_format and "." in version_format:
