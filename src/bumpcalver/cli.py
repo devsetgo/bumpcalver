@@ -39,6 +39,7 @@ from typing import Any, Dict, List, Optional
 
 import click
 
+from . import __version__
 from .backup_utils import BackupManager, backup_files_before_update, generate_operation_id
 from .config import load_config
 from .git_utils import create_git_tag
@@ -48,6 +49,7 @@ from .utils import default_timezone, get_build_version, get_current_datetime_ver
 
 
 @click.command()
+@click.version_option(__version__, "--version", "-V")
 @click.option("--beta", is_flag=True, help="Add -beta to version")
 @click.option("--rc", is_flag=True, help="Add -rc to version")
 @click.option("--release", is_flag=True, help="Add -release to version")

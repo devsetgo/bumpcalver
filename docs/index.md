@@ -215,9 +215,7 @@ Options:
   --auto-commit / --no-auto-commit
                               Automatically commit changes when creating a Git
                               tag.
-  --undo                      Undo the last version bump operation.
-  --undo-id TEXT              Undo a specific operation by ID.
-  --list-history              List recent operations that can be undone.
+  -V, --version               Show the version and exit.
   --help                      Show this message and exit.
 ```
 
@@ -231,6 +229,7 @@ Options:
 - `--timezone`: Overrides the timezone specified in the configuration.
 - `--git-tag` / `--no-git-tag`: Forces Git tagging on or off, overriding the configuration.
 - `--auto-commit` / `--no-auto-commit`: Forces auto-commit on or off, overriding the configuration.
+- `--version` / `-V`: Prints the installed BumpCalver version and exits.
 
 ### Undo Options
 

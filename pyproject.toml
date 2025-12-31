@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "bumpcalver"
-version = "2025.11.14.1"
+version = "2025.12.30.1"
 requires-python = ">=3.9"
 description = "A CLI tool for calendar-based version bumping"
 keywords = [ "python", "library", "calendar versioning", "calver", "versioning", "cli",]
@@ -27,8 +27,8 @@ Repository = "https://github.com/devsetgo/bumpcalver"
 bumpcalver = "bumpcalver.cli:main"
 
 [tool.bumpcalver]
-version_format = "{current_date}-{build_count:03}"
-date_format = "%Y-%m-%d"
+version_format = "{current_date}.{build_count:03}"
+date_format = "%Y.%m.%d"
 timezone = "America/New_York"
 git_tag = true
 auto_commit = false

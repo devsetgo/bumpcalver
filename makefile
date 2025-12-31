@@ -2,7 +2,7 @@
 # Project Variables
 # =============================================================================
 REPONAME = bumpcalver
-APP_VERSION = 2025-11-14-001
+APP_VERSION = 2025.12.30.001
 
 # Python Configuration
 PYTHON = python3
@@ -205,6 +205,7 @@ clean: ## Clean up generated files and caches
 install: ## Install the project's dependencies
 	@printf "\033[1;33m📦 Installing dependencies...\033[0m\n"
 	$(PIP) install -r $(REQUIREMENTS_PATH)
+	$(PIP) install -e .
 	@printf "\033[0;32m✅ Dependencies installed successfully!\033[0m\n"
 
 pre-commit: ## Set up pre-commit hooks
