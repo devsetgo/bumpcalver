@@ -316,7 +316,21 @@ bumpcalver --build --git-tag --auto-commit  # Official version
 bumpcalver --undo  # Back to original state
 ```
 
-For complete undo documentation, see [docs/undo.md](docs/undo.md).
+For complete undo documentation, see [Undo Docs](https://devsetgo.github.io/bumpcalver/latest/undo.md).
+
+---
+
+## Documentation
+
+For comprehensive information about BumpCalver, check out our documentation:
+
+- **[QuickStart Guide](https://devsetgo.github.io/bumpcalver/latest/quickstart.md)** - Get started with BumpCalver quickly
+- **[Calendar Versioning Guide](https://devsetgo.github.io/bumpcalver/latest/calendar-versioning-guide.md)** - Comprehensive guide to calendar versioning patterns, real-world examples, and best practices
+- **[Development Guide](https://devsetgo.github.io/bumpcalver/latest/development-guide.md)** - How to contribute to the project, development setup, testing procedures, and PR guidelines
+- **[Undo Operations](https://devsetgo.github.io/bumpcalver/latest/undo.md)** - How to revert version changes
+- **[Versioning Strategies](https://devsetgo.github.io/bumpcalver/latest/versioning.md)** - Different approaches to version management
+
+For the full documentation site, visit: [BumpCalver CLI Documentation](https://devsetgo.github.io/bumpcalver/)
 
 ---
 

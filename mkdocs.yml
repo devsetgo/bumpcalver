@@ -11,6 +11,7 @@ copyright: 'Copyright &copy; 2024 - 2025 Mike Ryan'
 nav:
     - Introduction: 'index.md'
     - QuickStart: 'quickstart.md'
+    - Calendar Versioning Guide: 'calendar-versioning-guide.md'
     - Timezones: 'timezones.md'
     # - Modules: 'models.md'
     - Examples:
@@ -18,7 +19,10 @@ nav:
       - Filelayout: 'examples/filelayout.md'
     - Documentation:
       - Versioning: 'versioning.md'
+      - Undo Functionality: 'undo.md'
       - Quick Reference: 'mike-quickref.md'
+    - Development:
+      - Contributing Guide: 'development-guide.md'
     - About:
       - About: 'about.md'
       - Contributing: 'contribute.md'

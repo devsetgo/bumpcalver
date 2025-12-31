@@ -4,6 +4,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## Latest Changes
+### <span style='color:blue'>Undo functionality and History</span> ([v2025.10.11.2](https://github.com/devsetgo/bumpcalver/releases/tag/v2025.10.11.2))
+
+#### What's Changed
+* 67 undue command (#86) @devsetgo
+* pip(deps): bump pytest from 8.4.1 to 8.4.2 (#80) @[dependabot[bot]](https://github.com/apps/dependabot)
+* pip(deps): bump pytest-mock from 3.14.1 to 3.15.1 (#79) @[dependabot[bot]](https://github.com/apps/dependabot)
+* pip(deps): bump tox from 4.29.0 to 4.30.2 (#81) @[dependabot[bot]](https://github.com/apps/dependabot)
+* pip(deps): bump mkdocstrings[python,shell] from 0.30.0 to 0.30.1 (#82) @[dependabot[bot]](https://github.com/apps/dependabot)
+* pip(deps): bump pytest-cov from 6.2.1 to 7.0.0 (#83) @[dependabot[bot]](https://github.com/apps/dependabot)
+* github actions(deps): bump SonarSource/sonarqube-scan-action from 5.3.1 to 6.0.0 (#84) @[dependabot[bot]](https://github.com/apps/dependabot)
+* github actions(deps): bump actions/setup-python from 5 to 6 (#85) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Improving Makefile (#78) @devsetgo
+* github actions(deps): bump actions/checkout from 4 to 5 (#72) @[dependabot[bot]](https://github.com/apps/dependabot)
+* pip(deps): bump ruff from 0.12.7 to 0.12.11 (#73) @[dependabot[bot]](https://github.com/apps/dependabot)
+* pip(deps): bump build from 1.2.2.post1 to 1.3.0 (#74) @[dependabot[bot]](https://github.com/apps/dependabot)
+* pip(deps): bump mkdocs-print-site-plugin from 2.7.3 to 2.8 (#75) @[dependabot[bot]](https://github.com/apps/dependabot)
+* pip(deps): bump pre-commit from 4.2.0 to 4.3.0 (#76) @[dependabot[bot]](https://github.com/apps/dependabot)
+* pip(deps): bump tox from 4.28.4 to 4.29.0 (#77) @[dependabot[bot]](https://github.com/apps/dependabot)
+
+
+Published Date: 2025 October 11, 22:23
+
+### <span style='color:blue'>Error Message Improvements</span> ([2025.8.31.3](https://github.com/devsetgo/bumpcalver/releases/tag/2025.8.31.3))
+
+#### What's Changed
+* bump of version (#71) @devsetgo
+* Improving Error Messages (#70) @devsetgo
+* Fixing Tests Updating Existing Documents (#69) @devsetgo
+
+
+Published Date: 2025 August 31, 14:35
+
 ### <span style='color:blue'>Fix of release</span> ([v2025.8.2.3](https://github.com/devsetgo/bumpcalver/releases/tag/v2025.8.2.3))
 
 #### What's Changed

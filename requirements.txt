@@ -26,3 +26,4 @@ toml==0.10.2 # Vulnerabilities: None
 tox==4.32.0 # From 4.30.2 | Vulnerabilities: None
 twine==6.2.0 # From 6.1.0 | Vulnerabilities: None
 wheel==0.45.1 # Vulnerabilities: None
+
