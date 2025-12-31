@@ -4,6 +4,14 @@ import subprocess
 from unittest import mock
 from click.testing import CliRunner
 from src.bumpcalver.cli import main
+from src.bumpcalver import __version__
+
+
+def test_version_option():
+    runner = CliRunner()
+    result = runner.invoke(main, ["--version"])
+    assert result.exit_code == 0
+    assert __version__ in result.output
 
 
 @mock.patch('src.bumpcalver.cli.update_version_in_files')
