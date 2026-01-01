@@ -1,6 +1,6 @@
 autoflake==2.3.1 # Vulnerabilities: None
 autopep8==2.3.2 # Vulnerabilities: None
-black==25.9.0 # From 25.1.0 | Vulnerabilities: None
+black==25.11.0 # From 25.1.0 | Vulnerabilities: None
 build==1.3.0 # Vulnerabilities: None
 click==8.3.0 # From 8.2.1 | Vulnerabilities: None
 flake8==7.3.0 # Vulnerabilities: None
