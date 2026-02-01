@@ -25,4 +25,4 @@ ruff==0.14.10 # From 0.14.4 | Vulnerabilities: None
 toml==0.10.2 # Vulnerabilities: None
 tox==4.32.0 # Vulnerabilities: None
 twine==6.2.0 # Vulnerabilities: None
-wheel==0.45.1 # Vulnerabilities: None
+wheel==0.46.3 # Vulnerabilities: None
