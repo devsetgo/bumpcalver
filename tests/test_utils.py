@@ -102,6 +102,30 @@ def test_parse_version_with_custom_format_no_count():
     assert result == expected
 
 
+def test_parse_version_dot_separated_non_numeric_build_count(capsys):
+    version = "24.12.xyz"
+    version_format = "{current_date}.{build_count:03}"
+    date_format = "%y.%m"
+
+    result = parse_version(version, version_format, date_format)
+    assert result is None
+
+    captured = capsys.readouterr()
+    assert "Failed" not in captured.out
+    assert "does not match format" in captured.out
+
+
+def test_parse_version_dynamic_parsing_exception_is_handled(capsys):
+    # Intentionally pass a non-string version_format to force a TypeError inside
+    # the dynamic parsing helper. This should be caught and logged by parse_version.
+    version = "24.12.001"
+    result = parse_version(version, object(), "%y.%m")
+    assert result is None
+
+    captured = capsys.readouterr()
+    assert "Dynamic version parsing failed for '24.12.001':" in captured.out
+
+
 def test_get_current_date_valid_timezone():
     result = get_current_date("America/New_York")
     assert result is not None
