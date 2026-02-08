@@ -81,13 +81,35 @@ def _validate_date_format(version: str) -> bool:
 
 def _validate_year_format(year_part: str) -> bool:
     """Validate that the year part looks like a valid year."""
-    return bool(re.match(r'^\d{2,4}$', year_part))
+    # Accept common CalVer leading segments:
+    # - YY (e.g. 24)
+    # - YYYY (e.g. 2024)
+    # - YYMMDD (e.g. 241207)
+    # - YYYYMMDD (e.g. 20241207)
+    # Keep rejecting 1-digit segments like "1" (SemVer-ish patterns).
+    return bool(re.match(r'^\d{2}(?:\d{2}){0,3}$', year_part))
 
 
 def _parse_dot_separated_version(version_parts: list, parts_count: int) -> Optional[tuple]:
-    """Parse dot-separated version strings like '25.Q4.001'."""
-    if len(version_parts) < parts_count:
-        return None # pragma: no cover
+    """Parse dot-separated version strings like '26.1.28.1' or '25.Q4.001'."""
+    # We treat the last segment as the build count and everything before it
+    # as the date portion. This supports date formats that themselves contain
+    # dots (e.g. %y.%-m.%-d -> 26.1.28) as well as quarter formats (25.Q4).
+    if len(version_parts) < 2:
+        return None  # pragma: no cover
+
+    if not _validate_year_format(version_parts[0]):
+        return None
+
+    count_str = version_parts[-1]
+    try:
+        count = int(count_str)
+    except ValueError:
+        return None  # pragma: no cover
+
+    date_str = ".".join(version_parts[:-1])
+    return date_str, count
+
 
     if len(version_parts) >= 3:
         # Format like "25.Q4.001" -> date="25.Q4", count="001"
