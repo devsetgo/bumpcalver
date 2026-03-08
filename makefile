@@ -2,7 +2,7 @@
 # Project Variables
 # =============================================================================
 REPONAME = bumpcalver
-APP_VERSION = 2025.12.30.001
+APP_VERSION = 2026.03.08.001
 
 # Python Configuration
 PYTHON = python3
@@ -224,7 +224,7 @@ test: ## Run the project's tests with pre-commit hooks
 	@printf "\033[1;33m🧪 Running full test suite...\033[0m\n"
 	pre-commit run -a
 	$(PYTEST) --cov=$(SERVICE_PATH) --cov-report=xml --cov-report=html --junitxml=report.xml
-	sed -i 's|<source>.*</source>|<source>$(REPONAME)</source>|' coverage.xml
+	$(PYTHON) -c 'import re; from pathlib import Path; p=Path("coverage.xml"); t=p.read_text(encoding="utf-8"); new="<sources>\\n\\t\\t<source>src</source>\\n\\t</sources>"; t=re.sub(r"(?s)<sources>.*?</sources>", new, t, count=1); p.write_text(t, encoding="utf-8")'
 	genbadge coverage -i coverage.xml
 	genbadge tests -i report.xml
 	@printf "\033[0;32m✅ All tests passed!\033[0m\n"

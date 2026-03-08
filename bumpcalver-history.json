@@ -1,6 +1,238 @@
 [
   {
     "operation_id": "test_op",
+    "timestamp": "2026-03-08T22:23:47.552917",
+    "version": "2025.10.12.001",
+    "files_updated": [
+      "test.py"
+    ],
+    "backups": {
+      "test.py": "backup.py"
+    },
+    "git_tag": true,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": null
+  },
+  {
+    "operation_id": "test-123",
+    "timestamp": "2026-03-08T22:23:47.522380",
+    "version": "1.0.0",
+    "files_updated": [
+      "test.py"
+    ],
+    "backups": {
+      "test.py": "backup.py"
+    },
+    "git_tag": true,
+    "git_commit": true,
+    "git_commit_hash": "abc123",
+    "git_tag_name": "v1.0.0"
+  },
+  {
+    "operation_id": "20260308_222347_236",
+    "timestamp": "2026-03-08T22:23:47.241950",
+    "version": "2025.01.01",
+    "files_updated": [
+      "test.py"
+    ],
+    "backups": {},
+    "git_tag": true,
+    "git_commit": true,
+    "git_commit_hash": null,
+    "git_tag_name": null
+  },
+  {
+    "operation_id": "20260308_222347_205",
+    "timestamp": "2026-03-08T22:23:47.206227",
+    "version": "2025-08-03.1.2.3",
+    "files_updated": [
+      "test.py"
+    ],
+    "backups": {},
+    "git_tag": false,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": null
+  },
+  {
+    "operation_id": "20260308_222347_192",
+    "timestamp": "2026-03-08T22:23:47.193153",
+    "version": "2025-08-03.release",
+    "files_updated": [
+      "test.py"
+    ],
+    "backups": {},
+    "git_tag": false,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": null
+  },
+  {
+    "operation_id": "20260308_222347_190",
+    "timestamp": "2026-03-08T22:23:47.191040",
+    "version": "2025-08-03.rc",
+    "files_updated": [
+      "test.py"
+    ],
+    "backups": {},
+    "git_tag": false,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": null
+  },
+  {
+    "operation_id": "20260308_222347_187",
+    "timestamp": "2026-03-08T22:23:47.188250",
+    "version": "2025-08-03.beta",
+    "files_updated": [
+      "test.py"
+    ],
+    "backups": {},
+    "git_tag": false,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": null
+  },
+  {
+    "operation_id": "test_op",
+    "timestamp": "2026-03-08T20:45:27.079663",
+    "version": "2025.10.12.001",
+    "files_updated": [
+      "test.py"
+    ],
+    "backups": {
+      "test.py": "backup.py"
+    },
+    "git_tag": true,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": null
+  },
+  {
+    "operation_id": "test-123",
+    "timestamp": "2026-03-08T20:45:27.044873",
+    "version": "1.0.0",
+    "files_updated": [
+      "test.py"
+    ],
+    "backups": {
+      "test.py": "backup.py"
+    },
+    "git_tag": true,
+    "git_commit": true,
+    "git_commit_hash": "abc123",
+    "git_tag_name": "v1.0.0"
+  },
+  {
+    "operation_id": "20260308_204526_731",
+    "timestamp": "2026-03-08T20:45:26.739528",
+    "version": "2025.01.01",
+    "files_updated": [
+      "test.py"
+    ],
+    "backups": {},
+    "git_tag": true,
+    "git_commit": true,
+    "git_commit_hash": null,
+    "git_tag_name": null
+  },
+  {
+    "operation_id": "20260308_204526_709",
+    "timestamp": "2026-03-08T20:45:26.709310",
+    "version": "2025-08-03.1.2.3",
+    "files_updated": [
+      "test.py"
+    ],
+    "backups": {},
+    "git_tag": false,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": null
+  },
+  {
+    "operation_id": "20260308_204526_700",
+    "timestamp": "2026-03-08T20:45:26.700391",
+    "version": "2025-08-03.release",
+    "files_updated": [
+      "test.py"
+    ],
+    "backups": {},
+    "git_tag": false,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": null
+  },
+  {
+    "operation_id": "20260308_204526_697",
+    "timestamp": "2026-03-08T20:45:26.698132",
+    "version": "2025-08-03.rc",
+    "files_updated": [
+      "test.py"
+    ],
+    "backups": {},
+    "git_tag": false,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": null
+  },
+  {
+    "operation_id": "20260308_204526_694",
+    "timestamp": "2026-03-08T20:45:26.695226",
+    "version": "2025-08-03.beta",
+    "files_updated": [
+      "test.py"
+    ],
+    "backups": {},
+    "git_tag": false,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": null
+  },
+  {
+    "operation_id": "20260308_204424_131",
+    "timestamp": "2026-03-08T20:44:24.155185",
+    "version": "2026.03.08.001",
+    "files_updated": [
+      "/workspaces/bumpcalver/makefile",
+      "/workspaces/bumpcalver/pyproject.toml",
+      "/workspaces/bumpcalver/src/bumpcalver/__init__.py",
+      "/workspaces/bumpcalver/examples/makefile",
+      "/workspaces/bumpcalver/examples/dockerfile",
+      "/workspaces/bumpcalver/examples/dockerfile",
+      "/workspaces/bumpcalver/examples/example.py",
+      "/workspaces/bumpcalver/examples/pyproject.toml",
+      "/workspaces/bumpcalver/examples/example.xml",
+      "/workspaces/bumpcalver/examples/example.json",
+      "/workspaces/bumpcalver/examples/example.yaml",
+      "/workspaces/bumpcalver/examples/example.toml",
+      "/workspaces/bumpcalver/sonar-project.properties",
+      "/workspaces/bumpcalver/examples/sonar-project.properties",
+      "/workspaces/bumpcalver/examples/setup.cfg"
+    ],
+    "backups": {
+      "/workspaces/bumpcalver/makefile": "/workspaces/bumpcalver/.bumpcalver/backups/20260308_204424_131_makefile",
+      "/workspaces/bumpcalver/pyproject.toml": "/workspaces/bumpcalver/.bumpcalver/backups/20260308_204424_131_pyproject.toml",
+      "/workspaces/bumpcalver/src/bumpcalver/__init__.py": "/workspaces/bumpcalver/.bumpcalver/backups/20260308_204424_132___init__.py",
+      "/workspaces/bumpcalver/examples/makefile": "/workspaces/bumpcalver/.bumpcalver/backups/20260308_204424_132_makefile",
+      "/workspaces/bumpcalver/examples/dockerfile": "/workspaces/bumpcalver/.bumpcalver/backups/20260308_204424_134_dockerfile",
+      "/workspaces/bumpcalver/examples/example.py": "/workspaces/bumpcalver/.bumpcalver/backups/20260308_204424_134_example.py",
+      "/workspaces/bumpcalver/examples/pyproject.toml": "/workspaces/bumpcalver/.bumpcalver/backups/20260308_204424_134_pyproject.toml",
+      "/workspaces/bumpcalver/examples/example.xml": "/workspaces/bumpcalver/.bumpcalver/backups/20260308_204424_135_example.xml",
+      "/workspaces/bumpcalver/examples/example.json": "/workspaces/bumpcalver/.bumpcalver/backups/20260308_204424_135_example.json",
+      "/workspaces/bumpcalver/examples/example.yaml": "/workspaces/bumpcalver/.bumpcalver/backups/20260308_204424_135_example.yaml",
+      "/workspaces/bumpcalver/examples/example.toml": "/workspaces/bumpcalver/.bumpcalver/backups/20260308_204424_135_example.toml",
+      "/workspaces/bumpcalver/sonar-project.properties": "/workspaces/bumpcalver/.bumpcalver/backups/20260308_204424_136_sonar-project.properties",
+      "/workspaces/bumpcalver/examples/sonar-project.properties": "/workspaces/bumpcalver/.bumpcalver/backups/20260308_204424_136_sonar-project.properties",
+      "/workspaces/bumpcalver/examples/setup.cfg": "/workspaces/bumpcalver/.bumpcalver/backups/20260308_204424_136_setup.cfg"
+    },
+    "git_tag": true,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": "2026.03.08.001"
+  },
+  {
+    "operation_id": "test_op",
     "timestamp": "2026-03-08T20:34:54.683994",
     "version": "2025.10.12.001",
     "files_updated": [
@@ -470,211 +702,6 @@
     ],
     "backups": {},
     "git_tag": false,
-    "git_commit": false,
-    "git_commit_hash": null,
-    "git_tag_name": null
-  },
-  {
-    "operation_id": "test_op",
-    "timestamp": "2026-03-08T20:04:50.255473",
-    "version": "2025.10.12.001",
-    "files_updated": [
-      "test.py"
-    ],
-    "backups": {
-      "test.py": "backup.py"
-    },
-    "git_tag": true,
-    "git_commit": false,
-    "git_commit_hash": null,
-    "git_tag_name": null
-  },
-  {
-    "operation_id": "test-123",
-    "timestamp": "2026-03-08T20:04:50.234395",
-    "version": "1.0.0",
-    "files_updated": [
-      "test.py"
-    ],
-    "backups": {
-      "test.py": "backup.py"
-    },
-    "git_tag": true,
-    "git_commit": true,
-    "git_commit_hash": "abc123",
-    "git_tag_name": "v1.0.0"
-  },
-  {
-    "operation_id": "20260308_200449_999",
-    "timestamp": "2026-03-08T20:04:50.021195",
-    "version": "2025.01.01",
-    "files_updated": [
-      "test.py"
-    ],
-    "backups": {},
-    "git_tag": true,
-    "git_commit": true,
-    "git_commit_hash": null,
-    "git_tag_name": null
-  },
-  {
-    "operation_id": "20260308_200449_983",
-    "timestamp": "2026-03-08T20:04:49.983318",
-    "version": "2025-08-03.1.2.3",
-    "files_updated": [
-      "test.py"
-    ],
-    "backups": {},
-    "git_tag": false,
-    "git_commit": false,
-    "git_commit_hash": null,
-    "git_tag_name": null
-  },
-  {
-    "operation_id": "20260308_200449_981",
-    "timestamp": "2026-03-08T20:04:49.981725",
-    "version": "2025-08-03.release",
-    "files_updated": [
-      "test.py"
-    ],
-    "backups": {},
-    "git_tag": false,
-    "git_commit": false,
-    "git_commit_hash": null,
-    "git_tag_name": null
-  },
-  {
-    "operation_id": "20260308_200449_979",
-    "timestamp": "2026-03-08T20:04:49.980087",
-    "version": "2025-08-03.rc",
-    "files_updated": [
-      "test.py"
-    ],
-    "backups": {},
-    "git_tag": false,
-    "git_commit": false,
-    "git_commit_hash": null,
-    "git_tag_name": null
-  },
-  {
-    "operation_id": "20260308_200449_976",
-    "timestamp": "2026-03-08T20:04:49.977586",
-    "version": "2025-08-03.beta",
-    "files_updated": [
-      "test.py"
-    ],
-    "backups": {},
-    "git_tag": false,
-    "git_commit": false,
-    "git_commit_hash": null,
-    "git_tag_name": null
-  },
-  {
-    "operation_id": "test_op",
-    "timestamp": "2026-03-08T19:51:45.314250",
-    "version": "2025.10.12.001",
-    "files_updated": [
-      "test.py"
-    ],
-    "backups": {
-      "test.py": "backup.py"
-    },
-    "git_tag": true,
-    "git_commit": false,
-    "git_commit_hash": null,
-    "git_tag_name": null
-  },
-  {
-    "operation_id": "test-123",
-    "timestamp": "2026-03-08T19:51:45.293706",
-    "version": "1.0.0",
-    "files_updated": [
-      "test.py"
-    ],
-    "backups": {
-      "test.py": "backup.py"
-    },
-    "git_tag": true,
-    "git_commit": true,
-    "git_commit_hash": "abc123",
-    "git_tag_name": "v1.0.0"
-  },
-  {
-    "operation_id": "20260308_195145_070",
-    "timestamp": "2026-03-08T19:51:45.075515",
-    "version": "2025.01.01",
-    "files_updated": [
-      "test.py"
-    ],
-    "backups": {},
-    "git_tag": true,
-    "git_commit": true,
-    "git_commit_hash": null,
-    "git_tag_name": null
-  },
-  {
-    "operation_id": "20260308_195145_053",
-    "timestamp": "2026-03-08T19:51:45.053841",
-    "version": "2025-08-03.1.2.3",
-    "files_updated": [
-      "test.py"
-    ],
-    "backups": {},
-    "git_tag": false,
-    "git_commit": false,
-    "git_commit_hash": null,
-    "git_tag_name": null
-  },
-  {
-    "operation_id": "20260308_195145_051",
-    "timestamp": "2026-03-08T19:51:45.052037",
-    "version": "2025-08-03.release",
-    "files_updated": [
-      "test.py"
-    ],
-    "backups": {},
-    "git_tag": false,
-    "git_commit": false,
-    "git_commit_hash": null,
-    "git_tag_name": null
-  },
-  {
-    "operation_id": "20260308_195145_042",
-    "timestamp": "2026-03-08T19:51:45.042759",
-    "version": "2025-08-03.rc",
-    "files_updated": [
-      "test.py"
-    ],
-    "backups": {},
-    "git_tag": false,
-    "git_commit": false,
-    "git_commit_hash": null,
-    "git_tag_name": null
-  },
-  {
-    "operation_id": "20260308_195145_040",
-    "timestamp": "2026-03-08T19:51:45.040666",
-    "version": "2025-08-03.beta",
-    "files_updated": [
-      "test.py"
-    ],
-    "backups": {},
-    "git_tag": false,
-    "git_commit": false,
-    "git_commit_hash": null,
-    "git_tag_name": null
-  },
-  {
-    "operation_id": "test_op",
-    "timestamp": "2026-03-08T19:43:25.620981",
-    "version": "2025.10.12.001",
-    "files_updated": [
-      "test.py"
-    ],
-    "backups": {
-      "test.py": "backup.py"
-    },
-    "git_tag": true,
     "git_commit": false,
     "git_commit_hash": null,
     "git_tag_name": null
