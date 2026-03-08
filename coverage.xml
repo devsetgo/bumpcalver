@@ -4,7 +4,6 @@
 	<!-- Based on https://raw.githubusercontent.com/cobertura/web/master/htdocs/xml/coverage-04.dtd -->
 	<sources>
 		<source>bumpcalver</source>
-		<source>bumpcalver</source>
 	</sources>
 	<packages>
 		<package name="bumpcalver" line-rate="1" branch-rate="0" complexity="0">
