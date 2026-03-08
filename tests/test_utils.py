@@ -92,6 +92,16 @@ def test_parse_version_with_quarter_format_and_beta():
     assert result == expected
 
 
+def test_parse_version_with_multidot_date_and_build_count():
+    """Regression: date formats may contain dots (e.g. 26.3.7.1)."""
+    version = "26.3.7.1"
+    version_format = "{current_date}.{build_count}"
+    date_format = "%y.%-m.%-d"  # not used by parser, but represents common config
+    expected = ("26.3.7", 1)
+    result = parse_version(version, version_format, date_format)
+    assert result == expected
+
+
 def test_parse_version_with_custom_format_no_count():
     """Test parsing version with custom format but no build count."""
     version = "25.Q4"
@@ -170,6 +180,29 @@ def test_get_build_version_version_exists_today(monkeypatch):
     version_format = "{current_date}-{build_count}"
     result = get_build_version(file_config, version_format, "UTC", "%Y-%m-%d")
     assert result == "2023-10-11-2"
+
+
+def test_get_build_version_multidot_date_increments(monkeypatch):
+    """Regression: if current_date contains dots, build count must still increment."""
+    current_date = "26.3.7"
+    monkeypatch.setattr(
+        "src.bumpcalver.utils.get_current_datetime_version", lambda tz, df: current_date
+    )
+
+    mock_handler = mock.Mock()
+    mock_handler.read_version.return_value = "26.3.7.1"
+    monkeypatch.setattr(
+        "src.bumpcalver.utils.get_version_handler", lambda ft: mock_handler
+    )
+
+    file_config = {
+        "path": "dummy_path",
+        "file_type": "python",
+        "variable": "__version__",
+    }
+    version_format = "{current_date}.{build_count}"
+    result = get_build_version(file_config, version_format, "UTC", "%y.%-m.%-d")
+    assert result == "26.3.7.2"
 
 
 def test_get_build_version_version_exists_not_today(monkeypatch):

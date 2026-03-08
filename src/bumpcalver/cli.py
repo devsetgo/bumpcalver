@@ -43,7 +43,7 @@ from . import __version__
 from .backup_utils import BackupManager, backup_files_before_update, generate_operation_id
 from .config import load_config
 from .git_utils import create_git_tag
-from .handlers import update_version_in_files
+from .handlers import get_version_handler, update_version_in_files
 from .undo_utils import list_undo_history, undo_last_operation, undo_operation_by_id
 from .utils import default_timezone, get_build_version, get_current_datetime_version
 
@@ -140,11 +140,6 @@ def main(
         file_config["path"] = os.path.join(project_root, file_config["path"])
 
     try:
-        # Create backup manager and backup files before making changes
-        backup_manager = BackupManager()
-        operation_id = generate_operation_id()
-        backups, _ = backup_files_before_update(file_configs, backup_manager)
-
         if build:
             print("Build option is set. Calling get_build_version.")
             init_file_config: Dict[str, Any] = file_configs[0]
@@ -164,9 +159,56 @@ def main(
         elif custom:
             new_version += f".{custom}"
 
+        # No-op guard: if all configured files already contain the computed version,
+        # do not create backups, write undo history, or attempt git operations.
+        all_files_already_updated = True
+        for file_config in file_configs:
+            file_path: str = file_config["path"]
+            file_type: str = file_config.get("file_type", "")
+            variable: str = file_config.get("variable", "")
+            directive: str = file_config.get("directive", "")
+
+            try:
+                handler = get_version_handler(file_type)
+                if directive:
+                    current_version = handler.read_version(
+                        file_path, variable, directive=directive
+                    )
+                else:
+                    current_version = handler.read_version(file_path, variable)
+            except Exception:
+                all_files_already_updated = False
+                break
+
+            if current_version != new_version:
+                all_files_already_updated = False
+                break
+
+        if all_files_already_updated:
+            print(f"Version already set to {new_version}; no files to update.")
+            return
+
+        # Create backup manager and backup files before making changes
+        backup_manager = BackupManager()
+        operation_id = generate_operation_id()
+        backups, _ = backup_files_before_update(file_configs, backup_manager)
+
         print(f"Calling update_version_in_files with version: {new_version}")
         files_updated: List[str] = update_version_in_files(new_version, file_configs)
         print(f"Files updated: {files_updated}")
+
+        if not files_updated:
+            # Nothing was changed; avoid creating undo history entries for a no-op.
+            # Clean up any backups we created since there is nothing to undo.
+            for backup_path in backups.values():
+                try:
+                    if backup_path and os.path.exists(backup_path):
+                        os.remove(backup_path)
+                except Exception:
+                    pass
+
+            print(f"No files were updated; version already set to {new_version}.")
+            return
 
         # Handle git operations and capture information for undo
         git_commit_hash = None

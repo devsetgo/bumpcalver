@@ -1,5 +1,7 @@
 # tests/test_cli.py
 
+import os
+import tempfile
 import subprocess
 from unittest import mock
 from click.testing import CliRunner
@@ -185,6 +187,22 @@ def test_build_option(monkeypatch):
     mock_get_build_version = mock.Mock(return_value="2023-10-10-001")
     monkeypatch.setattr("src.bumpcalver.cli.get_build_version", mock_get_build_version)
 
+    # Avoid touching the filesystem in this unit test
+    monkeypatch.setattr(
+        "src.bumpcalver.cli.update_version_in_files",
+        lambda new_version, file_configs: [file_configs[0]["path"]],
+    )
+
+    mock_backup_files_before_update = mock.Mock(return_value=({}, mock.Mock()))
+    monkeypatch.setattr(
+        "src.bumpcalver.cli.backup_files_before_update", mock_backup_files_before_update
+    )
+
+    mock_backup_manager_cls = mock.Mock()
+    mock_backup_manager_instance = mock.Mock()
+    mock_backup_manager_cls.return_value = mock_backup_manager_instance
+    monkeypatch.setattr("src.bumpcalver.cli.BackupManager", mock_backup_manager_cls)
+
     # Run the CLI command with the --build option
     runner = CliRunner()
     result = runner.invoke(main, ["--build"])
@@ -200,6 +218,281 @@ def test_build_option(monkeypatch):
     # Verify the output
     assert result.exit_code == 0
     assert "Updated version to 2023-10-10-001 in specified files." in result.output
+
+
+def test_build_option_noop_does_not_create_history(monkeypatch):
+    mock_config = {
+        "version_format": "{current_date}.{build_count}",
+        "date_format": "%y.%-m.%-d",
+        "file_configs": [
+            {"path": "test.py", "file_type": "python", "variable": "__version__"}
+        ],
+        "timezone": "UTC",
+        "git_tag": True,
+        "auto_commit": False,
+    }
+    monkeypatch.setattr("src.bumpcalver.cli.load_config", lambda: mock_config)
+
+    # Computed new version equals current version
+    monkeypatch.setattr("src.bumpcalver.cli.get_build_version", lambda *a, **k: "26.3.7.1")
+
+    mock_handler = mock.Mock()
+    mock_handler.read_version.return_value = "26.3.7.1"
+    monkeypatch.setattr("src.bumpcalver.cli.get_version_handler", lambda ft: mock_handler)
+
+    mock_update = mock.Mock()
+    monkeypatch.setattr("src.bumpcalver.cli.update_version_in_files", mock_update)
+
+    mock_backup = mock.Mock()
+    monkeypatch.setattr("src.bumpcalver.cli.backup_files_before_update", mock_backup)
+
+    mock_store_history = mock.Mock()
+    mock_backup_manager_instance = mock.Mock()
+    mock_backup_manager_instance.store_operation_history = mock_store_history
+    monkeypatch.setattr("src.bumpcalver.cli.BackupManager", lambda: mock_backup_manager_instance)
+
+    mock_git_tag = mock.Mock()
+    monkeypatch.setattr("src.bumpcalver.cli.create_git_tag", mock_git_tag)
+
+    runner = CliRunner()
+    result = runner.invoke(main, ["--build", "--git-tag"])
+
+    assert result.exit_code == 0
+    assert "Version already set to 26.3.7.1" in result.output
+    mock_update.assert_not_called()
+    mock_backup.assert_not_called()
+    mock_store_history.assert_not_called()
+    mock_git_tag.assert_not_called()
+
+
+def test_build_option_noop_with_directive_does_not_create_history(monkeypatch):
+    """Cover directive-based read_version path in the no-op guard."""
+    mock_config = {
+        "version_format": "{current_date}.{build_count}",
+        "date_format": "%y.%-m.%-d",
+        "file_configs": [
+            {
+                "path": "Dockerfile",
+                "file_type": "dockerfile",
+                "variable": "APP_VERSION",
+                "directive": "ARG",
+            }
+        ],
+        "timezone": "UTC",
+        "git_tag": True,
+        "auto_commit": False,
+    }
+    monkeypatch.setattr("src.bumpcalver.cli.load_config", lambda: mock_config)
+
+    monkeypatch.setattr(
+        "src.bumpcalver.cli.get_build_version", lambda *a, **k: "26.3.7.1"
+    )
+
+    mock_handler = mock.Mock()
+    mock_handler.read_version.return_value = "26.3.7.1"
+    monkeypatch.setattr("src.bumpcalver.cli.get_version_handler", lambda ft: mock_handler)
+
+    mock_update = mock.Mock()
+    monkeypatch.setattr("src.bumpcalver.cli.update_version_in_files", mock_update)
+    mock_backup = mock.Mock()
+    monkeypatch.setattr("src.bumpcalver.cli.backup_files_before_update", mock_backup)
+
+    mock_backup_manager_instance = mock.Mock()
+    mock_backup_manager_instance.store_operation_history = mock.Mock()
+    monkeypatch.setattr(
+        "src.bumpcalver.cli.BackupManager", lambda: mock_backup_manager_instance
+    )
+    mock_git_tag = mock.Mock()
+    monkeypatch.setattr("src.bumpcalver.cli.create_git_tag", mock_git_tag)
+
+    runner = CliRunner()
+    result = runner.invoke(main, ["--build", "--git-tag"])
+
+    assert result.exit_code == 0
+    assert "Version already set to 26.3.7.1" in result.output
+    mock_handler.read_version.assert_called_once()
+    # Ensure the directive path was used
+    assert mock_handler.read_version.call_args.kwargs.get("directive") == "ARG"
+    mock_update.assert_not_called()
+    mock_backup.assert_not_called()
+    mock_backup_manager_instance.store_operation_history.assert_not_called()
+    mock_git_tag.assert_not_called()
+
+
+def test_noop_guard_read_exception_falls_through_to_update(monkeypatch):
+    """If the no-op guard can't read a file version, it should proceed to update."""
+    mock_config = {
+        "version_format": "{current_date}.{build_count}",
+        "date_format": "%y.%-m.%-d",
+        "file_configs": [
+            {"path": "test.py", "file_type": "python", "variable": "__version__"}
+        ],
+        "timezone": "UTC",
+        "git_tag": False,
+        "auto_commit": False,
+    }
+    monkeypatch.setattr("src.bumpcalver.cli.load_config", lambda: mock_config)
+    monkeypatch.setattr(
+        "src.bumpcalver.cli.get_build_version", lambda *a, **k: "26.3.7.1"
+    )
+
+    mock_handler = mock.Mock()
+    mock_handler.read_version.side_effect = RuntimeError("boom")
+    monkeypatch.setattr("src.bumpcalver.cli.get_version_handler", lambda ft: mock_handler)
+
+    mock_backup_manager_instance = mock.Mock()
+    mock_backup_manager_instance.store_operation_history = mock.Mock()
+    monkeypatch.setattr(
+        "src.bumpcalver.cli.BackupManager", lambda: mock_backup_manager_instance
+    )
+
+    mock_backup = mock.Mock(return_value=({}, mock_backup_manager_instance))
+    monkeypatch.setattr("src.bumpcalver.cli.backup_files_before_update", mock_backup)
+
+    mock_update = mock.Mock(return_value=[os.path.join(os.getcwd(), "test.py")])
+    monkeypatch.setattr("src.bumpcalver.cli.update_version_in_files", mock_update)
+
+    runner = CliRunner()
+    result = runner.invoke(main, ["--build"])
+
+    assert result.exit_code == 0
+    mock_backup.assert_called_once()
+    mock_update.assert_called_once()
+    mock_backup_manager_instance.store_operation_history.assert_called_once()
+
+
+def test_no_files_updated_removes_backups_and_skips_history(monkeypatch):
+    """Cover the no-op-after-update branch that cleans up created backups."""
+    mock_config = {
+        "version_format": "{current_date}.{build_count}",
+        "date_format": "%y.%-m.%-d",
+        "file_configs": [
+            {"path": "test.py", "file_type": "python", "variable": "__version__"}
+        ],
+        "timezone": "UTC",
+        "git_tag": True,
+        "auto_commit": False,
+    }
+    monkeypatch.setattr("src.bumpcalver.cli.load_config", lambda: mock_config)
+    monkeypatch.setattr(
+        "src.bumpcalver.cli.get_build_version", lambda *a, **k: "26.3.7.1"
+    )
+
+    # Ensure we don't trip the early no-op guard
+    mock_handler = mock.Mock()
+    mock_handler.read_version.return_value = "0.0.0"
+    monkeypatch.setattr("src.bumpcalver.cli.get_version_handler", lambda ft: mock_handler)
+
+    backup_fd, backup_path = tempfile.mkstemp(prefix="bumpcalver_backup_")
+    os.close(backup_fd)
+    assert os.path.exists(backup_path)
+
+    mock_backup_manager_instance = mock.Mock()
+    mock_backup_manager_instance.store_operation_history = mock.Mock()
+    monkeypatch.setattr(
+        "src.bumpcalver.cli.BackupManager", lambda: mock_backup_manager_instance
+    )
+
+    backups = {os.path.join(os.getcwd(), "test.py"): backup_path}
+    monkeypatch.setattr(
+        "src.bumpcalver.cli.backup_files_before_update",
+        lambda file_configs, backup_manager: (backups, backup_manager),
+    )
+
+    monkeypatch.setattr(
+        "src.bumpcalver.cli.update_version_in_files", lambda *a, **k: []
+    )
+    mock_git_tag = mock.Mock()
+    monkeypatch.setattr("src.bumpcalver.cli.create_git_tag", mock_git_tag)
+
+    runner = CliRunner()
+    result = runner.invoke(main, ["--build", "--git-tag"])
+
+    assert result.exit_code == 0
+    assert "No files were updated" in result.output
+    assert not os.path.exists(backup_path)
+    mock_backup_manager_instance.store_operation_history.assert_not_called()
+    mock_git_tag.assert_not_called()
+
+
+def test_no_files_updated_backup_cleanup_exception_is_swallowed(monkeypatch):
+    """Cover the cleanup exception branch inside the no-files-updated path."""
+    mock_config = {
+        "version_format": "{current_date}.{build_count}",
+        "date_format": "%y.%-m.%-d",
+        "file_configs": [
+            {"path": "test.py", "file_type": "python", "variable": "__version__"}
+        ],
+        "timezone": "UTC",
+        "git_tag": False,
+        "auto_commit": False,
+    }
+    monkeypatch.setattr("src.bumpcalver.cli.load_config", lambda: mock_config)
+    monkeypatch.setattr(
+        "src.bumpcalver.cli.get_build_version", lambda *a, **k: "26.3.7.1"
+    )
+
+    mock_handler = mock.Mock()
+    mock_handler.read_version.return_value = "0.0.0"
+    monkeypatch.setattr("src.bumpcalver.cli.get_version_handler", lambda ft: mock_handler)
+
+    mock_backup_manager_instance = mock.Mock()
+    mock_backup_manager_instance.store_operation_history = mock.Mock()
+    monkeypatch.setattr(
+        "src.bumpcalver.cli.BackupManager", lambda: mock_backup_manager_instance
+    )
+
+    backups = {os.path.join(os.getcwd(), "test.py"): "/tmp/backup_should_fail_remove"}
+    monkeypatch.setattr(
+        "src.bumpcalver.cli.backup_files_before_update",
+        lambda file_configs, backup_manager: (backups, backup_manager),
+    )
+    monkeypatch.setattr(
+        "src.bumpcalver.cli.update_version_in_files", lambda *a, **k: []
+    )
+
+    monkeypatch.setattr("src.bumpcalver.cli.os.path.exists", lambda p: True)
+
+    def _raise_remove(_p: str) -> None:
+        raise OSError("cannot remove")
+
+    monkeypatch.setattr("src.bumpcalver.cli.os.remove", _raise_remove)
+
+    runner = CliRunner()
+    result = runner.invoke(main, ["--build"])
+    assert result.exit_code == 0
+    assert "No files were updated" in result.output
+    mock_backup_manager_instance.store_operation_history.assert_not_called()
+
+
+def test_list_history_option(monkeypatch):
+    mock_list = mock.Mock()
+    monkeypatch.setattr("src.bumpcalver.cli.list_undo_history", mock_list)
+    runner = CliRunner()
+    result = runner.invoke(main, ["--list-history"])
+    assert result.exit_code == 0
+    mock_list.assert_called_once()
+
+
+def test_undo_option_exit_codes(monkeypatch):
+    monkeypatch.setattr("src.bumpcalver.cli.undo_last_operation", lambda: True)
+    runner = CliRunner()
+    result = runner.invoke(main, ["--undo"])
+    assert result.exit_code == 0
+
+
+def test_undo_id_option_exit_codes(monkeypatch):
+    monkeypatch.setattr("src.bumpcalver.cli.undo_operation_by_id", lambda _id: False)
+    runner = CliRunner()
+    result = runner.invoke(main, ["--undo-id", "abc"])
+    assert result.exit_code == 1
+
+
+def test_undo_options_conflict_with_bump_options():
+    runner = CliRunner()
+    result = runner.invoke(main, ["--build", "--undo"])
+    assert result.exit_code != 0
+    assert "Undo options" in result.output
 
 
 def test_value_error(monkeypatch):

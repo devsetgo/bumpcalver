@@ -90,7 +90,7 @@ def _validate_year_format(year_part: str) -> bool:
     return bool(re.match(r'^\d{2}(?:\d{2}){0,3}$', year_part))
 
 
-def _parse_dot_separated_version(version_parts: list, parts_count: int) -> Optional[tuple]:
+def _parse_dot_separated_version(version_parts: list[str]) -> Optional[tuple[str, int]]:
     """Parse dot-separated version strings like '26.1.28.1' or '25.Q4.001'."""
     # We treat the last segment as the build count and everything before it
     # as the date portion. This supports date formats that themselves contain
@@ -111,29 +111,6 @@ def _parse_dot_separated_version(version_parts: list, parts_count: int) -> Optio
     return date_str, count
 
 
-    if len(version_parts) >= 3:
-        # Format like "25.Q4.001" -> date="25.Q4", count="001"
-        date_str = f"{version_parts[0]}.{version_parts[1]}"
-        count_str = version_parts[2]
-
-        if not _validate_year_format(version_parts[0]):
-            return None
-
-        return date_str, int(count_str)
-
-    elif len(version_parts) == 2:
-        # Format like "25.001" -> date="25", count="001"
-        date_str = version_parts[0]
-        count_str = version_parts[1]
-
-        if not re.match(r'^\d{2,4}', version_parts[0]):
-            return None # pragma: no cover
-
-        return date_str, int(count_str)
-
-    return None # pragma: no cover
-
-
 def _parse_dynamic_version(version: str, version_format: str) -> Optional[tuple]:
     """Parse version using dynamic format rules."""
     if _is_invalid_version_prefix(version):
@@ -149,9 +126,8 @@ def _parse_dynamic_version(version: str, version_format: str) -> Optional[tuple]
 
     # Handle dot-separated formats
     if "{current_date}" in version_format and "." in version_format:
-        parts = version_format.split(".")
         version_parts = clean_version.split(".")
-        return _parse_dot_separated_version(version_parts, len(parts))
+        return _parse_dot_separated_version(version_parts)
 
     return None
 
