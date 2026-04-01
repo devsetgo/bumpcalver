@@ -15,7 +15,7 @@ packaging==26.0 # From 25.0 | Vulnerabilities: None
 pre-commit==4.5.1 # Vulnerabilities: None
 pylint==4.0.4 # Vulnerabilities: None
 pytest==9.0.2 # Vulnerabilities: None
-pytest-cov==7.0.0 # Vulnerabilities: None
+pytest-cov==7.1.0 # Vulnerabilities: None
 pytest-html==4.2.0 # From 4.1.1 | Vulnerabilities: None
 pytest-mock==3.15.1 # Vulnerabilities: None
 pytest-runner==6.0.1 # Vulnerabilities: None
