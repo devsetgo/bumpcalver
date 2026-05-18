@@ -4,7 +4,6 @@ import os
 import tempfile
 from unittest import mock
 
-import pytest
 from click.testing import CliRunner
 
 from bumpcalver.cli import main
