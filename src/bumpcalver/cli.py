@@ -45,7 +45,7 @@ from .config import load_config
 from .git_utils import create_git_tag
 from .handlers import get_version_handler, update_version_in_files
 from .undo_utils import list_undo_history, undo_last_operation, undo_operation_by_id
-from .utils import default_timezone, get_build_version, get_current_datetime_version
+from .utils import default_timezone, get_build_version, get_current_datetime_version, update_semantic_in_config
 
 
 @click.command()
@@ -70,6 +70,9 @@ from .utils import default_timezone, get_build_version, get_current_datetime_ver
 @click.option("--undo", is_flag=True, help="Undo the last version bump operation")
 @click.option("--undo-id", default=None, help="Undo a specific operation by ID")
 @click.option("--list-history", is_flag=True, help="List recent operations that can be undone")
+@click.option("--bump-major", is_flag=True, help="Increment major version in config (resets minor and patch to 0)")
+@click.option("--bump-minor", is_flag=True, help="Increment minor version in config (resets patch to 0)")
+@click.option("--bump-patch", is_flag=True, help="Increment patch version in config")
 def main(
     beta: bool,
     rc: bool,
@@ -82,9 +85,15 @@ def main(
     undo: bool,
     undo_id: Optional[str],
     list_history: bool,
+    bump_major: bool,
+    bump_minor: bool,
+    bump_patch: bool,
 ) -> None:
+    if sum([bump_major, bump_minor, bump_patch]) > 1:
+        raise click.UsageError("Only one of --bump-major, --bump-minor, --bump-patch can be set at a time.")
+
     # Check for conflicting undo options with version bump options FIRST
-    version_bump_options = [beta, rc, release, build, bool(custom)]
+    version_bump_options = [beta, rc, release, build, bool(custom), bump_major, bump_minor, bump_patch]
     undo_options = [undo, bool(undo_id), list_history]
 
     if any(version_bump_options) and any(undo_options):
@@ -124,6 +133,25 @@ def main(
     config_timezone: str = config.get("timezone", default_timezone)
     config_git_tag: bool = config.get("git_tag", False)
     config_auto_commit: bool = config.get("auto_commit", False)
+    config_major: int = config.get("major", 0)
+    config_minor: int = config.get("minor", 0)
+    config_patch: int = config.get("patch", 0)
+
+    if bump_major:
+        config_major += 1
+        config_minor = 0
+        config_patch = 0
+        update_semantic_in_config("major", config_major)
+        update_semantic_in_config("minor", config_minor)
+        update_semantic_in_config("patch", config_patch)
+    elif bump_minor:
+        config_minor += 1
+        config_patch = 0
+        update_semantic_in_config("minor", config_minor)
+        update_semantic_in_config("patch", config_patch)
+    elif bump_patch:
+        config_patch += 1
+        update_semantic_in_config("patch", config_patch)
 
     if not file_configs:  # pragma: no cover
         print("No files specified in the configuration.")
@@ -144,7 +172,8 @@ def main(
             print("Build option is set. Calling get_build_version.")
             init_file_config: Dict[str, Any] = file_configs[0]
             new_version: str = get_build_version(
-                init_file_config, version_format, timezone, date_format
+                init_file_config, version_format, timezone, date_format,
+                major=config_major, minor=config_minor, patch=config_patch,
             )
         else:
             print("Build option is not set. Calling get_current_datetime_version.")
