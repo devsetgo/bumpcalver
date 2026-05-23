@@ -10,11 +10,20 @@ readme = "README.md"
 file = "LICENSE"
 
 [tool.bumpcalver]
+# Standard CalVer format (default)
 version_format = "{current_date}-{build_count:03}"
 date_format = "%y.%m.%d"
 timezone = "America/New_York"
 git_tag = true
 auto_commit = true
+
+# --- Hybrid Semantic + Calendar Versioning (optional) ---
+# Uncomment and set major/minor/patch to use a hybrid format such as 1.0-20260523.1
+# major = 1
+# minor = 0
+# patch = 0
+# version_format = "{major}.{minor}-{current_date}.{build_count}"
+# date_format = "%Y%m%d"
 [[tool.bumpcalver.file]]
 path = "pyproject.toml"
 file_type = "toml"

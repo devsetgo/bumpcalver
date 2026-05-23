@@ -212,6 +212,28 @@ bumpcalver --build --alpha
 # Result: 24.Q4.001.alpha
 ```
 
+### Hybrid Semantic + Calendar Versioning
+
+For projects that want to keep a familiar SemVer prefix (`1.0`, `2.3`) while also showing release dates, BumpCalver supports hybrid formats using `{major}`, `{minor}`, and `{patch}` placeholders:
+
+```toml
+[tool.bumpcalver]
+major = 1
+minor = 0
+version_format = "{major}.{minor}-{current_date}.{build_count}"
+date_format = "%Y%m%d"
+# Produces: 1.0-20260523.1
+```
+
+Bump the semantic prefix from the CLI:
+
+```bash
+bumpcalver --build --bump minor   # → 1.1-20260523.1
+bumpcalver --build --bump major   # → 2.0-20260523.1
+```
+
+See the [Hybrid Versioning Guide](hybrid-versioning-guide.md) for the full list of supported formats, CLI options, and best practices.
+
 ### Mixed Separators (Limited Support)
 
 While not fully supported, simple mixed separators work:
