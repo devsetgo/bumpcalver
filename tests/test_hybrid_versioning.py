@@ -444,7 +444,7 @@ class TestCliBumpFlags:
              mock.patch("src.bumpcalver.cli.BackupManager"), \
              mock.patch("src.bumpcalver.cli.backup_files_before_update", return_value=({}, None)), \
              mock.patch("src.bumpcalver.cli.generate_operation_id", return_value="test-op-id"):
-            result = runner.invoke(main, ["--build", "--bump-major"])
+            result = runner.invoke(main, ["--build", "--bump", "major"])
             assert result.exit_code == 0
             calls = {call[0] for call in mock_update.call_args_list}
             assert ("major", 2) in calls
@@ -461,7 +461,7 @@ class TestCliBumpFlags:
              mock.patch("src.bumpcalver.cli.BackupManager"), \
              mock.patch("src.bumpcalver.cli.backup_files_before_update", return_value=({}, None)), \
              mock.patch("src.bumpcalver.cli.generate_operation_id", return_value="test-op-id"):
-            result = runner.invoke(main, ["--build", "--bump-minor"])
+            result = runner.invoke(main, ["--build", "--bump", "minor"])
             assert result.exit_code == 0
             calls = {call[0] for call in mock_update.call_args_list}
             assert ("minor", 1) in calls
@@ -477,20 +477,19 @@ class TestCliBumpFlags:
              mock.patch("src.bumpcalver.cli.BackupManager"), \
              mock.patch("src.bumpcalver.cli.backup_files_before_update", return_value=({}, None)), \
              mock.patch("src.bumpcalver.cli.generate_operation_id", return_value="test-op-id"):
-            result = runner.invoke(main, ["--build", "--bump-patch"])
+            result = runner.invoke(main, ["--build", "--bump", "patch"])
             assert result.exit_code == 0
             calls = {call[0] for call in mock_update.call_args_list}
             assert ("patch", 3) in calls
 
-    def test_multiple_bump_flags_error(self):
+    def test_invalid_bump_value_error(self):
         runner = CliRunner()
-        result = runner.invoke(main, ["--bump-major", "--bump-minor"])
+        result = runner.invoke(main, ["--bump", "invalid"])
         assert result.exit_code != 0
-        assert "Only one of" in result.output
 
     def test_bump_with_undo_error(self):
         runner = CliRunner()
-        result = runner.invoke(main, ["--bump-major", "--undo"])
+        result = runner.invoke(main, ["--bump", "major", "--undo"])
         assert result.exit_code != 0
 
 
