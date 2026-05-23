@@ -65,18 +65,20 @@ def parse_dot_path(dot_path: str, file_type: str) -> str:
 
 
 _SEMVER_PLACEHOLDERS = frozenset({"{major}", "{minor}", "{patch}"})
+_CURRENT_DATE_KEY = "{current_date}"
+_TWO_DIGITS = r"\d{2}"
 
 _STRFTIME_CODES = [
     ("%-m", r"\d{1,2}"),
     ("%-d", r"\d{1,2}"),
     ("%Y",  r"\d{4}"),
-    ("%y",  r"\d{2}"),
-    ("%m",  r"\d{2}"),
-    ("%d",  r"\d{2}"),
+    ("%y",  _TWO_DIGITS),
+    ("%m",  _TWO_DIGITS),
+    ("%d",  _TWO_DIGITS),
     ("%j",  r"\d{3}"),
-    ("%H",  r"\d{2}"),
-    ("%M",  r"\d{2}"),
-    ("%S",  r"\d{2}"),
+    ("%H",  _TWO_DIGITS),
+    ("%M",  _TWO_DIGITS),
+    ("%S",  _TWO_DIGITS),
     ("%q",  r"\d"),
 ]
 
@@ -106,7 +108,7 @@ def _parse_hybrid_version(
             .replace("{major}",        "__MAJOR__")
             .replace("{minor}",        "__MINOR__")
             .replace("{patch}",        "__PATCH__")
-            .replace("{current_date}", "__DATE__")
+            .replace(_CURRENT_DATE_KEY, "__DATE__")
             .replace("{build_count}",  "__BUILD__"))
 
     pattern = re.escape(temp)
@@ -134,7 +136,7 @@ def _parse_hybrid_version(
 
 def _is_invalid_version_prefix(version: str) -> bool:
     """Check if version has invalid prefixes that indicate non-CalVer patterns."""
-    return version.startswith('v') or version.startswith('release')
+    return version.startswith(('v', 'release'))
 
 
 def _clean_version_suffixes(version: str) -> str:
@@ -190,13 +192,13 @@ def _parse_dynamic_version(version: str, version_format: str, date_format: str =
     clean_version = _clean_version_suffixes(version)
 
     # Handle formats without build count (date-only)
-    if "{current_date}" in version_format and "{build_count" not in version_format:
+    if _CURRENT_DATE_KEY in version_format and "{build_count" not in version_format:
         if _validate_date_format(clean_version):
             return clean_version, 0
         return None # pragma: no cover
 
     # Handle dot-separated formats
-    if "{current_date}" in version_format and "." in version_format:
+    if _CURRENT_DATE_KEY in version_format and "." in version_format:
         version_parts = clean_version.split(".")
         return _parse_dot_separated_version(version_parts)
 
