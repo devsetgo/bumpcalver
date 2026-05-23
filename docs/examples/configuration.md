@@ -75,6 +75,38 @@ version_standard = "python"
 ```
 
 
+## Hybrid Semantic + Calendar Versioning
+
+To combine a SemVer prefix with a CalVer date, add `major`, `minor`, and `patch` keys and use them in `version_format`:
+
+```toml
+[tool.bumpcalver]
+major = 1
+minor = 0
+patch = 0
+version_format = "{major}.{minor}-{current_date}.{build_count}"
+date_format = "%Y%m%d"
+timezone = "America/New_York"
+git_tag = true
+auto_commit = true
+
+[[tool.bumpcalver.file]]
+path = "pyproject.toml"
+file_type = "toml"
+variable = "project.version"
+
+[[tool.bumpcalver.file]]
+path = "src/mypackage/__init__.py"
+file_type = "python"
+variable = "__version__"
+```
+
+This produces versions like `1.0-20260523.1`. Use `--bump minor` or `--bump major` on the CLI to increment the semantic prefix and persist the change back to config.
+
+For a full reference on hybrid formats, see the [Hybrid Versioning Guide](../hybrid-versioning-guide.md).
+
+---
+
 ## BumpCalver.TOML Configuration
 
 File needs to be in the root and named bumpcalver.toml
