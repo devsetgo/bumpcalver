@@ -12,6 +12,7 @@ nav:
     - Introduction: 'index.md'
     - QuickStart: 'quickstart.md'
     - Calendar Versioning Guide: 'calendar-versioning-guide.md'
+    - Hybrid Versioning Guide: 'hybrid-versioning-guide.md'
     - Timezones: 'timezones.md'
     # - Modules: 'models.md'
     - Examples:
