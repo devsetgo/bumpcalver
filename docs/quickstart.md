@@ -13,7 +13,7 @@ pip install bumpcalver
 Create a `pyproject.toml` file in your project's root directory with the following content:
 
 ```toml
-tool.bumpcalver]
+[tool.bumpcalver]
 version_format = "{current_date}-{build_count:03}"
 date_format = "%y.%m.%d"
 timezone = "America/New_York"
@@ -64,8 +64,8 @@ bumpcalver --build
 This command will:
 
 - Increment the build count for the current date.
-- Update the `__version__` variable in `version.py` and `src/module_name/__init__.py`.
-- Use the timezone specified in your configuration (`UTC` in this case).
+- Update the version in all files listed under `[[tool.bumpcalver.file]]`.
+- Use the timezone specified in your configuration (`America/New_York` in this example).
 
 #### Pre-release Versioning
 
@@ -133,9 +133,7 @@ For comprehensive information about calendar versioning patterns, real-world exa
 
 ### See Documentation
 
-For more examples and advanced usage, please refer to the [full documentation](#) or visit the project's repository.
-
-*Note: Replace `#` with the actual link to your documentation or repository.*
+For more examples and advanced usage, visit the [BumpCalver documentation](https://devsetgo.github.io/bumpcalver/) or the [GitHub repository](https://github.com/devsetgo/bumpcalver).
 
 ---
 
@@ -147,10 +145,10 @@ Ensure that your `version.py` file (or the file specified in your configuration)
 __version__ = "0.1.0"
 ```
 
-After running `bumpcalver --build`, it will be updated to:
+After running `bumpcalver --build`, it will be updated to (using `date_format = "%y.%m.%d"` and today's date):
 
 ```python
-__version__ = "2023-10-05-001"
+__version__ = "26.05.24-001"
 ```
 
 ---

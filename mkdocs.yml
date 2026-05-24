@@ -6,7 +6,7 @@ repo_name: 'devsetgo/bumpcalver'
 repo_url: 'https://github.com/devsetgo/bumpcalver'
 
 # Copyright
-copyright: 'Copyright &copy; 2024 - 2025 Mike Ryan'
+copyright: 'Copyright &copy; 2024 - 2026 Mike Ryan'
 
 nav:
     - Introduction: 'index.md'
@@ -19,7 +19,6 @@ nav:
       - Configuration: 'examples/configuration.md'
       - Filelayout: 'examples/filelayout.md'
     - Documentation:
-      - Versioning: 'versioning.md'
       - Undo Functionality: 'undo.md'
       - Quick Reference: 'mike-quickref.md'
     - Development:
