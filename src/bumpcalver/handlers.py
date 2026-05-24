@@ -1,175 +1,9 @@
 """
 Version handlers for BumpCalver.
 
-This module provides a comprehensive set of handlers for reading and updating version strings
-across different file formats commonly used in software development projects. The module is
-designed with extensibility and type safety in mind, following the Abstract Base Class pattern
-to ensure consistent interfaces across all handler implementations.
-
-The handlers support various file formats including configuration files, source code files,
-container definitions, and build scripts. Each handler is optimized for its specific file format
-and provides robust error handling, encoding support, and version formatting capabilities.
-
-Architecture:
-    The module follows a hierarchical design with VersionHandler as the abstract base class
-    that defines the contract for all concrete handler implementations. Each handler specializes
-    in a specific file format while providing consistent read/update operations and version
-    formatting capabilities.
-
-Supported File Formats:
-    - Python files (.py): Variable assignments like __version__ = "1.0.0"
-    - TOML files (.toml): Nested configuration with dot notation support
-    - YAML files (.yaml, .yml): Hierarchical configuration with key-value pairs
-    - JSON files (.json): Simple key-value pairs for version storage
-    - XML files (.xml): Element-based version storage with XPath-like access
-    - Dockerfile: ARG and ENV directive support for container versioning
-    - Makefile: Variable assignments for build automation
-    - Properties files (.properties): Key=value format for Java-style configuration
-    - Environment files (.env): Environment variable definitions
-    - Setup.cfg files: INI-style configuration with section support
-
-Version Standards:
-    The module supports multiple version formatting standards:
-    - PEP 440 (Python): Canonical Python package versioning
-    - Semantic Versioning: Major.Minor.Patch format
-    - Calendar Versioning: Date-based versioning schemes
-    - Custom formats: User-defined version patterns
-
-Classes:
-    VersionHandler: Abstract base class defining the handler interface. Provides common
-        formatting methods and establishes the contract for read_version and update_version
-        operations. All concrete handlers inherit from this class.
-
-    PythonVersionHandler: Specialized handler for Python source files. Uses regex patterns
-        to locate and update variable assignments. Supports single and double quoted strings
-        with proper escaping. Handles encoding detection and preserves file formatting.
-
-    TomlVersionHandler: Handler for TOML configuration files using the tomli library.
-        Supports nested key access via dot notation (e.g., "tool.poetry.version").
-        Preserves TOML structure and formatting while updating specific values.
-
-    YamlVersionHandler: Handler for YAML files using the PyYAML library. Supports nested
-        dictionary access and maintains YAML formatting. Handles both simple and complex
-        YAML structures with proper type preservation.
-
-    JsonVersionHandler: Handler for JSON files with built-in json module support.
-        Maintains JSON formatting with proper indentation. Supports nested object
-        access and preserves data types during updates.
-
-    XmlVersionHandler: Handler for XML files using ElementTree. Supports XPath-like
-        element selection and updates. Preserves XML structure and encoding declarations.
-
-    DockerfileVersionHandler: Specialized handler for Docker container definitions.
-        Supports both ARG and ENV directives with proper syntax validation.
-        Handles multi-stage builds and preserves Dockerfile formatting.
-
-    MakefileVersionHandler: Handler for GNU Make build scripts. Supports variable
-        assignments with both = and := operators. Preserves makefile structure
-        and comment blocks.
-
-    PropertiesVersionHandler: Handler for Java-style properties files. Supports
-        key=value syntax with comment preservation. Handles special characters
-        and encoding properly.
-
-    EnvVersionHandler: Handler for environment variable files. Supports quoted
-        and unquoted values with proper escaping. Preserves comments and file
-        structure while updating specific variables.
-
-    SetupCfgVersionHandler: Handler for Python setup.cfg files using configparser.
-        Supports INI-style sections with dot notation access (e.g., "metadata.version").
-        Preserves section structure and comments.
-
-Functions:
-    get_version_handler(file_type: str) -> VersionHandler:
-        Factory function that returns the appropriate handler instance for a given
-        file type. Raises ValueError for unsupported file types.
-
-        Args:
-            file_type: String identifier for the file format
-
-        Returns:
-            Configured handler instance for the specified format
-
-        Raises:
-            ValueError: If the file type is not supported
-
-    update_version_in_files(new_version: str, file_configs: List[Dict[str, Any]]) -> List[str]:
-        Batch update function that processes multiple files with different configurations.
-        Provides transactional-like behavior with detailed success/failure reporting.
-
-        Args:
-            new_version: The version string to apply to all configured files
-            file_configs: List of file configuration dictionaries
-
-        Returns:
-            List of successfully updated file paths
-
-        Configuration Format:
-            Each file_config dictionary should contain:
-            - path (str): Absolute or relative path to the file
-            - file_type (str): Handler type identifier
-            - variable (str): Variable/key name to update
-            - directive (str, optional): For Dockerfile ARG/ENV specification
-            - version_standard (str, optional): Formatting standard to apply
-
-Error Handling:
-    All handlers implement robust error handling with informative error messages.
-    Common error scenarios include:
-    - File not found or permission errors
-    - Malformed configuration files
-    - Missing variables or keys
-    - Encoding issues
-    - Syntax errors in configuration files
-
-Usage Examples:
-    Basic single file update:
-        >>> handler = PythonVersionHandler()
-        >>> current_version = handler.read_version("src/mypackage/__init__.py", "__version__")
-        >>> success = handler.update_version("src/mypackage/__init__.py", "__version__", "2024.01.15")
-
-    TOML file with nested keys:
-        >>> handler = TomlVersionHandler()
-        >>> version = handler.read_version("pyproject.toml", "tool.poetry.version")
-        >>> handler.update_version("pyproject.toml", "tool.poetry.version", "2024.01.15")
-
-    Dockerfile with ARG directive:
-        >>> handler = DockerfileVersionHandler()
-        >>> version = handler.read_version("Dockerfile", "VERSION", directive="ARG")
-        >>> handler.update_version("Dockerfile", "VERSION", "2024.01.15", directive="ARG")
-
-    Batch processing multiple files:
-        >>> file_configs = [
-        ...     {"path": "version.py", "file_type": "python", "variable": "__version__"},
-        ...     {"path": "pyproject.toml", "file_type": "toml", "variable": "tool.poetry.version"},
-        ...     {"path": "package.json", "file_type": "json", "variable": "version"},
-        ... ]
-        >>> updated_files = update_version_in_files("2024.01.15", file_configs)
-        >>> print(f"Updated {len(updated_files)} files successfully")
-
-    Version formatting with standards:
-        >>> handler = TomlVersionHandler()
-        >>> handler.update_version(
-        ...     "pyproject.toml",
-        ...     "tool.poetry.version",
-        ...     "2024-01-15",
-        ...     version_standard="python"
-        ... )  # Converts to PEP 440 format: "2024.1.15"
-
-Dependencies:
-    - toml: For TOML file parsing and generation
-    - yaml: For YAML file parsing and generation
-    - xml.etree.ElementTree: For XML file processing (standard library)
-    - json: For JSON file processing (standard library)
-    - re: For regex pattern matching (standard library)
-    - configparser: For INI-style file processing (standard library)
-    - typing: For type hints and annotations (standard library)
-
-Notes:
-    - All file operations use UTF-8 encoding by default
-    - Handlers preserve original file formatting where possible
-    - Version formatting is applied during updates, not reads
-    - Error messages are designed to be user-friendly and actionable
-    - The module is thread-safe for read operations but not for concurrent writes
+Provides read/update handlers for Python, TOML, YAML, JSON, XML, Dockerfile,
+Makefile, Properties, .env, and setup.cfg files. Use `get_version_handler(file_type)`
+to obtain the right handler, or `update_version_in_files` for batch updates.
 """
 
 import json
@@ -384,18 +218,31 @@ class VersionHandler(ABC):
                 self._log_variable_not_found(variable, file_path)
             return False
 
-    def _handle_read_operation(self, file_path: str, operation_func, variable: str, prefix: str = "") -> Optional[str]:
-        """Handle read operations with standardized error handling.
+    def _update_key_value_file(
+        self, file_path: str, variable: str, new_version: str, not_found_label: str = "Variable"
+    ) -> bool:
+        """Shared update logic for key=value line-based files (Properties, .env)."""
+        try:
+            with open(file_path, "r", encoding="utf-8") as file:
+                lines = file.readlines()
 
-        Args:
-            file_path (str): Path to the file to read.
-            operation_func: Function that performs the actual read operation.
-            variable (str): The variable name being searched for.
-            prefix (str): Optional prefix for error messages.
+            line_index = self._find_key_value_in_lines(lines, variable)
+            if line_index is None:
+                print(f"{not_found_label} '{variable}' not found in {file_path}")
+                return False
 
-        Returns:
-            Optional[str]: The version string if found, None otherwise.
-        """
+            key, _ = lines[line_index].strip().split("=", 1)
+            lines[line_index] = f"{key}={new_version}\n"
+            with open(file_path, "w", encoding="utf-8") as file:
+                file.writelines(lines)
+            print(f"Updated {file_path}")
+            return True
+        except Exception as e:
+            print(f"Error updating {file_path}: {e}")
+            return False
+
+    def _handle_read_operation(self, file_path: str, operation_func) -> Optional[str]:
+        """Handle read operations with standardized error handling."""
         try:
             return operation_func()
         except Exception as e:
@@ -444,7 +291,7 @@ class PythonVersionHandler(VersionHandler):
             self._log_variable_not_found(variable, file_path)  # no pragma: no cover
             return None # no pragma: no cover
 
-        return self._handle_read_operation(file_path, read_operation, variable)
+        return self._handle_read_operation(file_path, read_operation)
 
     def update_version(
         self, file_path: str, variable: str, new_version: str, **kwargs
@@ -519,7 +366,7 @@ class TomlVersionHandler(VersionHandler):
                     return None
             return temp
 
-        return self._handle_read_operation(file_path, read_operation, variable)
+        return self._handle_read_operation(file_path, read_operation)
 
     def update_version(
         self, file_path: str, variable: str, new_version: str, **kwargs
@@ -611,7 +458,7 @@ class YamlVersionHandler(VersionHandler):
                     return None
             return temp
 
-        return self._handle_read_operation(file_path, read_operation, variable)
+        return self._handle_read_operation(file_path, read_operation)
 
     def update_version(
         self, file_path: str, variable: str, new_version: str, **kwargs
@@ -686,7 +533,7 @@ class JsonVersionHandler(VersionHandler):
                 data = json.load(f)
             return data.get(variable)
 
-        return self._handle_read_operation(file_path, read_operation, variable)
+        return self._handle_read_operation(file_path, read_operation)
 
     def update_version(
         self, file_path: str, variable: str, new_version: str, **kwargs
@@ -760,7 +607,7 @@ class XmlVersionHandler(VersionHandler):
             self._log_variable_not_found(variable, file_path)
             return None
 
-        return self._handle_read_operation(file_path, read_operation, variable)
+        return self._handle_read_operation(file_path, read_operation)
 
     def update_version(
         self, file_path: str, variable: str, new_version: str, **kwargs
@@ -848,7 +695,7 @@ class DockerfileVersionHandler(VersionHandler):
             print(f"No {directive} variable '{variable}' found in {file_path}")
             return None
 
-        return self._handle_read_operation(file_path, read_operation, variable)
+        return self._handle_read_operation(file_path, read_operation)
 
     def update_version(
         self, file_path: str, variable: str, new_version: str, **kwargs
@@ -931,7 +778,7 @@ class MakefileVersionHandler(VersionHandler):
             self._log_variable_not_found(variable, file_path)  # no pragma: no cover
             return None  # no pragma: no cover
 
-        return self._handle_read_operation(file_path, read_operation, variable)
+        return self._handle_read_operation(file_path, read_operation)
 
     def update_version(
         self, file_path: str, variable: str, new_version: str, **kwargs
@@ -1002,39 +849,8 @@ class PropertiesVersionHandler(VersionHandler):
     def update_version(
         self, file_path: str, variable: str, new_version: str, **kwargs
     ) -> bool:
-        """Updates the version string in the specified properties file.
-
-        Args:
-            file_path (str): The path to the properties file.
-            variable (str): The property key that holds the version string.
-            new_version (str): The new version string to set.
-            **kwargs: Additional keyword arguments including version_standard.
-
-        Returns:
-            bool: True if the version was successfully updated, False otherwise.
-        """
         new_version = self._format_version_with_standard(new_version, **kwargs)
-
-        try:
-            with open(file_path, "r", encoding="utf-8") as file:
-                lines = file.readlines()
-
-            line_index = self._find_key_value_in_lines(lines, variable)
-            if line_index is not None:
-                stripped_line = lines[line_index].strip()
-                key, _ = stripped_line.split("=", 1)
-                lines[line_index] = f"{key}={new_version}\n"
-
-                with open(file_path, "w", encoding="utf-8") as file:
-                    file.writelines(lines)
-                print(f"Updated {file_path}")
-                return True
-            else:
-                print(f"Property '{variable}' not found in {file_path}")
-                return False
-        except Exception as e:
-            print(f"Error updating {file_path}: {e}")
-            return False
+        return self._update_key_value_file(file_path, variable, new_version, "Property")
 
 
 class EnvVersionHandler(VersionHandler):
@@ -1076,39 +892,8 @@ class EnvVersionHandler(VersionHandler):
     def update_version(
         self, file_path: str, variable: str, new_version: str, **kwargs
     ) -> bool:
-        """Updates the version string in the specified .env file.
-
-        Args:
-            file_path (str): The path to the .env file.
-            variable (str): The environment variable name that holds the version string.
-            new_version (str): The new version string to set.
-            **kwargs: Additional keyword arguments including version_standard.
-
-        Returns:
-            bool: True if the version was successfully updated, False otherwise.
-        """
         new_version = self._format_version_with_standard(new_version, **kwargs)
-
-        try:
-            with open(file_path, "r", encoding="utf-8") as file:
-                lines = file.readlines()
-
-            line_index = self._find_key_value_in_lines(lines, variable)
-            if line_index is not None:
-                stripped_line = lines[line_index].strip()
-                key, _ = stripped_line.split("=", 1)
-                lines[line_index] = f"{key}={new_version}\n"
-
-                with open(file_path, "w", encoding="utf-8") as file:
-                    file.writelines(lines)
-                print(f"Updated {file_path}")
-                return True
-            else:
-                print(f"Environment variable '{variable}' not found in {file_path}")
-                return False
-        except Exception as e:
-            print(f"Error updating {file_path}: {e}")
-            return False
+        return self._update_key_value_file(file_path, variable, new_version, "Environment variable")
 
 
 class SetupCfgVersionHandler(VersionHandler):
@@ -1216,65 +1001,41 @@ class SetupCfgVersionHandler(VersionHandler):
             # Update the variable based on its format
             if "." in variable:
                 self._update_dot_notation_variable(config, variable, new_version)
-                updated = True
             else:
-                # For simple variables, we always succeed whether found or created
                 self._update_simple_variable(config, variable, new_version)
-                updated = True
 
-            if updated:
-                with open(file_path, "w", encoding="utf-8") as file:
-                    config.write(file)
-                print(f"Updated {file_path}")
-                return True
-            else:
-                print(f"Variable '{variable}' not found in {file_path}")  # no pragma: no cover
-                return False  # no pragma: no cover
+            with open(file_path, "w", encoding="utf-8") as file:
+                config.write(file)
+            print(f"Updated {file_path}")
+            return True
         except Exception as e:
             print(f"Error updating {file_path}: {e}")
             return False
 
 
+_HANDLER_REGISTRY: Dict[str, type] = {
+    "python": PythonVersionHandler,
+    "toml": TomlVersionHandler,
+    "yaml": YamlVersionHandler,
+    "json": JsonVersionHandler,
+    "xml": XmlVersionHandler,
+    "dockerfile": DockerfileVersionHandler,
+    "makefile": MakefileVersionHandler,
+    "properties": PropertiesVersionHandler,
+    "env": EnvVersionHandler,
+    "setup.cfg": SetupCfgVersionHandler,
+}
+
+
 def get_version_handler(file_type: str) -> VersionHandler:
-    """Returns the appropriate version handler for the given file type.
+    """Return a handler instance for the given file type.
 
-    This function returns an instance of a version handler class based on the
-    specified file type. If the file type is not supported, it raises a ValueError.
-
-    Args:
-        file_type (str): The type of the file (e.g., "python", "toml", "yaml", "json", "xml", "dockerfile", "makefile", "properties", "env", "setup.cfg").
-
-    Returns:
-        VersionHandler: An instance of the appropriate version handler class.
-
-    Raises:
-        ValueError: If the specified file type is not supported.
-
-    Example:
-        handler = get_version_handler("python")
+    Raises ValueError for unsupported types.
     """
-    if file_type == "python":
-        return PythonVersionHandler()
-    elif file_type == "toml":
-        return TomlVersionHandler()
-    elif file_type == "yaml":
-        return YamlVersionHandler()
-    elif file_type == "json":
-        return JsonVersionHandler()
-    elif file_type == "xml":
-        return XmlVersionHandler()
-    elif file_type == "dockerfile":
-        return DockerfileVersionHandler()
-    elif file_type == "makefile":
-        return MakefileVersionHandler()
-    elif file_type == "properties":
-        return PropertiesVersionHandler()
-    elif file_type == "env":
-        return EnvVersionHandler()
-    elif file_type == "setup.cfg":
-        return SetupCfgVersionHandler()
-    else:
+    handler_class = _HANDLER_REGISTRY.get(file_type)
+    if handler_class is None:
         raise ValueError(f"Unsupported file type: {file_type}")
+    return handler_class()
 
 
 def update_version_in_files(

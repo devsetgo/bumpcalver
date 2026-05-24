@@ -19,7 +19,7 @@ Example:
 import os
 import shutil
 import subprocess
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, Optional
 
 from .backup_utils import BackupManager
 
@@ -250,36 +250,3 @@ def list_undo_history(backup_manager: Optional[BackupManager] = None, limit: int
     print("-" * 80)
     print("Use 'bumpcalver --undo' to undo the latest operation")
     print("Use 'bumpcalver --undo-id <operation_id>' to undo a specific operation")
-
-
-def validate_undo_safety(operation: Dict[str, Any]) -> List[str]:
-    """Validate that it's safe to undo an operation.
-
-    Args:
-        operation: The operation record to validate
-
-    Returns:
-        List of warning messages, empty if safe to proceed
-    """
-    warnings = []
-
-    # Check if backup files still exist
-    for backup_path in operation["backups"].values():
-        if not os.path.exists(backup_path):
-            warnings.append(f"Backup file {backup_path} not found")
-
-    # Check if original files have been modified since the operation
-    for original_path, backup_path in operation["backups"].items():
-        if os.path.exists(original_path) and os.path.exists(backup_path):
-            try:
-                original_mtime = os.path.getmtime(original_path)
-                backup_mtime = os.path.getmtime(backup_path)
-
-                # If the original file is newer than the backup, it might have been modified
-                if original_mtime > backup_mtime + 1:  # 1 second tolerance
-                    warnings.append(f"File {original_path} may have been modified since backup")
-
-            except OSError:
-                warnings.append(f"Cannot check modification time for {original_path}")
-
-    return warnings

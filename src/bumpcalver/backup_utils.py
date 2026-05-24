@@ -123,6 +123,9 @@ class BackupManager:
             # Save updated history
             self._save_history(history)
 
+            # Prune stale backup files on each write
+            self.cleanup_old_backups()
+
         except Exception as e:
             print(f"Failed to store operation history: {e}")
 

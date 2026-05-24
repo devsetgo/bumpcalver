@@ -1,4 +1,5 @@
 # project files to ignore
+bumpcalver-history.json
 _venv/
 .vscode
 data/

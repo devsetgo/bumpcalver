@@ -54,8 +54,8 @@ def test_create_git_tag_no_tag_exists_no_autocommit(monkeypatch, capsys):
     captured = capsys.readouterr()
     assert "Created Git tag 'v1.0.0'" in captured.out
     assert commands_executed == [
-        ["git", "tag", "-l", "v1.0.0"],
         ["git", "rev-parse", "--is-inside-work-tree"],
+        ["git", "tag", "-l", "v1.0.0"],
         ["git", "tag", "v1.0.0"],
     ]
 
@@ -94,8 +94,8 @@ def test_create_git_tag_no_tag_exists_autocommit(monkeypatch, capsys):
     captured = capsys.readouterr()
     assert "Created Git tag 'v1.0.0'" in captured.out
     assert commands_executed == [
-        ["git", "tag", "-l", "v1.0.0"],
         ["git", "rev-parse", "--is-inside-work-tree"],
+        ["git", "tag", "-l", "v1.0.0"],
         ["git", "add", "file1", "file2"],
         ["git", "commit", "-m", "Bump version to v1.0.0"],
         ["git", "tag", "v1.0.0"],

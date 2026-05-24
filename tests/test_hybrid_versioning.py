@@ -4,7 +4,6 @@ import os
 import tempfile
 from unittest import mock
 
-import pytest
 from click.testing import CliRunner
 
 from src.bumpcalver.cli import main
@@ -418,7 +417,7 @@ class TestUpdateSemanticInConfig:
 
 
 # ---------------------------------------------------------------------------
-# CLI --bump-major / --bump-minor / --bump-patch
+# CLI --bump choice
 # ---------------------------------------------------------------------------
 
 class TestCliBumpFlags:
