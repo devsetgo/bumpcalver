@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## Latest Changes
+### <span style='color:blue'>Hybrid Versioning and Code Cleanup</span> ([v2026.05.24.001](https://github.com/devsetgo/bumpcalver/releases/tag/v2026.05.24.001))
+
+#### What's Changed
+* Cleanup and Improvements (#139) @devsetgo
+* 133 documentation is not deploying to GitHub pages (#138) @devsetgo
+* 134 potential bug in beta format (#137) @devsetgo
+* 135 feature request support hybrid semantic calendar versioning formats (#136) @devsetgo
+* github actions(deps): bump release-drafter/release-drafter from 6.2.0 to 7.2.1 (#126) @[dependabot[bot]](https://github.com/apps/dependabot)
+* github actions(deps): bump SonarSource/sonarqube-scan-action from 6.0.0 to 8.0.0 (#127) @[dependabot[bot]](https://github.com/apps/dependabot)
+* pip(deps): bump packaging from 26.0 to 26.2 (#128) @[dependabot[bot]](https://github.com/apps/dependabot)
+* pip(deps): bump build from 1.4.2 to 1.4.4 (#129) @[dependabot[bot]](https://github.com/apps/dependabot)
+* pip(deps): bump wheel from 0.46.3 to 0.47.0 (#130) @[dependabot[bot]](https://github.com/apps/dependabot)
+* pip(deps): bump mike from 2.1.4 to 2.2.0 (#131) @[dependabot[bot]](https://github.com/apps/dependabot)
+* pip(deps): bump ruff from 0.15.9 to 0.15.12 (#132) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Next Work (#119) @devsetgo
+
+
+Published Date: 2026 May 24, 19:17
+
 ### <span style='color:blue'>Bug fix on Increment</span> ([v2026.3.8.1](https://github.com/devsetgo/bumpcalver/releases/tag/v2026.3.8.1))
 
 #### What's Changed
@@ -213,3 +232,4 @@ Published Date: 2024 October 20, 15:35
 **Full Changelog**: https://github.com/devsetgo/bumpcalver/commits/2024.10.18
 
 Published Date: 2024 October 18, 18:42
+
