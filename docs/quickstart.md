@@ -67,7 +67,7 @@ This command will:
 - Update the `__version__` variable in `version.py` and `src/module_name/__init__.py`.
 - Use the timezone specified in your configuration (`UTC` in this case).
 
-#### Beta Versioning
+#### Pre-release Versioning
 
 To create a beta version:
 
@@ -75,7 +75,7 @@ To create a beta version:
 bumpcalver --build --beta
 ```
 
-This will prefix your version with `beta-`, resulting in a version like `beta-2023-10-05-001`.
+This appends `.beta` to the version by default, producing a version like `26.05.24.1.beta`. You can configure the suffix format (including PEP 440-style counters like `b{beta_count}`) via the `beta_format` key in `[tool.bumpcalver]`. See [Configuration Examples](examples/configuration.md#pre-release-suffix-formats) for details.
 
 #### Specify Timezone
 
