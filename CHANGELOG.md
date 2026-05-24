@@ -4,6 +4,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## Latest Changes
+### <span style='color:blue'>Bug fix on Increment</span> ([v2026.3.8.1](https://github.com/devsetgo/bumpcalver/releases/tag/v2026.3.8.1))
+
+#### What's Changed
+* bump of version (#118) @devsetgo
+* Fix of issue (#117) @devsetgo
+* pip(deps): bump ruff from 0.15.0 to 0.15.4 (#114) @[dependabot[bot]](https://github.com/apps/dependabot)
+* pip(deps): bump mkdocs-material from 9.7.1 to 9.7.3 (#115) @[dependabot[bot]](https://github.com/apps/dependabot)
+* github actions(deps): bump release-drafter/release-drafter from 6.1.0 to 6.2.0 (#107) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Dependency Update - Data Format fix (#113) @devsetgo
+* pip(deps): bump wheel from 0.45.1 to 0.46.3 (#109) @[dependabot[bot]](https://github.com/apps/dependabot)
+* pip(deps): bump packaging from 25.0 to 26.0 (#111) @[dependabot[bot]](https://github.com/apps/dependabot)
+* pip(deps): bump ruff from 0.14.10 to 0.14.14 (#112) @[dependabot[bot]](https://github.com/apps/dependabot)
+* Dependencies Update (#106) @devsetgo
+
+
+Published Date: 2026 March 08, 18:28
+
+### <span style='color:blue'>Adding --Version to the CLI</span> ([v2025.12.30.1](https://github.com/devsetgo/bumpcalver/releases/tag/v2025.12.30.1))
+
+#### What's Changed
+* Adding --version to CLI (#100) @devsetgo
+* pip(deps): bump mkdocs-material from 9.6.23 to 9.7.0 (#95) @[dependabot[bot]](https://github.com/apps/dependabot)
+* pip(deps): bump genbadge[all] from 1.1.2 to 1.1.3 (#96) @[dependabot[bot]](https://github.com/apps/dependabot)
+* pip(deps): bump ruff from 0.14.4 to 0.14.7 (#97) @[dependabot[bot]](https://github.com/apps/dependabot)
+* pip(deps): bump black from 25.9.0 to 25.11.0 (#98) @[dependabot[bot]](https://github.com/apps/dependabot)
+* github actions(deps): bump actions/checkout from 5 to 6 (#99) @[dependabot[bot]](https://github.com/apps/dependabot)
+
+
+Published Date: 2025 December 30, 22:13
+
+### <span style='color:blue'>Improved Date Formatting Functionality</span> ([v2025-11-14-001](https://github.com/devsetgo/bumpcalver/releases/tag/v2025-11-14-001))
+
+#### What's Changed
+* 93 using quarter in date formatting not updating (#94) @devsetgo
+* update of requirements versions (#92) @devsetgo
+
+
+Published Date: 2025 November 14, 21:31
+
 ### <span style='color:blue'>Undo functionality and History</span> ([v2025.10.11.2](https://github.com/devsetgo/bumpcalver/releases/tag/v2025.10.11.2))
 
 #### What's Changed

@@ -64,9 +64,79 @@ def parse_dot_path(dot_path: str, file_type: str) -> str:
     return dot_path
 
 
+_SEMVER_PLACEHOLDERS = frozenset({"{major}", "{minor}", "{patch}"})
+_CURRENT_DATE_KEY = "{current_date}"
+_TWO_DIGITS = r"\d{2}"
+
+_STRFTIME_CODES = [
+    ("%-m", r"\d{1,2}"),
+    ("%-d", r"\d{1,2}"),
+    ("%Y",  r"\d{4}"),
+    ("%y",  _TWO_DIGITS),
+    ("%m",  _TWO_DIGITS),
+    ("%d",  _TWO_DIGITS),
+    ("%j",  r"\d{3}"),
+    ("%H",  _TWO_DIGITS),
+    ("%M",  _TWO_DIGITS),
+    ("%S",  _TWO_DIGITS),
+    ("%q",  r"\d"),
+]
+
+
+def _is_hybrid_format(version_format: str) -> bool:
+    """Return True if version_format contains any semantic version placeholders."""
+    return any(ph in version_format for ph in _SEMVER_PLACEHOLDERS)
+
+
+def _date_format_to_regex(date_format: str) -> str:
+    """Convert a strftime date_format string to a regex fragment."""
+    result = re.escape(date_format)
+    for code, pattern in _STRFTIME_CODES:
+        result = result.replace(re.escape(code), pattern)
+    return result
+
+
+def _parse_hybrid_version(
+    version: str, version_format: str, date_format: str
+) -> Optional[tuple]:
+    """Parse a hybrid semantic+calendar version string.
+
+    Returns (date_str, build_count) or None.
+    """
+    temp = re.sub(r'\{build_count:[^}]+\}', "__BUILD_SPEC__", version_format)
+    temp = (temp
+            .replace("{major}",        "__MAJOR__")
+            .replace("{minor}",        "__MINOR__")
+            .replace("{patch}",        "__PATCH__")
+            .replace(_CURRENT_DATE_KEY, "__DATE__")
+            .replace("{build_count}",  "__BUILD__"))
+
+    pattern = re.escape(temp)
+    date_rx = _date_format_to_regex(date_format)
+    pattern = (pattern
+               .replace("__MAJOR__",      r"(?P<major>\d+)")
+               .replace("__MINOR__",      r"(?P<minor>\d+)")
+               .replace("__PATCH__",      r"(?P<patch>\d+)")
+               .replace("__DATE__",       f"(?P<current_date>{date_rx})")
+               .replace("__BUILD_SPEC__", r"(?P<build_count>\d+)")
+               .replace("__BUILD__",      r"(?P<build_count>\d+)"))
+
+    clean = _clean_version_suffixes(version)
+    m = re.fullmatch(pattern, clean)
+    if not m:
+        return None
+
+    date_str = m.group("current_date")
+    try:
+        count = int(m.group("build_count"))
+    except (IndexError, ValueError):
+        count = 0
+    return date_str, count
+
+
 def _is_invalid_version_prefix(version: str) -> bool:
     """Check if version has invalid prefixes that indicate non-CalVer patterns."""
-    return version.startswith('v') or version.startswith('release')
+    return version.startswith(('v', 'release'))
 
 
 def _clean_version_suffixes(version: str) -> str:
@@ -111,21 +181,24 @@ def _parse_dot_separated_version(version_parts: list[str]) -> Optional[tuple[str
     return date_str, count
 
 
-def _parse_dynamic_version(version: str, version_format: str) -> Optional[tuple]:
+def _parse_dynamic_version(version: str, version_format: str, date_format: str = "") -> Optional[tuple]:
     """Parse version using dynamic format rules."""
+    if _is_hybrid_format(version_format):
+        return _parse_hybrid_version(version, version_format, date_format)
+
     if _is_invalid_version_prefix(version):
         return None
 
     clean_version = _clean_version_suffixes(version)
 
     # Handle formats without build count (date-only)
-    if "{current_date}" in version_format and "{build_count" not in version_format:
+    if _CURRENT_DATE_KEY in version_format and "{build_count" not in version_format:
         if _validate_date_format(clean_version):
             return clean_version, 0
         return None # pragma: no cover
 
     # Handle dot-separated formats
-    if "{current_date}" in version_format and "." in version_format:
+    if _CURRENT_DATE_KEY in version_format and "." in version_format:
         version_parts = clean_version.split(".")
         return _parse_dot_separated_version(version_parts)
 
@@ -172,7 +245,7 @@ def parse_version(version: str, version_format: Optional[str] = None, date_forma
     # Try dynamic parsing if format parameters are provided
     if version_format and date_format:
         try:
-            result = _parse_dynamic_version(version, version_format)
+            result = _parse_dynamic_version(version, version_format, date_format or "")
             if result is not None:
                 return result
         except Exception as e:
@@ -216,8 +289,29 @@ def get_current_datetime_version(
 
     return now.strftime(date_format)
 
+def update_semantic_in_config(key: str, value: int) -> bool:
+    """Update major/minor/patch integer in pyproject.toml or bumpcalver.toml."""
+    for config_file in ("pyproject.toml", "bumpcalver.toml"):
+        if os.path.exists(config_file):
+            with open(config_file, "r", encoding="utf-8") as f:
+                content = f.read()
+            pattern = rf'^({re.escape(key)}\s*=\s*)\d+'
+            new_content = re.sub(pattern, rf'\g<1>{value}', content, flags=re.MULTILINE)
+            if new_content != content:
+                with open(config_file, "w", encoding="utf-8") as f:
+                    f.write(new_content)
+                return True
+    return False
+
+
 def get_build_version(
-    file_config: Dict[str, Any], version_format: str, timezone: str, date_format: str
+    file_config: Dict[str, Any],
+    version_format: str,
+    timezone: str,
+    date_format: str,
+    major: int = 0,
+    minor: int = 0,
+    patch: int = 0,
 ) -> str:
     """Returns the build version string based on the provided file configuration.
 
@@ -285,4 +379,10 @@ def get_build_version(
         build_count = 1
 
     # Return the formatted build version string
-    return version_format.format(current_date=current_date, build_count=build_count)
+    return version_format.format(
+        current_date=current_date,
+        build_count=build_count,
+        major=major,
+        minor=minor,
+        patch=patch,
+    )

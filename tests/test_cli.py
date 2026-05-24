@@ -213,6 +213,9 @@ def test_build_option(monkeypatch):
         mock_config["version_format"],
         mock_config["timezone"],
         mock_config["date_format"],
+        major=0,
+        minor=0,
+        patch=0,
     )
 
     # Verify the output

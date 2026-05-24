@@ -55,6 +55,9 @@ def load_config() -> Dict[str, Any]:
             config["file_configs"] = bumpcalver_config.get("file", [])
             config["git_tag"] = bumpcalver_config.get("git_tag", False)
             config["auto_commit"] = bumpcalver_config.get("auto_commit", False)
+            config["major"] = bumpcalver_config.get("major", 0)
+            config["minor"] = bumpcalver_config.get("minor", 0)
+            config["patch"] = bumpcalver_config.get("patch", 0)
 
             for file_config in config["file_configs"]:
                 original_path = file_config["path"]
