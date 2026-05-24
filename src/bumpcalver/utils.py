@@ -149,7 +149,8 @@ def _clean_version_suffixes(version: str) -> str:
     if cleaned != version:
         return cleaned
     # PEP 440 attached directly after a digit: b1, a1, rc1, etc.
-    return re.sub(r'(?<=\d)[a-zA-Z]+\d*$', '', version)
+    # Explicit alternation avoids backtracking ambiguity on [a-zA-Z]+\d*.
+    return re.sub(r'(?<=\d)(alpha|beta|rc|a|b)\d*$', '', version)
 
 
 def apply_prerelease_suffix(
