@@ -198,19 +198,47 @@ version_standard = "default"
 
 ## Advanced Patterns
 
-### Beta/Alpha Releases
+### Pre-release Suffixes
 
-BumpCalver automatically handles pre-release suffixes:
+BumpCalver supports configurable pre-release suffixes via `--beta`, `--rc`, and `--release`. The default suffix format produces dot-separated labels:
 
 ```bash
-# Create a beta version
-bumpcalver --build --beta
-# Result: 24.Q4.001.beta
-
-# Create an alpha version
-bumpcalver --build --alpha
-# Result: 24.Q4.001.alpha
+bumpcalver --build --beta     # Result: 24.Q4.001.beta
+bumpcalver --build --rc       # Result: 24.Q4.001.rc
+bumpcalver --build --release  # Result: 24.Q4.001.release
 ```
+
+Configure PEP 440-style suffixes with an auto-incrementing counter:
+
+```toml
+[tool.bumpcalver]
+beta_format = "b{beta_count}"   # → 24.Q4.001b1, 24.Q4.001b2, …
+rc_format   = "rc{rc_count}"   # → 24.Q4.001rc1, 24.Q4.001rc2, …
+```
+
+The counter increments when the **same base version** is re-tagged as a new pre-release, and resets to 1 when the base version changes (e.g., a new day or new `--build`). See [Configuration Examples](examples/configuration.md#pre-release-suffix-formats) for the full reference table.
+
+### Hybrid Semantic + Calendar Versioning
+
+For projects that want to keep a familiar SemVer prefix (`1.0`, `2.3`) while also showing release dates, BumpCalver supports hybrid formats using `{major}`, `{minor}`, and `{patch}` placeholders:
+
+```toml
+[tool.bumpcalver]
+major = 1
+minor = 0
+version_format = "{major}.{minor}-{current_date}.{build_count}"
+date_format = "%Y%m%d"
+# Produces: 1.0-20260523.1
+```
+
+Bump the semantic prefix from the CLI:
+
+```bash
+bumpcalver --build --bump minor   # → 1.1-20260523.1
+bumpcalver --build --bump major   # → 2.0-20260523.1
+```
+
+See the [Hybrid Versioning Guide](hybrid-versioning-guide.md) for the full list of supported formats, CLI options, and best practices.
 
 ### Mixed Separators (Limited Support)
 

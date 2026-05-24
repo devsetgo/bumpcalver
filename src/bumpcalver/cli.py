@@ -45,7 +45,7 @@ from .config import load_config
 from .git_utils import create_git_tag
 from .handlers import get_version_handler, update_version_in_files
 from .undo_utils import list_undo_history, undo_last_operation, undo_operation_by_id
-from .utils import default_timezone, get_build_version, get_current_datetime_version
+from .utils import apply_prerelease_suffix, default_timezone, get_build_version, get_current_datetime_version, update_semantic_in_config
 
 
 @click.command()
@@ -70,6 +70,12 @@ from .utils import default_timezone, get_build_version, get_current_datetime_ver
 @click.option("--undo", is_flag=True, help="Undo the last version bump operation")
 @click.option("--undo-id", default=None, help="Undo a specific operation by ID")
 @click.option("--list-history", is_flag=True, help="List recent operations that can be undone")
+@click.option(
+    "--bump",
+    type=click.Choice(["major", "minor", "patch"]),
+    default=None,
+    help="Increment the specified semantic version component in config",
+)
 def main(
     beta: bool,
     rc: bool,
@@ -82,9 +88,10 @@ def main(
     undo: bool,
     undo_id: Optional[str],
     list_history: bool,
+    bump: Optional[str],
 ) -> None:
     # Check for conflicting undo options with version bump options FIRST
-    version_bump_options = [beta, rc, release, build, bool(custom)]
+    version_bump_options = [beta, rc, release, build, bool(custom), bool(bump)]
     undo_options = [undo, bool(undo_id), list_history]
 
     if any(version_bump_options) and any(undo_options):
@@ -124,6 +131,25 @@ def main(
     config_timezone: str = config.get("timezone", default_timezone)
     config_git_tag: bool = config.get("git_tag", False)
     config_auto_commit: bool = config.get("auto_commit", False)
+    config_major: int = config.get("major", 0)
+    config_minor: int = config.get("minor", 0)
+    config_patch: int = config.get("patch", 0)
+
+    if bump == "major":
+        config_major += 1
+        config_minor = 0
+        config_patch = 0
+        update_semantic_in_config("major", config_major)
+        update_semantic_in_config("minor", config_minor)
+        update_semantic_in_config("patch", config_patch)
+    elif bump == "minor":
+        config_minor += 1
+        config_patch = 0
+        update_semantic_in_config("minor", config_minor)
+        update_semantic_in_config("patch", config_patch)
+    elif bump == "patch":
+        config_patch += 1
+        update_semantic_in_config("patch", config_patch)
 
     if not file_configs:  # pragma: no cover
         print("No files specified in the configuration.")
@@ -144,18 +170,32 @@ def main(
             print("Build option is set. Calling get_build_version.")
             init_file_config: Dict[str, Any] = file_configs[0]
             new_version: str = get_build_version(
-                init_file_config, version_format, timezone, date_format
+                init_file_config, version_format, timezone, date_format,
+                major=config_major, minor=config_minor, patch=config_patch,
             )
         else:
             print("Build option is not set. Calling get_current_datetime_version.")
             new_version = get_current_datetime_version(timezone, date_format)
 
+        if beta or rc or release:
+            current_raw_version = ""
+            try:
+                first_cfg = file_configs[0]
+                handler = get_version_handler(first_cfg.get("file_type", ""))
+                directive = first_cfg.get("directive", "")
+                if directive:
+                    current_raw_version = handler.read_version(first_cfg["path"], first_cfg.get("variable", ""), directive=directive) or ""
+                else:
+                    current_raw_version = handler.read_version(first_cfg["path"], first_cfg.get("variable", "")) or ""
+            except Exception:
+                pass
+
         if beta:
-            new_version += ".beta"
+            new_version = apply_prerelease_suffix(new_version, config.get("beta_format", ".beta"), current_raw_version)
         elif rc:
-            new_version += ".rc"
+            new_version = apply_prerelease_suffix(new_version, config.get("rc_format", ".rc"), current_raw_version)
         elif release:
-            new_version += ".release"
+            new_version = apply_prerelease_suffix(new_version, config.get("release_format", ".release"), current_raw_version)
         elif custom:
             new_version += f".{custom}"
 

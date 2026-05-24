@@ -80,9 +80,15 @@ As an alternative, you can use configuration file named `bumpcalver.toml`. The C
 
 ### Configuration Options
 
-- `version_format` (string): Format string for the version. Should include `{current_date}` and `{build_count}` placeholders.
+- `version_format` (string): Format string for the version. Supports `{current_date}`, `{build_count}`, and the hybrid placeholders `{major}`, `{minor}`, `{patch}`.
 - `date_format` (string): Format string for the date. Supports various combinations of year, month, day, quarter, and week.
 - `timezone` (string): Timezone for date calculations (e.g., `UTC`, `America/New_York`).
+- `major` (integer, optional): Major version component for hybrid versioning. Defaults to `0`.
+- `minor` (integer, optional): Minor version component for hybrid versioning. Defaults to `0`.
+- `patch` (integer, optional): Patch version component for hybrid versioning. Defaults to `0`.
+- `beta_format` (string, optional): Suffix appended when `--beta` is used. Supports a `{beta_count}` placeholder for auto-incrementing. Defaults to `.beta`.
+- `rc_format` (string, optional): Suffix appended when `--rc` is used. Supports a `{rc_count}` placeholder. Defaults to `.rc`.
+- `release_format` (string, optional): Suffix appended when `--release` is used. Defaults to `.release`.
 - `file` (list of tables): Specifies which files to update and how to find the version string.
   - `path` (string): Path to the file to be updated.
   - `file_type` (string): Type of the file (e.g., `python`, `toml`, `yaml`, `json`, `xml`, `dockerfile`, `makefile`, `properties`, `env`, `setup.cfg`).
@@ -209,6 +215,8 @@ Options:
   --release                   Use release versioning.
   --custom TEXT               Add custom suffix to version.
   --build                     Use build count versioning.
+  --bump [major|minor|patch]  Increment the specified semantic version
+                              component in config (for hybrid versioning).
   --timezone TEXT             Timezone for date calculations (default: value
                               from config or America/New_York).
   --git-tag / --no-git-tag    Create a Git tag with the new version.
@@ -223,11 +231,12 @@ Options:
 
 ### Version Bump Options
 
-- `--beta`: Adds `.beta` suffix to the version.
-- `--rc`: Adds `.rc` suffix to the version.
-- `--release`: Adds `.release` suffix to the version.
+- `--beta`: Appends the configured `beta_format` suffix (default `.beta`) to the version.
+- `--rc`: Appends the configured `rc_format` suffix (default `.rc`) to the version.
+- `--release`: Appends the configured `release_format` suffix (default `.release`) to the version.
 - `--custom TEXT`: Adds a custom suffix to the version.
 - `--build`: Increments the build count based on the current date.
+- `--bump [major|minor|patch]`: Increments the specified semantic component (`major`, `minor`, or `patch`) in config and writes the new value back. Use with hybrid `version_format` strings that contain `{major}`, `{minor}`, or `{patch}`.
 - `--timezone`: Overrides the timezone specified in the configuration.
 - `--git-tag` / `--no-git-tag`: Forces Git tagging on or off, overriding the configuration.
 - `--auto-commit` / `--no-auto-commit`: Forces auto-commit on or off, overriding the configuration.
@@ -298,6 +307,64 @@ Undo a specific operation by ID:
 bumpcalver --undo-id 20251012_143015_123
 ```
 
+### Pre-release Versioning
+
+By default `--beta`, `--rc`, and `--release` append `.beta`, `.rc`, and `.release`:
+
+```bash
+bumpcalver --build --beta     # → 26.05.24.1.beta
+bumpcalver --build --rc       # → 26.05.24.1.rc
+bumpcalver --build --release  # → 26.05.24.1.release
+```
+
+Configure the suffix format — including an optional counter — in `pyproject.toml`:
+
+```toml
+[tool.bumpcalver]
+beta_format    = "b{beta_count}"   # PEP 440 style: 26.05.24.1b1, 26.05.24.1b2
+rc_format      = "rc{rc_count}"   # PEP 440 style: 26.05.24.1rc1
+release_format = ".release"       # literal suffix (no counter)
+```
+
+The `{beta_count}` placeholder auto-increments when the same base version already has a beta suffix in the file; it resets to 1 when the base version changes.
+
+```bash
+bumpcalver --beta   # → 26.05.24.1b1  (first beta of this build)
+bumpcalver --beta   # → 26.05.24.1b2  (second beta of the same build)
+bumpcalver --build --beta  # → 26.05.24.2b1  (new build, counter resets)
+```
+
+### Hybrid Semantic + Calendar Versioning
+
+Combine a SemVer prefix with a CalVer date to signal both maturity and release timing:
+
+```toml
+[tool.bumpcalver]
+major = 1
+minor = 0
+patch = 0
+version_format = "{major}.{minor}-{current_date}.{build_count}"
+date_format = "%Y%m%d"
+```
+
+```bash
+# Standard build — uses major/minor from config
+bumpcalver --build
+# → 1.0-20260523.1
+
+# Bump minor and rebuild in one step
+bumpcalver --build --bump minor
+# → 1.1-20260523.1  (config updated: minor = 1)
+
+# Bump major (resets minor and patch to 0)
+bumpcalver --build --bump major
+# → 2.0-20260523.1  (config updated: major = 2, minor = 0, patch = 0)
+```
+
+See the [Hybrid Versioning Guide](https://devsetgo.github.io/bumpcalver/latest/hybrid-versioning-guide.md) for full details.
+
+---
+
 ### Safety Net Workflow
 
 Use undo functionality as a safety net during development:
@@ -326,6 +393,7 @@ For comprehensive information about BumpCalver, check out our documentation:
 
 - **[QuickStart Guide](https://devsetgo.github.io/bumpcalver/latest/quickstart.md)** - Get started with BumpCalver quickly
 - **[Calendar Versioning Guide](https://devsetgo.github.io/bumpcalver/latest/calendar-versioning-guide.md)** - Comprehensive guide to calendar versioning patterns, real-world examples, and best practices
+- **[Hybrid Versioning Guide](https://devsetgo.github.io/bumpcalver/latest/hybrid-versioning-guide.md)** - Combining semantic version prefixes (`1.0`) with calendar dates for dual-signal versioning
 - **[Development Guide](https://devsetgo.github.io/bumpcalver/latest/development-guide.md)** - How to contribute to the project, development setup, testing procedures, and PR guidelines
 - **[Undo Operations](https://devsetgo.github.io/bumpcalver/latest/undo.md)** - How to revert version changes
 - **[Versioning Strategies](https://devsetgo.github.io/bumpcalver/latest/versioning.md)** - Different approaches to version management

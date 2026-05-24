@@ -1,8 +1,24 @@
+# Standard CalVer format (default)
 version_format = "{current_date}-{build_count:03}"
 date_format = "%y.%m.%d"
 timezone = "America/New_York"
 git_tag = true
 auto_commit = true
+
+# --- Pre-release suffix formats (optional) ---
+# Defaults produce .beta / .rc / .release when --beta / --rc / --release is used.
+# Use {beta_count} / {rc_count} for PEP 440-style counters (b1, rc1, …).
+# beta_format    = "b{beta_count}"   # → 26.05.24.1b1
+# rc_format      = "rc{rc_count}"    # → 26.05.24.1rc1
+# release_format = ".release"
+
+# --- Hybrid Semantic + Calendar Versioning (optional) ---
+# Uncomment and set major/minor/patch to use a hybrid format such as 1.0-20260523.1
+# major = 1
+# minor = 0
+# patch = 0
+# version_format = "{major}.{minor}-{current_date}.{build_count}"
+# date_format = "%Y%m%d"
 
 [[file]]
 path = "pyproject.toml"

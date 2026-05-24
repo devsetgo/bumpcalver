@@ -226,3 +226,39 @@ def test_load_config_no_config_file_found(monkeypatch):
         file=sys.stderr,
     )
     assert config == {}
+
+
+def test_load_config_reads_suffix_formats(monkeypatch):
+    monkeypatch.setattr(os.path, "exists", lambda x: x == "pyproject.toml")
+    content = {
+        "tool": {
+            "bumpcalver": {
+                "version_format": "{current_date}.{build_count}",
+                "file": [],
+                "beta_format": "b{beta_count}",
+                "rc_format": "rc{rc_count}",
+                "release_format": ".final",
+            }
+        }
+    }
+    monkeypatch.setattr(toml, "load", lambda f: content)
+    monkeypatch.setattr("src.bumpcalver.config.parse_dot_path", lambda x, y: x)
+
+    config = load_config()
+
+    assert config["beta_format"] == "b{beta_count}"
+    assert config["rc_format"] == "rc{rc_count}"
+    assert config["release_format"] == ".final"
+
+
+def test_load_config_suffix_format_defaults(monkeypatch):
+    monkeypatch.setattr(os.path, "exists", lambda x: x == "pyproject.toml")
+    content = {"tool": {"bumpcalver": {"version_format": "{current_date}.{build_count}", "file": []}}}
+    monkeypatch.setattr(toml, "load", lambda f: content)
+    monkeypatch.setattr("src.bumpcalver.config.parse_dot_path", lambda x, y: x)
+
+    config = load_config()
+
+    assert config["beta_format"] == ".beta"
+    assert config["rc_format"] == ".rc"
+    assert config["release_format"] == ".release"
