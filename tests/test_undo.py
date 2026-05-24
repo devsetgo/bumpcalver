@@ -8,7 +8,6 @@ import os
 import shutil
 import subprocess
 import tempfile
-import time
 import unittest
 from datetime import datetime
 from unittest import mock
@@ -21,7 +20,6 @@ from src.bumpcalver.undo_utils import (
     undo_operation_by_id,
     undo_operation,
     undo_git_operations,
-    validate_undo_safety
 )
 from tests.test_utils_isolated import isolated_test_environment, create_test_file
 
@@ -463,28 +461,6 @@ class TestUndoUtilities(unittest.TestCase):
 
             self.assertFalse(success)
 
-    def test_validate_undo_safety(self):
-        """Test undo safety validation."""
-        with isolated_test_environment() as test_dir:
-            # Create test file and backup
-            original_file = create_test_file(test_dir, "test.py", "__version__ = '1.0.0'\n")
-            backup_path = self.backup_manager.create_backup(original_file)
-
-            operation = {
-                "operation_id": "test_op",
-                "backups": {original_file: backup_path}
-            }
-
-            # Test with valid backup
-            warnings = validate_undo_safety(operation)
-            self.assertEqual(len(warnings), 0)
-
-            # Test with missing backup
-            operation["backups"] = {original_file: "/nonexistent/backup.py"}
-            warnings = validate_undo_safety(operation)
-            self.assertGreater(len(warnings), 0)
-            self.assertTrue(any("not found" in warning for warning in warnings))
-
     @mock.patch('src.bumpcalver.undo_utils.restore_files_from_backups')
     @mock.patch('src.bumpcalver.undo_utils.undo_git_operations')
     def test_undo_last_operation(self, mock_undo_git, mock_restore_files):
@@ -613,65 +589,6 @@ class TestUndoUtilities(unittest.TestCase):
             with open(original_file, 'r') as f:
                 content = f.read()
             self.assertIn("1.0.0", content)
-
-    def test_validate_undo_safety_warnings(self):
-        """Test validate_undo_safety with various warning conditions."""
-        with isolated_test_environment():
-            # Create test operation with missing backup
-            operation = {
-                "operation_id": "test_op",
-                "version": "1.0.0",
-                "files_updated": ["test.py"],
-                "backups": {"test.py": "/nonexistent/backup.py"},
-                "timestamp": "2025-10-12T10:00:00"
-            }
-
-            warnings = validate_undo_safety(operation)
-            self.assertEqual(len(warnings), 1)
-            self.assertIn("Backup file /nonexistent/backup.py not found", warnings[0])
-
-    def test_validate_undo_safety_modified_files(self):
-        """Test validate_undo_safety with modified files."""
-        with isolated_test_environment() as temp_dir:
-            # Create original and backup files
-            original_file = create_test_file(temp_dir, "test.py", "__version__ = '1.0.0'\n")
-            backup_file = create_test_file(temp_dir, "backup.py", "__version__ = '1.0.0'\n")
-
-            # Make backup file older
-            old_time = time.time() - 10  # 10 seconds ago
-            os.utime(backup_file, (old_time, old_time))
-
-            operation = {
-                "operation_id": "test_op",
-                "version": "1.0.0",
-                "files_updated": [original_file],
-                "backups": {original_file: backup_file},
-                "timestamp": "2025-10-12T10:00:00"
-            }
-
-            warnings = validate_undo_safety(operation)
-            # Should warn about file being potentially modified
-            modified_warnings = [w for w in warnings if "may have been modified" in w]
-            self.assertEqual(len(modified_warnings), 1)
-
-    def test_validate_undo_safety_os_error(self):
-        """Test validate_undo_safety handles OS errors."""
-        with isolated_test_environment() as temp_dir:
-            original_file = create_test_file(temp_dir, "test.py", "__version__ = '1.0.0'\n")
-            backup_file = create_test_file(temp_dir, "backup.py", "__version__ = '1.0.0'\n")
-
-            operation = {
-                "operation_id": "test_op",
-                "version": "1.0.0",
-                "files_updated": [original_file],
-                "backups": {original_file: backup_file},
-                "timestamp": "2025-10-12T10:00:00"
-            }
-
-            with mock.patch('os.path.getmtime', side_effect=OSError("Permission denied")):
-                warnings = validate_undo_safety(operation)
-                os_error_warnings = [w for w in warnings if "Cannot check modification time" in w]
-                self.assertEqual(len(os_error_warnings), 1)
 
     @mock.patch('subprocess.run')
     def test_undo_git_operations_commit_and_tag(self, mock_run):

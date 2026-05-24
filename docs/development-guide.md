@@ -265,16 +265,13 @@ class YourFormatHandler(VersionHandler):
         # Implementation
 ```
 
-2. **Register the Handler** in the `get_version_handler` function:
+2. **Register the Handler** by adding it to `_HANDLER_REGISTRY` in `handlers.py`:
 
 ```python
-def get_version_handler(file_type: str) -> VersionHandler:
-    """Get the appropriate version handler for the file type."""
-    handlers = {
-        # ... existing handlers
-        "your_format": YourFormatHandler(),
-    }
-    # ...
+_HANDLER_REGISTRY: Dict[str, type] = {
+    # ... existing entries
+    "your_format": YourFormatHandler,
+}
 ```
 
 3. **Add Tests** in `tests/test_handlers.py`:

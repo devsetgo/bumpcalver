@@ -5,7 +5,7 @@
 
 Support Python Versions
 
-![Static Badge](https://img.shields.io/badge/Python-3.13%20%7C%203.12%20%7C%203.11%20%7C%203.10%20%7C%203.9-blue)
+![Static Badge](https://img.shields.io/badge/Python-3.14%20%7C%203.13%20%7C%203.12%20%7C%203.11%20%7C%203.10%20%7C%203.9-blue)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Coverage Status](https://raw.githubusercontent.com/devsetgo/bumpcalver/refs/heads/main/coverage-badge.svg)](./reports/coverage/index.html)
 [![Tests Status](https://raw.githubusercontent.com/devsetgo/bumpcalver/refs/heads/main/tests-badge.svg)](./reports/coverage/index.html)
@@ -24,9 +24,6 @@ SonarCloud:
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=devsetgo_bumpcalver&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=devsetgo_bumpcalver)
 
 # BumpCalver CLI Documentation
-
-## Note
-This project should be consider in beta as it could have bugs due to being only a few months old.
 
 ## Overview
 
@@ -53,8 +50,6 @@ To install the BumpCalver CLI, you can add it to your project's dependencies. If
 ```bash
 pip install bumpcalver
 ```
-
-*Note: Replace the installation command with the actual method based on how the package is distributed.*
 
 ---
 
@@ -396,7 +391,7 @@ For comprehensive information about BumpCalver, check out our documentation:
 - **[Hybrid Versioning Guide](https://devsetgo.github.io/bumpcalver/latest/hybrid-versioning-guide.md)** - Combining semantic version prefixes (`1.0`) with calendar dates for dual-signal versioning
 - **[Development Guide](https://devsetgo.github.io/bumpcalver/latest/development-guide.md)** - How to contribute to the project, development setup, testing procedures, and PR guidelines
 - **[Undo Operations](https://devsetgo.github.io/bumpcalver/latest/undo.md)** - How to revert version changes
-- **[Versioning Strategies](https://devsetgo.github.io/bumpcalver/latest/versioning.md)** - Different approaches to version management
+- **[Hybrid Versioning Guide](https://devsetgo.github.io/bumpcalver/latest/hybrid-versioning-guide.md)** - Combining semantic version prefixes with calendar dates
 
 For the full documentation site, visit: [BumpCalver CLI Documentation](https://devsetgo.github.io/bumpcalver/)
 

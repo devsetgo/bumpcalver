@@ -1,7 +1,51 @@
 [
   {
+    "operation_id": "20260524_225603_565",
+    "timestamp": "2026-05-24T22:56:03.610559",
+    "version": "2026.05.24.001",
+    "files_updated": [
+      "/workspaces/bumpcalver/makefile",
+      "/workspaces/bumpcalver/pyproject.toml",
+      "/workspaces/bumpcalver/src/bumpcalver/__init__.py",
+      "/workspaces/bumpcalver/examples/makefile",
+      "/workspaces/bumpcalver/examples/dockerfile",
+      "/workspaces/bumpcalver/examples/dockerfile",
+      "/workspaces/bumpcalver/examples/example.py",
+      "/workspaces/bumpcalver/examples/pyproject.toml",
+      "/workspaces/bumpcalver/examples/example.xml",
+      "/workspaces/bumpcalver/examples/example.json",
+      "/workspaces/bumpcalver/examples/example.yaml",
+      "/workspaces/bumpcalver/examples/example.toml",
+      "/workspaces/bumpcalver/sonar-project.properties",
+      "/workspaces/bumpcalver/examples/sonar-project.properties",
+      "/workspaces/bumpcalver/examples/.env",
+      "/workspaces/bumpcalver/examples/setup.cfg"
+    ],
+    "backups": {
+      "/workspaces/bumpcalver/makefile": "/workspaces/bumpcalver/.bumpcalver/backups/20260524_225603_565_makefile",
+      "/workspaces/bumpcalver/pyproject.toml": "/workspaces/bumpcalver/.bumpcalver/backups/20260524_225603_565_pyproject.toml",
+      "/workspaces/bumpcalver/src/bumpcalver/__init__.py": "/workspaces/bumpcalver/.bumpcalver/backups/20260524_225603_566___init__.py",
+      "/workspaces/bumpcalver/examples/makefile": "/workspaces/bumpcalver/.bumpcalver/backups/20260524_225603_566_makefile",
+      "/workspaces/bumpcalver/examples/dockerfile": "/workspaces/bumpcalver/.bumpcalver/backups/20260524_225603_567_dockerfile",
+      "/workspaces/bumpcalver/examples/example.py": "/workspaces/bumpcalver/.bumpcalver/backups/20260524_225603_568_example.py",
+      "/workspaces/bumpcalver/examples/pyproject.toml": "/workspaces/bumpcalver/.bumpcalver/backups/20260524_225603_568_pyproject.toml",
+      "/workspaces/bumpcalver/examples/example.xml": "/workspaces/bumpcalver/.bumpcalver/backups/20260524_225603_569_example.xml",
+      "/workspaces/bumpcalver/examples/example.json": "/workspaces/bumpcalver/.bumpcalver/backups/20260524_225603_570_example.json",
+      "/workspaces/bumpcalver/examples/example.yaml": "/workspaces/bumpcalver/.bumpcalver/backups/20260524_225603_570_example.yaml",
+      "/workspaces/bumpcalver/examples/example.toml": "/workspaces/bumpcalver/.bumpcalver/backups/20260524_225603_571_example.toml",
+      "/workspaces/bumpcalver/sonar-project.properties": "/workspaces/bumpcalver/.bumpcalver/backups/20260524_225603_571_sonar-project.properties",
+      "/workspaces/bumpcalver/examples/sonar-project.properties": "/workspaces/bumpcalver/.bumpcalver/backups/20260524_225603_572_sonar-project.properties",
+      "/workspaces/bumpcalver/examples/.env": "/workspaces/bumpcalver/.bumpcalver/backups/20260524_225603_572_.env",
+      "/workspaces/bumpcalver/examples/setup.cfg": "/workspaces/bumpcalver/.bumpcalver/backups/20260524_225603_573_setup.cfg"
+    },
+    "git_tag": true,
+    "git_commit": false,
+    "git_commit_hash": null,
+    "git_tag_name": "2026.05.24.001"
+  },
+  {
     "operation_id": "test_op",
-    "timestamp": "2026-05-24T01:20:10.231295",
+    "timestamp": "2026-05-24T03:10:00.152354",
     "version": "2025.10.12.001",
     "files_updated": [
       "test.py"
@@ -16,7 +60,7 @@
   },
   {
     "operation_id": "test-123",
-    "timestamp": "2026-05-24T01:20:10.209832",
+    "timestamp": "2026-05-24T03:10:00.073863",
     "version": "1.0.0",
     "files_updated": [
       "test.py"
@@ -30,8 +74,8 @@
     "git_tag_name": "v1.0.0"
   },
   {
-    "operation_id": "20260524_012009_860",
-    "timestamp": "2026-05-24T01:20:09.861113",
+    "operation_id": "20260524_030959_780",
+    "timestamp": "2026-05-24T03:09:59.780783",
     "version": "26.05.24rc1",
     "files_updated": [
       "test.py"
@@ -43,8 +87,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_012009_858",
-    "timestamp": "2026-05-24T01:20:09.858202",
+    "operation_id": "20260524_030959_778",
+    "timestamp": "2026-05-24T03:09:59.778718",
     "version": "26.05.24b2",
     "files_updated": [
       "test.py"
@@ -56,8 +100,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_012009_855",
-    "timestamp": "2026-05-24T01:20:09.855415",
+    "operation_id": "20260524_030959_776",
+    "timestamp": "2026-05-24T03:09:59.776391",
     "version": "26.05.24b1",
     "files_updated": [
       "test.py"
@@ -69,8 +113,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_012009_845",
-    "timestamp": "2026-05-24T01:20:09.850431",
+    "operation_id": "20260524_030959_767",
+    "timestamp": "2026-05-24T03:09:59.771638",
     "version": "2025.01.01",
     "files_updated": [
       "test.py"
@@ -82,8 +126,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_012009_825",
-    "timestamp": "2026-05-24T01:20:09.825285",
+    "operation_id": "20260524_030959_746",
+    "timestamp": "2026-05-24T03:09:59.746767",
     "version": "2025-08-03.1.2.3",
     "files_updated": [
       "test.py"
@@ -95,8 +139,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_012009_823",
-    "timestamp": "2026-05-24T01:20:09.823380",
+    "operation_id": "20260524_030959_742",
+    "timestamp": "2026-05-24T03:09:59.742982",
     "version": "2025-08-03.release",
     "files_updated": [
       "test.py"
@@ -108,8 +152,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_012009_819",
-    "timestamp": "2026-05-24T01:20:09.820088",
+    "operation_id": "20260524_030959_740",
+    "timestamp": "2026-05-24T03:09:59.740961",
     "version": "2025-08-03.rc",
     "files_updated": [
       "test.py"
@@ -121,8 +165,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_012009_815",
-    "timestamp": "2026-05-24T01:20:09.815260",
+    "operation_id": "20260524_030959_737",
+    "timestamp": "2026-05-24T03:09:59.738364",
     "version": "2025-08-03.beta",
     "files_updated": [
       "test.py"
@@ -135,7 +179,7 @@
   },
   {
     "operation_id": "test_op",
-    "timestamp": "2026-05-24T00:57:46.550013",
+    "timestamp": "2026-05-24T03:09:02.879852",
     "version": "2025.10.12.001",
     "files_updated": [
       "test.py"
@@ -150,7 +194,7 @@
   },
   {
     "operation_id": "test-123",
-    "timestamp": "2026-05-24T00:57:46.523468",
+    "timestamp": "2026-05-24T03:09:02.855216",
     "version": "1.0.0",
     "files_updated": [
       "test.py"
@@ -164,8 +208,8 @@
     "git_tag_name": "v1.0.0"
   },
   {
-    "operation_id": "20260524_005746_221",
-    "timestamp": "2026-05-24T00:57:46.221211",
+    "operation_id": "20260524_030902_423",
+    "timestamp": "2026-05-24T03:09:02.423989",
     "version": "26.05.24rc1",
     "files_updated": [
       "test.py"
@@ -177,8 +221,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_005746_218",
-    "timestamp": "2026-05-24T00:57:46.219028",
+    "operation_id": "20260524_030902_420",
+    "timestamp": "2026-05-24T03:09:02.420339",
     "version": "26.05.24b2",
     "files_updated": [
       "test.py"
@@ -190,8 +234,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_005746_216",
-    "timestamp": "2026-05-24T00:57:46.216667",
+    "operation_id": "20260524_030902_412",
+    "timestamp": "2026-05-24T03:09:02.412470",
     "version": "26.05.24b1",
     "files_updated": [
       "test.py"
@@ -203,8 +247,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_005746_207",
-    "timestamp": "2026-05-24T00:57:46.212663",
+    "operation_id": "20260524_030902_395",
+    "timestamp": "2026-05-24T03:09:02.406710",
     "version": "2025.01.01",
     "files_updated": [
       "test.py"
@@ -216,8 +260,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_005746_187",
-    "timestamp": "2026-05-24T00:57:46.187163",
+    "operation_id": "20260524_030902_330",
+    "timestamp": "2026-05-24T03:09:02.330289",
     "version": "2025-08-03.1.2.3",
     "files_updated": [
       "test.py"
@@ -229,8 +273,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_005746_185",
-    "timestamp": "2026-05-24T00:57:46.185211",
+    "operation_id": "20260524_030902_327",
+    "timestamp": "2026-05-24T03:09:02.327360",
     "version": "2025-08-03.release",
     "files_updated": [
       "test.py"
@@ -242,8 +286,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_005746_183",
-    "timestamp": "2026-05-24T00:57:46.183241",
+    "operation_id": "20260524_030902_324",
+    "timestamp": "2026-05-24T03:09:02.324403",
     "version": "2025-08-03.rc",
     "files_updated": [
       "test.py"
@@ -255,8 +299,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_005746_180",
-    "timestamp": "2026-05-24T00:57:46.180649",
+    "operation_id": "20260524_030902_314",
+    "timestamp": "2026-05-24T03:09:02.316322",
     "version": "2025-08-03.beta",
     "files_updated": [
       "test.py"
@@ -269,7 +313,7 @@
   },
   {
     "operation_id": "test_op",
-    "timestamp": "2026-05-24T00:54:29.742134",
+    "timestamp": "2026-05-24T03:07:05.588327",
     "version": "2025.10.12.001",
     "files_updated": [
       "test.py"
@@ -284,7 +328,7 @@
   },
   {
     "operation_id": "test-123",
-    "timestamp": "2026-05-24T00:54:29.719463",
+    "timestamp": "2026-05-24T03:07:05.569417",
     "version": "1.0.0",
     "files_updated": [
       "test.py"
@@ -298,8 +342,8 @@
     "git_tag_name": "v1.0.0"
   },
   {
-    "operation_id": "20260524_005429_443",
-    "timestamp": "2026-05-24T00:54:29.443476",
+    "operation_id": "20260524_030705_308",
+    "timestamp": "2026-05-24T03:07:05.308957",
     "version": "26.05.24rc1",
     "files_updated": [
       "test.py"
@@ -311,8 +355,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_005429_441",
-    "timestamp": "2026-05-24T00:54:29.441665",
+    "operation_id": "20260524_030705_307",
+    "timestamp": "2026-05-24T03:07:05.307115",
     "version": "26.05.24b2",
     "files_updated": [
       "test.py"
@@ -324,8 +368,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_005429_439",
-    "timestamp": "2026-05-24T00:54:29.439590",
+    "operation_id": "20260524_030705_305",
+    "timestamp": "2026-05-24T03:07:05.305158",
     "version": "26.05.24b1",
     "files_updated": [
       "test.py"
@@ -337,8 +381,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_005429_429",
-    "timestamp": "2026-05-24T00:54:29.435327",
+    "operation_id": "20260524_030705_296",
+    "timestamp": "2026-05-24T03:07:05.301370",
     "version": "2025.01.01",
     "files_updated": [
       "test.py"
@@ -350,8 +394,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_005429_411",
-    "timestamp": "2026-05-24T00:54:29.411239",
+    "operation_id": "20260524_030705_278",
+    "timestamp": "2026-05-24T03:07:05.278415",
     "version": "2025-08-03.1.2.3",
     "files_updated": [
       "test.py"
@@ -363,8 +407,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_005429_409",
-    "timestamp": "2026-05-24T00:54:29.409397",
+    "operation_id": "20260524_030705_276",
+    "timestamp": "2026-05-24T03:07:05.276749",
     "version": "2025-08-03.release",
     "files_updated": [
       "test.py"
@@ -376,8 +420,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_005429_399",
-    "timestamp": "2026-05-24T00:54:29.400160",
+    "operation_id": "20260524_030705_274",
+    "timestamp": "2026-05-24T03:07:05.275016",
     "version": "2025-08-03.rc",
     "files_updated": [
       "test.py"
@@ -389,8 +433,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_005429_397",
-    "timestamp": "2026-05-24T00:54:29.397866",
+    "operation_id": "20260524_030705_271",
+    "timestamp": "2026-05-24T03:07:05.272516",
     "version": "2025-08-03.beta",
     "files_updated": [
       "test.py"
@@ -403,7 +447,7 @@
   },
   {
     "operation_id": "test_op",
-    "timestamp": "2026-05-24T00:50:23.611662",
+    "timestamp": "2026-05-24T03:01:06.633081",
     "version": "2025.10.12.001",
     "files_updated": [
       "test.py"
@@ -418,7 +462,7 @@
   },
   {
     "operation_id": "test-123",
-    "timestamp": "2026-05-24T00:50:23.590793",
+    "timestamp": "2026-05-24T03:01:06.614437",
     "version": "1.0.0",
     "files_updated": [
       "test.py"
@@ -432,8 +476,8 @@
     "git_tag_name": "v1.0.0"
   },
   {
-    "operation_id": "20260524_005023_312",
-    "timestamp": "2026-05-24T00:50:23.312212",
+    "operation_id": "20260524_030106_365",
+    "timestamp": "2026-05-24T03:01:06.365263",
     "version": "26.05.24rc1",
     "files_updated": [
       "test.py"
@@ -445,8 +489,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_005023_310",
-    "timestamp": "2026-05-24T00:50:23.310451",
+    "operation_id": "20260524_030106_363",
+    "timestamp": "2026-05-24T03:01:06.363570",
     "version": "26.05.24b2",
     "files_updated": [
       "test.py"
@@ -458,8 +502,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_005023_308",
-    "timestamp": "2026-05-24T00:50:23.308550",
+    "operation_id": "20260524_030106_361",
+    "timestamp": "2026-05-24T03:01:06.361694",
     "version": "26.05.24b1",
     "files_updated": [
       "test.py"
@@ -471,8 +515,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_005023_298",
-    "timestamp": "2026-05-24T00:50:23.304500",
+    "operation_id": "20260524_030106_352",
+    "timestamp": "2026-05-24T03:01:06.357693",
     "version": "2025.01.01",
     "files_updated": [
       "test.py"
@@ -484,8 +528,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_005023_281",
-    "timestamp": "2026-05-24T00:50:23.281501",
+    "operation_id": "20260524_030106_334",
+    "timestamp": "2026-05-24T03:01:06.334705",
     "version": "2025-08-03.1.2.3",
     "files_updated": [
       "test.py"
@@ -497,8 +541,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_005023_279",
-    "timestamp": "2026-05-24T00:50:23.279822",
+    "operation_id": "20260524_030106_333",
+    "timestamp": "2026-05-24T03:01:06.333121",
     "version": "2025-08-03.release",
     "files_updated": [
       "test.py"
@@ -510,8 +554,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_005023_277",
-    "timestamp": "2026-05-24T00:50:23.277999",
+    "operation_id": "20260524_030106_331",
+    "timestamp": "2026-05-24T03:01:06.331320",
     "version": "2025-08-03.rc",
     "files_updated": [
       "test.py"
@@ -523,8 +567,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_005023_275",
-    "timestamp": "2026-05-24T00:50:23.275909",
+    "operation_id": "20260524_030106_327",
+    "timestamp": "2026-05-24T03:01:06.328538",
     "version": "2025-08-03.beta",
     "files_updated": [
       "test.py"
@@ -537,7 +581,7 @@
   },
   {
     "operation_id": "test_op",
-    "timestamp": "2026-05-24T00:46:57.346431",
+    "timestamp": "2026-05-24T02:44:21.815754",
     "version": "2025.10.12.001",
     "files_updated": [
       "test.py"
@@ -552,7 +596,7 @@
   },
   {
     "operation_id": "test-123",
-    "timestamp": "2026-05-24T00:46:57.319510",
+    "timestamp": "2026-05-24T02:44:21.795194",
     "version": "1.0.0",
     "files_updated": [
       "test.py"
@@ -566,8 +610,8 @@
     "git_tag_name": "v1.0.0"
   },
   {
-    "operation_id": "20260524_004657_019",
-    "timestamp": "2026-05-24T00:46:57.019615",
+    "operation_id": "20260524_024421_505",
+    "timestamp": "2026-05-24T02:44:21.505901",
     "version": "26.05.24rc1",
     "files_updated": [
       "test.py"
@@ -579,8 +623,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_004657_017",
-    "timestamp": "2026-05-24T00:46:57.017302",
+    "operation_id": "20260524_024421_504",
+    "timestamp": "2026-05-24T02:44:21.504307",
     "version": "26.05.24b2",
     "files_updated": [
       "test.py"
@@ -592,8 +636,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_004657_014",
-    "timestamp": "2026-05-24T00:46:57.014496",
+    "operation_id": "20260524_024421_502",
+    "timestamp": "2026-05-24T02:44:21.502610",
     "version": "26.05.24b1",
     "files_updated": [
       "test.py"
@@ -605,8 +649,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_004657_004",
-    "timestamp": "2026-05-24T00:46:57.009376",
+    "operation_id": "20260524_024421_493",
+    "timestamp": "2026-05-24T02:44:21.498561",
     "version": "2025.01.01",
     "files_updated": [
       "test.py"
@@ -618,8 +662,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_004656_983",
-    "timestamp": "2026-05-24T00:46:56.983184",
+    "operation_id": "20260524_024421_476",
+    "timestamp": "2026-05-24T02:44:21.476242",
     "version": "2025-08-03.1.2.3",
     "files_updated": [
       "test.py"
@@ -631,8 +675,8 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_004656_981",
-    "timestamp": "2026-05-24T00:46:56.981467",
+    "operation_id": "20260524_024421_474",
+    "timestamp": "2026-05-24T02:44:21.474613",
     "version": "2025-08-03.release",
     "files_updated": [
       "test.py"
@@ -644,22 +688,9 @@
     "git_tag_name": null
   },
   {
-    "operation_id": "20260524_004656_979",
-    "timestamp": "2026-05-24T00:46:56.979394",
+    "operation_id": "20260524_024421_472",
+    "timestamp": "2026-05-24T02:44:21.472970",
     "version": "2025-08-03.rc",
-    "files_updated": [
-      "test.py"
-    ],
-    "backups": {},
-    "git_tag": false,
-    "git_commit": false,
-    "git_commit_hash": null,
-    "git_tag_name": null
-  },
-  {
-    "operation_id": "20260524_004656_976",
-    "timestamp": "2026-05-24T00:46:56.976663",
-    "version": "2025-08-03.beta",
     "files_updated": [
       "test.py"
     ],

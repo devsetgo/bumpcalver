@@ -37,6 +37,13 @@ def create_git_tag(version: str, files_to_commit: List[str], auto_commit: bool) 
             create_git_tag("v1.0.0", ["file1.py", "file2.py"], auto_commit=True)
     """
     try:
+        # Check if in a Git repository first
+        subprocess.run(
+            ["git", "rev-parse", "--is-inside-work-tree"],
+            check=True,
+            capture_output=True,
+        )
+
         # Check if the Git tag already exists
         tag_check = subprocess.run(
             ["git", "tag", "-l", version], capture_output=True, text=True
@@ -44,13 +51,6 @@ def create_git_tag(version: str, files_to_commit: List[str], auto_commit: bool) 
         if version in tag_check.stdout.splitlines():
             print(f"Tag '{version}' already exists. Skipping tag creation.")
             return
-
-        # Check if in a Git repository
-        subprocess.run(
-            ["git", "rev-parse", "--is-inside-work-tree"],
-            check=True,
-            stdout=subprocess.PIPE,
-        )
 
         # Auto-commit if enabled
         if auto_commit:

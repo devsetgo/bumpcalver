@@ -332,26 +332,10 @@ version_format = "{current_date}.{build_count:03}"
 date_format = "%y.Q%q"
 ```
 
-## Validation and Testing
-
-BumpCalver includes comprehensive validation for calendar versioning patterns:
-
-```python
-# The system validates:
-# ✅ Year components (2-4 digits)
-# ✅ Date format consistency
-# ✅ Build count extraction
-# ✅ Pre-release suffix handling
-# ❌ Invalid formats (v1.0.0, release-1.0)
-```
-
-### Testing Your Format
+## Testing Your Format
 
 ```bash
-# Test your configuration without making changes
-bumpcalver --build --dry-run
-
-# Check current version parsing
+# Check recent version bump history to confirm parsing is working
 bumpcalver --list-history
 ```
 

@@ -1,0 +1,13 @@
+{
+  "name": "my-app",
+  "version": "2026.03.08.001",
+  "description": "My application",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT"
+}

@@ -1,205 +1,393 @@
-# Example file layouts
-Below are examples of various file types and how they could be setup using BumpCalver. As the intent of the library is to allow flexible use across different languages and use cases.
+# File Layout Examples
 
+Below are examples of the version-bearing files BumpCalver can update across different languages and file formats. Each section shows what the file looks like and the `[[tool.bumpcalver.file]]` entry that targets it.
 
-## MakeFile
-```make
-# Variables
-REPONAME = bumpcalver
-APP_VERSION = 2025.02.02
-PYTHON = python3
-PIP = $(PYTHON) -m pip
-PYTEST = $(PYTHON) -m pytest
+Working copies of every file shown here live in the [`examples/`](https://github.com/devsetgo/bumpcalver/tree/main/examples) directory of the repository. For complete ready-to-run configurations, see the [Configuration Recipes](configuration.md).
 
-EXAMPLE_PATH = examples
-SERVICE_PATH = src
-TESTS_PATH = tests
-SQLITE_PATH = _sqlite_db
-LOG_PATH = log
+---
 
-PORT = 5000
-WORKER = 8
-LOG_LEVEL = debug
+## Python
 
-REQUIREMENTS_PATH = requirements.txt
-# DEV_REQUIREMENTS_PATH = requirements/dev.txt
+### `pyproject.toml`
 
-.PHONY: autoflake black cleanup create-docs flake8 help install isort run-example run-example-dev speedtest test
-
-autoflake: ## Remove unused imports and unused variables from Python code
-	autoflake --in-place --remove-all-unused-imports  --ignore-init-module-imports --remove-unused-variables -r $(SERVICE_PATH)
-	autoflake --in-place --remove-all-unused-imports  --ignore-init-module-imports --remove-unused-variables -r $(TESTS_PATH)
-	autoflake --in-place --remove-all-unused-imports  --ignore-init-module-imports --remove-unused-variables -r $(EXAMPLE_PATH)
-
-```
-
-## YAML
-
-```yaml
-application:
-  description: This is an example application configuration file.
-  name: ExampleApp
-configuration:
-  version: 2025.02.02
-database:
-  host: localhost
-  password: password
-  port: 5432
-  username: user
-features:
-  feature_a: true
-  feature_b: false
-  feature_c: true
-```
-
-## XML
-```xml
-<configuration>
-    <version>2025.02.02</version>
-    <application>
-        <name>ExampleApp</name>
-        <description>This is an example application configuration file.</description>
-    </application>
-    <database>
-        <host>localhost</host>
-        <port>5432</port>
-        <username>user</username>
-        <password>password</password>
-    </database>
-    <features>
-        <feature_a>true</feature_a>
-        <feature_b>false</feature_b>
-        <feature_c>true</feature_c>
-    </features>
-</configuration>
-```
-
-## TOML
 ```toml
-[configuration]
-version = "2025.02.02"
-
-[configuration.application]
-name = "ExampleApp"
-description = "This is an example application configuration file."
-
-[configuration.database]
-host = "localhost"
-port = 5432
-username = "user"
-password = "password"
-
-[configuration.features]
-feature_a = true
-feature_b = false
-feature_c = true
-
+[project]
+name = "mypackage"
+version = "2026.05.24.001"
 ```
 
-## JSON
-```json
-{
-  "version": "2025.02.02",
-  "application": {
-    "name": "ExampleApp",
-    "description": "This is an example application configuration file."
-  },
-  "database": {
-    "host": "localhost",
-    "port": 5432,
-    "username": "user",
-    "password": "password"
-  },
-  "features": {
-    "feature_a": true,
-    "feature_b": false,
-    "feature_c": true
-  }
-}
-
+```toml
+# bumpcalver config entry
+[[tool.bumpcalver.file]]
+path = "pyproject.toml"
+file_type = "toml"
+variable = "project.version"
+version_standard = "python"
 ```
 
-## Dockerfile
-```docker
-# Use an official Python runtime as a parent image
-FROM python:3.14-slim
+### `__init__.py`
 
-# Set the working directory in the container
-WORKDIR /app
-
-# Copy the current directory contents into the container at /app
-COPY . /app
-
-# Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Make port 80 available to the world outside this container
-EXPOSE 80
-
-# Define environment variable
-ENV APP_VERSION=2025.02.02
-ARG VERSION=2025.02.02
-# Run app.py when the container launches
-CMD ["python", "app.py"]
-
+```python
+__version__ = "2026.05.24.001"
 ```
 
-## Properties File (sonar-project.properties)
-```properties
-sonar.projectKey=devsetgo_bumpcalver
-sonar.organization=devsetgo
-sonar.projectName=bumpcalver
-sonar.projectVersion=2025.02.02
-sonar.language=python
-sonar.sources=src
-sonar.tests=tests
-sonar.python.coverage.reportPaths=coverage.xml
-sonar.python.xunit.reportPath=report.xml
+```toml
+[[tool.bumpcalver.file]]
+path = "src/mypackage/__init__.py"
+file_type = "python"
+variable = "__version__"
+version_standard = "python"
 ```
 
-## Environment File (.env)
-```env
-# Application Configuration
-DEBUG=true
-VERSION=2025.02.02
-DATABASE_URL=postgresql://localhost/mydb
-API_KEY=your-secret-api-key
-LOG_LEVEL=info
-PORT=5000
-```
+### `setup.cfg`
 
-## Setup Configuration (setup.cfg)
 ```ini
 [metadata]
 name = example-package
-version = 2025.02.02
+version = 2026.05.24.001
 author = Your Name
 author_email = your.email@example.com
 description = A short description of the package
-long_description = file: README.md
-long_description_content_type = text/markdown
-url = https://github.com/yourusername/example-package
-classifiers =
-    Development Status :: 4 - Beta
-    Intended Audience :: Developers
-    License :: OSI Approved :: MIT License
-    Programming Language :: Python :: 3
-    Programming Language :: Python :: 3.9
-    Programming Language :: Python :: 3.10
-    Programming Language :: Python :: 3.11
 
 [options]
 packages = find:
 python_requires = >=3.9
 install_requires =
     click>=8.0.0
-    toml>=0.10.0
-
-[options.entry_points]
-console_scripts =
-    example-cli = example_package.cli:main
 ```
 
-````
+```toml
+[[tool.bumpcalver.file]]
+path = "setup.cfg"
+file_type = "setup.cfg"
+variable = "metadata.version"
+version_standard = "python"
+```
 
+---
+
+## Node.js / JavaScript
+
+### `package.json`
+
+```json
+{
+  "name": "my-app",
+  "version": "2026.05.24.1",
+  "description": "My application",
+  "main": "index.js"
+}
+```
+
+```toml
+[[tool.bumpcalver.file]]
+path = "package.json"
+file_type = "json"
+variable = "version"
+version_standard = "default"
+```
+
+> The `json` handler updates the **top-level** key. Nested keys are not supported.
+
+---
+
+## Rust
+
+### `Cargo.toml`
+
+```toml
+[package]
+name = "myapp"
+version = "2026.05.24.1"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+```
+
+```toml
+[[tool.bumpcalver.file]]
+path = "Cargo.toml"
+file_type = "toml"
+variable = "package.version"
+version_standard = "default"
+```
+
+---
+
+## Java
+
+### `gradle.properties` (Gradle)
+
+```properties
+version=2026.05.24.1
+group=com.example
+description=My Application
+```
+
+```toml
+[[tool.bumpcalver.file]]
+path = "gradle.properties"
+file_type = "properties"
+variable = "version"
+version_standard = "default"
+```
+
+Reference the version in `build.gradle`:
+```groovy
+version = project.findProperty('version')
+```
+
+### `version.properties` (Maven)
+
+```properties
+project.version=2026.05.24.1
+```
+
+```toml
+[[tool.bumpcalver.file]]
+path = "version.properties"
+file_type = "properties"
+variable = "project.version"
+version_standard = "default"
+```
+
+Load it in `pom.xml` with the Properties Maven Plugin and reference `${project.version}` as usual. See the [Maven recipe](configuration.md#java--maven) for the plugin setup.
+
+---
+
+## Go
+
+### `Makefile` (version passed via `-ldflags`)
+
+```makefile
+APP_VERSION = 2026.05.24.001
+
+build:
+	go build -ldflags="-X main.Version=$(APP_VERSION)" ./...
+
+.PHONY: build
+```
+
+```toml
+[[tool.bumpcalver.file]]
+path = "Makefile"
+file_type = "makefile"
+variable = "APP_VERSION"
+version_standard = "default"
+```
+
+### `version.txt` (embedded via `//go:embed`)
+
+```
+VERSION=2026.05.24.001
+```
+
+```toml
+[[tool.bumpcalver.file]]
+path = "version.txt"
+file_type = "env"
+variable = "VERSION"
+version_standard = "default"
+```
+
+Go code to read it:
+```go
+import (
+    _ "embed"
+    "strings"
+)
+
+//go:embed version.txt
+var versionFile string
+
+var Version = strings.TrimPrefix(strings.TrimSpace(versionFile), "VERSION=")
+```
+
+---
+
+## Ruby
+
+### `lib/mygem/version.rb`
+
+```ruby
+module MyGem
+  VERSION = "2026.05.24.1"
+end
+```
+
+```toml
+[[tool.bumpcalver.file]]
+path = "lib/mygem/version.rb"
+file_type = "python"
+variable = "VERSION"
+version_standard = "default"
+```
+
+> Ruby constants (`CONSTANT = "value"`) match the same line pattern as Python variables, so `file_type = "python"` works correctly here.
+
+---
+
+## .NET / C#
+
+### `MyApp.csproj`
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Version>2026.05.24.1</Version>
+    <AssemblyVersion>2026.05.24.1</AssemblyVersion>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+</Project>
+```
+
+```toml
+[[tool.bumpcalver.file]]
+path = "MyApp.csproj"
+file_type = "xml"
+variable = "PropertyGroup/Version"
+version_standard = "default"
+```
+
+> The `xml` handler accepts simple XPath paths. `PropertyGroup/Version` finds `<Version>` nested directly inside `<PropertyGroup>` at the document root.
+
+---
+
+## Docker / Containers
+
+### `Dockerfile`
+
+```dockerfile
+FROM python:3.14-slim
+
+WORKDIR /app
+COPY . /app
+
+ARG VERSION=2026.05.24.1
+ENV APP_VERSION=2026.05.24.1
+
+RUN pip install --no-cache-dir -r requirements.txt
+EXPOSE 80
+CMD ["python", "app.py"]
+```
+
+```toml
+# Update ARG
+[[tool.bumpcalver.file]]
+path = "Dockerfile"
+file_type = "dockerfile"
+variable = "arg.VERSION"
+version_standard = "default"
+
+# Update ENV
+[[tool.bumpcalver.file]]
+path = "Dockerfile"
+file_type = "dockerfile"
+variable = "env.APP_VERSION"
+version_standard = "default"
+```
+
+> Prefix `arg.` for `ARG` instructions and `env.` for `ENV` instructions. The same file can appear in multiple entries.
+
+---
+
+## General / Infrastructure
+
+### `Makefile`
+
+```makefile
+APP_VERSION = 2026.05.24.001
+PYTHON = python3
+PIP = $(PYTHON) -m pip
+
+.PHONY: build test
+
+build:
+	$(PIP) install -e .
+
+test:
+	$(PYTHON) -m pytest
+```
+
+```toml
+[[tool.bumpcalver.file]]
+path = "Makefile"
+file_type = "makefile"
+variable = "APP_VERSION"
+version_standard = "default"
+```
+
+### `YAML` config file
+
+```yaml
+application:
+  name: ExampleApp
+  version: "2026.05.24.001"
+database:
+  host: localhost
+  port: 5432
+```
+
+```toml
+[[tool.bumpcalver.file]]
+path = "config.yaml"
+file_type = "yaml"
+variable = "application.version"
+version_standard = "default"
+```
+
+### `XML` config file
+
+```xml
+<configuration>
+    <version>2026.05.24.001</version>
+    <application>
+        <name>ExampleApp</name>
+    </application>
+</configuration>
+```
+
+```toml
+[[tool.bumpcalver.file]]
+path = "config.xml"
+file_type = "xml"
+variable = "version"
+version_standard = "default"
+```
+
+### Environment file (`.env`)
+
+```env
+VERSION=2026.05.24.001
+APP_NAME=myapp
+DEBUG=false
+DATABASE_URL=postgresql://localhost/mydb
+```
+
+```toml
+[[tool.bumpcalver.file]]
+path = ".env"
+file_type = "env"
+variable = "VERSION"
+version_standard = "default"
+```
+
+### Properties file (`sonar-project.properties`)
+
+```properties
+sonar.projectKey=myorg_myproject
+sonar.organization=myorg
+sonar.projectName=myproject
+sonar.projectVersion=2026.05.24.001
+sonar.sources=src
+sonar.tests=tests
+```
+
+```toml
+[[tool.bumpcalver.file]]
+path = "sonar-project.properties"
+file_type = "properties"
+variable = "sonar.projectVersion"
+version_standard = "default"
 ```

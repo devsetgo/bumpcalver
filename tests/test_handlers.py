@@ -1503,7 +1503,7 @@ def test_version_handler_handle_read_operation_success():
     def operation_func():
         return "1.0.0"
 
-    result = handler._handle_read_operation("test_file.txt", operation_func, "VERSION")
+    result = handler._handle_read_operation("test_file.txt", operation_func)
     assert result == "1.0.0"
 
 
@@ -1523,7 +1523,7 @@ def test_version_handler_handle_read_operation_exception(capsys):
     def operation_func():
         raise IOError("File operation failed")
 
-    result = handler._handle_read_operation("test_file.txt", operation_func, "VERSION")
+    result = handler._handle_read_operation("test_file.txt", operation_func)
     assert result is None
 
     captured = capsys.readouterr()

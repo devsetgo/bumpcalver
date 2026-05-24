@@ -221,7 +221,7 @@ bumpcalver --build --git-tag
 If undo operations fail, you can manually:
 
 1. **Restore Files**: Copy backup files from `.bumpcalver/backups/`
-2. **Check History**: Review `history.json` for operation details
+2. **Check History**: Review `bumpcalver-history.json` for operation details
 3. **Git Operations**: Manually delete tags or reset commits using git commands
 
 ## Best Practices
