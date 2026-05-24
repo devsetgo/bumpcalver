@@ -1,0 +1,108 @@
+name: Deploy Documentation
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Docs version label for mike (e.g. 26.05.24.1)"
+        required: true
+        type: string
+      checkout_ref:
+        description: "Git ref to build docs from (tag/sha/branch)"
+        required: true
+        type: string
+      aliases:
+        description: "Space-separated aliases (e.g. 'latest stable')"
+        required: false
+        default: "latest stable"
+        type: string
+
+jobs:
+  deploy-docs:
+    name: Deploy versioned documentation
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.checkout_ref }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install mike
+
+      - name: Configure Git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch gh-pages branch
+        run: git fetch origin gh-pages:gh-pages || true
+
+      - name: Prepare documentation files
+        run: |
+          python3 scripts/update_docs.py
+          python3 scripts/changelog.py
+          cp README.md docs/index.md
+          cp CONTRIBUTING.md docs/contribute.md
+          cp CHANGELOG.md docs/release-notes.md
+
+      - name: Deploy documentation with mike
+        run: |
+          VERSION="${{ inputs.version }}"
+          DOCS_BRANCH="gh-pages"
+
+          if [ -z "$VERSION" ] || echo "$VERSION" | grep -q '^refs/'; then
+            echo "Error: Invalid version: '$VERSION'"
+            exit 1
+          fi
+
+          python3 scripts/deploy_docs.py deploy \
+            --version "$VERSION" \
+            --aliases ${{ inputs.aliases }} \
+            --title "Release $VERSION" \
+            --branch "$DOCS_BRANCH" \
+            --ignore-remote-status \
+            --push
+
+          mike set-default stable --branch "$DOCS_BRANCH" --push
+
+      - name: Clean working tree before gh-pages checkout
+        run: |
+          git reset --hard
+          git clean -fd
+
+      - name: Checkout gh-pages branch
+        run: |
+          git fetch origin gh-pages
+          git checkout -B gh-pages origin/gh-pages
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

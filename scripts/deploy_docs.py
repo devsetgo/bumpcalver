@@ -63,7 +63,7 @@ def run_command(command, check=True):
         raise
 
 
-def deploy_documentation(version, aliases=None, push=False, title=None, is_dev=False, ignore_remote_status=False):
+def deploy_documentation(version, aliases=None, push=False, title=None, is_dev=False, ignore_remote_status=False, branch=None):
     """Deploy documentation for a specific version using mike."""
     print(f"Deploying documentation for version: {version}")
 
@@ -105,6 +105,10 @@ def deploy_documentation(version, aliases=None, push=False, title=None, is_dev=F
         # Handle remote status conflicts
         if ignore_remote_status:
             cmd.extend(["--ignore-remote-status"])
+
+        # Target branch (defaults to mike's own default, typically gh-pages)
+        if branch:
+            cmd.extend(["--branch", branch])
 
         print(f"Running command: {' '.join(cmd)}")
         print(f"Working directory: {os.getcwd()}")
@@ -159,6 +163,8 @@ def main():
                        help="Deploy as development version")
     parser.add_argument("--ignore-remote-status", action="store_true",
                        help="Ignore remote git status conflicts")
+    parser.add_argument("--branch", default=None,
+                       help="Git branch mike deploys to (default: gh-pages)")
 
     args = parser.parse_args()
 
@@ -183,7 +189,8 @@ def main():
                 push=args.push,
                 title=args.title,
                 is_dev=args.dev,
-                ignore_remote_status=args.ignore_remote_status
+                ignore_remote_status=args.ignore_remote_status,
+                branch=args.branch,
             )
 
         elif args.action == "list":
