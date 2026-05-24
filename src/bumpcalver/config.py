@@ -58,6 +58,9 @@ def load_config() -> Dict[str, Any]:
             config["major"] = bumpcalver_config.get("major", 0)
             config["minor"] = bumpcalver_config.get("minor", 0)
             config["patch"] = bumpcalver_config.get("patch", 0)
+            config["beta_format"] = bumpcalver_config.get("beta_format", ".beta")
+            config["rc_format"] = bumpcalver_config.get("rc_format", ".rc")
+            config["release_format"] = bumpcalver_config.get("release_format", ".release")
 
             for file_config in config["file_configs"]:
                 original_path = file_config["path"]

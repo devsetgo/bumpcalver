@@ -622,3 +622,88 @@ def test_git_tag_subprocess_exception(mock_load_config, mock_get_current_datetim
     assert result.exit_code == 0
     # Verify store_operation_history was called (lines 190-192)
     mock_backup_instance.store_operation_history.assert_called_once()
+
+
+@mock.patch('src.bumpcalver.cli.get_version_handler')
+@mock.patch('src.bumpcalver.cli.update_version_in_files')
+@mock.patch('src.bumpcalver.cli.get_current_datetime_version')
+@mock.patch('src.bumpcalver.cli.load_config')
+def test_beta_custom_format_no_existing(
+    mock_load_config, mock_get_dt, mock_update, mock_get_handler
+):
+    """beta_format = 'b{beta_count}' with no existing version produces 'b1'."""
+    mock_load_config.return_value = {
+        "version_format": "{current_date}.{build_count}",
+        "date_format": "%y.%m.%d",
+        "file_configs": [{"path": "test.py", "file_type": "python", "variable": "__version__"}],
+        "timezone": "America/New_York",
+        "git_tag": False,
+        "auto_commit": False,
+        "beta_format": "b{beta_count}",
+    }
+    mock_get_dt.return_value = "26.05.24"
+    mock_handler = mock.Mock()
+    mock_handler.read_version.return_value = None
+    mock_get_handler.return_value = mock_handler
+    mock_update.return_value = ["test.py"]
+
+    runner = CliRunner()
+    result = runner.invoke(main, ["--beta"])
+    assert result.exit_code == 0
+    mock_update.assert_called_once_with("26.05.24b1", mock.ANY)
+
+
+@mock.patch('src.bumpcalver.cli.get_version_handler')
+@mock.patch('src.bumpcalver.cli.update_version_in_files')
+@mock.patch('src.bumpcalver.cli.get_current_datetime_version')
+@mock.patch('src.bumpcalver.cli.load_config')
+def test_beta_custom_format_increments_count(
+    mock_load_config, mock_get_dt, mock_update, mock_get_handler
+):
+    """beta_format = 'b{beta_count}' increments when current version matches base."""
+    mock_load_config.return_value = {
+        "version_format": "{current_date}.{build_count}",
+        "date_format": "%y.%m.%d",
+        "file_configs": [{"path": "test.py", "file_type": "python", "variable": "__version__"}],
+        "timezone": "America/New_York",
+        "git_tag": False,
+        "auto_commit": False,
+        "beta_format": "b{beta_count}",
+    }
+    mock_get_dt.return_value = "26.05.24"
+    mock_handler = mock.Mock()
+    mock_handler.read_version.return_value = "26.05.24b1"
+    mock_get_handler.return_value = mock_handler
+    mock_update.return_value = ["test.py"]
+
+    runner = CliRunner()
+    result = runner.invoke(main, ["--beta"])
+    assert result.exit_code == 0
+    mock_update.assert_called_once_with("26.05.24b2", mock.ANY)
+
+
+@mock.patch('src.bumpcalver.cli.get_version_handler')
+@mock.patch('src.bumpcalver.cli.update_version_in_files')
+@mock.patch('src.bumpcalver.cli.get_current_datetime_version')
+@mock.patch('src.bumpcalver.cli.load_config')
+def test_rc_custom_format(mock_load_config, mock_get_dt, mock_update, mock_get_handler):
+    """rc_format is read from config and honoured."""
+    mock_load_config.return_value = {
+        "version_format": "{current_date}.{build_count}",
+        "date_format": "%y.%m.%d",
+        "file_configs": [{"path": "test.py", "file_type": "python", "variable": "__version__"}],
+        "timezone": "America/New_York",
+        "git_tag": False,
+        "auto_commit": False,
+        "rc_format": "rc{rc_count}",
+    }
+    mock_get_dt.return_value = "26.05.24"
+    mock_handler = mock.Mock()
+    mock_handler.read_version.return_value = None
+    mock_get_handler.return_value = mock_handler
+    mock_update.return_value = ["test.py"]
+
+    runner = CliRunner()
+    result = runner.invoke(main, ["--rc"])
+    assert result.exit_code == 0
+    mock_update.assert_called_once_with("26.05.24rc1", mock.ANY)

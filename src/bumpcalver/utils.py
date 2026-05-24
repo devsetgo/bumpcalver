@@ -140,8 +140,51 @@ def _is_invalid_version_prefix(version: str) -> bool:
 
 
 def _clean_version_suffixes(version: str) -> str:
-    """Remove beta/alpha/rc suffixes from version string."""
-    return re.sub(r'\.(alpha|beta|rc\d*)$', '', version)
+    """Remove pre-release suffixes from a version string.
+
+    Handles dot-prefixed forms (.beta, .rc1) and PEP 440 attached forms
+    (b1, rc2, a1) where letters follow immediately after a digit.
+    """
+    cleaned = re.sub(r'\.(alpha|beta|rc\d*|release)$', '', version)
+    if cleaned != version:
+        return cleaned
+    # PEP 440 attached directly after a digit: b1, a1, rc1, etc.
+    return re.sub(r'(?<=\d)[a-zA-Z]+\d*$', '', version)
+
+
+def apply_prerelease_suffix(
+    base_version: str,
+    suffix_format: str,
+    current_raw_version: str = "",
+) -> str:
+    """Apply a pre-release suffix to *base_version*, honouring ``{xxx_count}`` placeholders.
+
+    If *suffix_format* contains no placeholder the literal string is appended.
+    When a placeholder is present the count is derived from *current_raw_version*:
+    if it starts with *base_version* + the suffix prefix the existing count is
+    incremented; otherwise the count starts at 1.
+    """
+    count_match = re.search(r'\{[^}]+\}', suffix_format)
+    if not count_match:
+        return base_version + suffix_format
+
+    literal_prefix = suffix_format[: count_match.start()]
+    literal_after = suffix_format[count_match.end() :]
+
+    count = 1
+    if current_raw_version:
+        pattern = (
+            re.escape(base_version)
+            + re.escape(literal_prefix)
+            + r'(\d+)'
+            + re.escape(literal_after)
+            + '$'
+        )
+        m = re.match(pattern, current_raw_version)
+        if m:
+            count = int(m.group(1)) + 1
+
+    return f"{base_version}{literal_prefix}{count}{literal_after}"
 
 
 def _validate_date_format(version: str) -> bool:

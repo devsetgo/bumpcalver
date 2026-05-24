@@ -45,7 +45,7 @@ from .config import load_config
 from .git_utils import create_git_tag
 from .handlers import get_version_handler, update_version_in_files
 from .undo_utils import list_undo_history, undo_last_operation, undo_operation_by_id
-from .utils import default_timezone, get_build_version, get_current_datetime_version, update_semantic_in_config
+from .utils import apply_prerelease_suffix, default_timezone, get_build_version, get_current_datetime_version, update_semantic_in_config
 
 
 @click.command()
@@ -177,12 +177,25 @@ def main(
             print("Build option is not set. Calling get_current_datetime_version.")
             new_version = get_current_datetime_version(timezone, date_format)
 
+        if beta or rc or release:
+            current_raw_version = ""
+            try:
+                first_cfg = file_configs[0]
+                handler = get_version_handler(first_cfg.get("file_type", ""))
+                directive = first_cfg.get("directive", "")
+                if directive:
+                    current_raw_version = handler.read_version(first_cfg["path"], first_cfg.get("variable", ""), directive=directive) or ""
+                else:
+                    current_raw_version = handler.read_version(first_cfg["path"], first_cfg.get("variable", "")) or ""
+            except Exception:
+                pass
+
         if beta:
-            new_version += ".beta"
+            new_version = apply_prerelease_suffix(new_version, config.get("beta_format", ".beta"), current_raw_version)
         elif rc:
-            new_version += ".rc"
+            new_version = apply_prerelease_suffix(new_version, config.get("rc_format", ".rc"), current_raw_version)
         elif release:
-            new_version += ".release"
+            new_version = apply_prerelease_suffix(new_version, config.get("release_format", ".release"), current_raw_version)
         elif custom:
             new_version += f".{custom}"
 

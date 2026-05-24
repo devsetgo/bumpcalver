@@ -5,6 +5,8 @@ import re
 from unittest import mock
 
 from src.bumpcalver.utils import (
+    _clean_version_suffixes,
+    apply_prerelease_suffix,
     get_build_version,
     get_current_date,
     get_current_datetime_version,
@@ -330,3 +332,69 @@ def test_get_build_version_with_directive(monkeypatch):
     mock_handler.read_version.assert_called_with(
         "dummy_path", "VERSION", directive="ARG"
     )
+
+
+# ---------------------------------------------------------------------------
+# _clean_version_suffixes — PEP 440 attached pre-release forms
+# ---------------------------------------------------------------------------
+
+def test_clean_version_suffixes_dot_beta():
+    assert _clean_version_suffixes("26.05.24.1.beta") == "26.05.24.1"
+
+def test_clean_version_suffixes_dot_rc1():
+    assert _clean_version_suffixes("26.05.24.1.rc1") == "26.05.24.1"
+
+def test_clean_version_suffixes_pep440_b1():
+    assert _clean_version_suffixes("26.05.24.1b1") == "26.05.24.1"
+
+def test_clean_version_suffixes_pep440_a1():
+    assert _clean_version_suffixes("26.05.24.1a1") == "26.05.24.1"
+
+def test_clean_version_suffixes_pep440_rc2():
+    assert _clean_version_suffixes("26.05.24.1rc2") == "26.05.24.1"
+
+def test_clean_version_suffixes_no_suffix_unchanged():
+    assert _clean_version_suffixes("26.05.24.1") == "26.05.24.1"
+
+def test_clean_version_suffixes_quarter_unchanged():
+    assert _clean_version_suffixes("26.Q4.1") == "26.Q4.1"
+
+def test_clean_version_suffixes_hybrid_b1():
+    assert _clean_version_suffixes("1.0-20260524.1b1") == "1.0-20260524.1"
+
+
+# ---------------------------------------------------------------------------
+# apply_prerelease_suffix
+# ---------------------------------------------------------------------------
+
+def test_apply_prerelease_suffix_literal_dot_beta():
+    result = apply_prerelease_suffix("26.05.24.1", ".beta")
+    assert result == "26.05.24.1.beta"
+
+def test_apply_prerelease_suffix_literal_dot_rc():
+    result = apply_prerelease_suffix("26.05.24.1", ".rc")
+    assert result == "26.05.24.1.rc"
+
+def test_apply_prerelease_suffix_count_first_run():
+    result = apply_prerelease_suffix("26.05.24.1", "b{beta_count}")
+    assert result == "26.05.24.1b1"
+
+def test_apply_prerelease_suffix_count_increments_when_base_matches():
+    result = apply_prerelease_suffix("26.05.24.1", "b{beta_count}", "26.05.24.1b1")
+    assert result == "26.05.24.1b2"
+
+def test_apply_prerelease_suffix_count_resets_on_new_base():
+    result = apply_prerelease_suffix("26.05.24.2", "b{beta_count}", "26.05.24.1b3")
+    assert result == "26.05.24.2b1"
+
+def test_apply_prerelease_suffix_count_empty_current():
+    result = apply_prerelease_suffix("26.05.24.1", "b{beta_count}", "")
+    assert result == "26.05.24.1b1"
+
+def test_apply_prerelease_suffix_rc_count():
+    result = apply_prerelease_suffix("26.05.24.1", "rc{rc_count}", "26.05.24.1rc1")
+    assert result == "26.05.24.1rc2"
+
+def test_apply_prerelease_suffix_dot_prefix_with_count():
+    result = apply_prerelease_suffix("26.05.24.1", ".b{beta_count}", "26.05.24.1.b2")
+    assert result == "26.05.24.1.b3"
