@@ -23,6 +23,10 @@ date_format = "%y.%m.%d"
 timezone = "America/New_York"
 git_tag = true
 auto_commit = true
+# Pre-release suffix formats (defaults shown — omit keys to use defaults)
+# beta_format    = ".beta"
+# rc_format      = ".rc"
+# release_format = ".release"
 [[tool.bumpcalver.file]]
 path = "pyproject.toml"
 file_type = "toml"
@@ -75,6 +79,32 @@ version_standard = "python"
 ```
 
 
+## Pre-release Suffix Formats
+
+By default `--beta`, `--rc`, and `--release` produce `.beta`, `.rc`, and `.release` suffixes. You can override each with `beta_format`, `rc_format`, and `release_format`. Formats that contain a `{…_count}` placeholder auto-increment the counter across successive pre-releases of the same base version.
+
+```toml
+[tool.bumpcalver]
+version_format = "{current_date}.{build_count}"
+date_format    = "%y.%m.%d"
+beta_format    = "b{beta_count}"    # PEP 440 beta: 26.05.24.1b1, b2, …
+rc_format      = "rc{rc_count}"     # PEP 440 rc:   26.05.24.1rc1, rc2, …
+release_format = ".release"         # plain literal suffix
+```
+
+| Config key | Default | Example output |
+|---|---|---|
+| `beta_format = ".beta"` | ✓ | `26.05.24.1.beta` |
+| `beta_format = "b{beta_count}"` | | `26.05.24.1b1` |
+| `rc_format = "rc{rc_count}"` | | `26.05.24.1rc1` |
+
+Counter behaviour:
+- First `--beta` with a new base version → count starts at **1**.
+- Subsequent `--beta` with the **same** base version → count increments.
+- `--build` always creates a new base version, so the counter resets.
+
+---
+
 ## Hybrid Semantic + Calendar Versioning
 
 To combine a SemVer prefix with a CalVer date, add `major`, `minor`, and `patch` keys and use them in `version_format`:
@@ -117,6 +147,10 @@ date_format = "%y.%m.%d"
 timezone = "America/New_York"
 git_tag = true
 auto_commit = true
+# Pre-release suffix formats (defaults shown — omit keys to use defaults)
+# beta_format    = ".beta"
+# rc_format      = ".rc"
+# release_format = ".release"
 
 [[file]]
 path = "pyproject.toml"
