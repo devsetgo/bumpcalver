@@ -417,7 +417,7 @@ class TestUpdateSemanticInConfig:
 
 
 # ---------------------------------------------------------------------------
-# CLI --bump choice
+# CLI --bump-major / --bump-minor / --bump-patch
 # ---------------------------------------------------------------------------
 
 class TestCliBumpFlags:
