@@ -191,8 +191,15 @@ class VersionHandler(ABC):
         else:
             print(f"Updated {file_path}")
 
-    def _handle_regex_update(self, file_path: str, pattern: re.Pattern, replacement_func, new_version: str,
-                           variable: str, not_found_message: Optional[str] = None) -> bool:
+    def _handle_regex_update(
+        self,
+        file_path: str,
+        pattern: re.Pattern,
+        replacement_func,
+        new_version: str,
+        variable: str,
+        not_found_message: Optional[str] = None,
+    ) -> bool:
         """Handle regex-based file updates with standardized error handling.
 
         Args:
@@ -303,7 +310,7 @@ class PythonVersionHandler(VersionHandler):
             if match:
                 return match.group(1)
             self._log_variable_not_found(variable, file_path)  # no pragma: no cover
-            return None # no pragma: no cover
+            return None  # no pragma: no cover
 
         return self._handle_read_operation(file_path, read_operation)
 
@@ -320,7 +327,9 @@ class PythonVersionHandler(VersionHandler):
         def replacement(match):
             return f"{match.group(1)}{match.group(2)}{new_version}{match.group(4)}{match.group(5)}"
 
-        return self._handle_regex_update(file_path, version_pattern, replacement, new_version, variable)
+        return self._handle_regex_update(
+            file_path, version_pattern, replacement, new_version, variable
+        )
 
 
 class TomlVersionHandler(VersionHandler):
@@ -334,6 +343,7 @@ class TomlVersionHandler(VersionHandler):
 
     def read_version(self, file_path: str, variable: str, **kwargs: Any) -> Optional[str]:
         """Reads the value at `variable`, a dot-separated key path (e.g. `"tool.project.version"`)."""
+
         def read_operation():
             with open(file_path, "r", encoding="utf-8") as file:
                 toml_content = tomlkit.load(file)
@@ -362,7 +372,7 @@ class TomlVersionHandler(VersionHandler):
             temp = toml_content
             for key in keys[:-1]:
                 if key not in temp:
-                    temp[key] = {} # no pragma: no cover
+                    temp[key] = {}  # no pragma: no cover
                 temp = temp[key]
             last_key = keys[-1]
             if last_key in temp:
@@ -397,6 +407,7 @@ class YamlVersionHandler(VersionHandler):
 
     def read_version(self, file_path: str, variable: str, **kwargs: Any) -> Optional[str]:
         """Reads the value at `variable`, a dot-separated key path (e.g. `"configuration.version"`)."""
+
         def read_operation():
             with open(file_path, "r", encoding="utf-8") as f:
                 data = _yaml.load(f)
@@ -423,7 +434,7 @@ class YamlVersionHandler(VersionHandler):
             keys = variable.split(".")
             temp = data
             for key in keys[:-1]:
-                temp = temp.setdefault(key, {}) # no pragma: no cover
+                temp = temp.setdefault(key, {})  # no pragma: no cover
             temp[keys[-1]] = new_version
             with open(file_path, "w", encoding="utf-8") as f:
                 _yaml.dump(data, f)
@@ -439,6 +450,7 @@ class JsonVersionHandler(VersionHandler):
 
     def read_version(self, file_path: str, variable: str, **kwargs: Any) -> Optional[str]:
         """Reads the top-level key `variable` (unlike Toml/Yaml, this is a plain key, not a dot-separated path)."""
+
         def read_operation():
             with open(file_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
@@ -478,6 +490,7 @@ class XmlVersionHandler(VersionHandler):
 
     def read_version(self, file_path: str, variable: str, **kwargs: Any) -> Optional[str]:
         """Reads the text of the element at `variable`, an ElementTree `find()` path (e.g. `"version"` or `"metadata/version"`)."""
+
         def read_operation():
             tree = ET.parse(file_path)
             root = tree.getroot()
@@ -523,9 +536,7 @@ class DockerfileVersionHandler(VersionHandler):
         """Reads `variable`'s value from an `ARG`/`ENV` line; requires `directive="ARG"` or `"ENV"` in kwargs."""
         directive = kwargs.get("directive", "").upper()
         if directive not in ["ARG", "ENV"]:
-            print(
-                f"Invalid or missing directive for variable '{variable}' in {file_path}."
-            )
+            print(f"Invalid or missing directive for variable '{variable}' in {file_path}.")
             return None
 
         pattern = re.compile(
@@ -549,9 +560,7 @@ class DockerfileVersionHandler(VersionHandler):
         """Updates `variable`'s `ARG`/`ENV` line in place; requires `directive="ARG"` or `"ENV"` in kwargs."""
         directive = kwargs.get("directive", "").upper()
         if directive not in ["ARG", "ENV"]:
-            print(
-                f"Invalid or missing directive for variable '{variable}' in {file_path}."
-            )
+            print(f"Invalid or missing directive for variable '{variable}' in {file_path}.")
             return False
 
         new_version = self._format_version_with_standard(new_version, **kwargs)
@@ -563,7 +572,9 @@ class DockerfileVersionHandler(VersionHandler):
             return f"{match.group(1)}{new_version}"
 
         not_found_message = f"No {directive} variable '{variable}' found in {file_path}"
-        success = self._handle_regex_update(file_path, pattern, replacement, new_version, variable, not_found_message)
+        success = self._handle_regex_update(
+            file_path, pattern, replacement, new_version, variable, not_found_message
+        )
 
         if success:
             self._log_success_update(file_path, f"{directive} variable '{variable}'")
@@ -576,6 +587,7 @@ class MakefileVersionHandler(VersionHandler):
 
     def read_version(self, file_path: str, variable: str, **kwargs: Any) -> Optional[str]:
         """Reads the value from the first line starting with `variable` (e.g. `VERSION = 1.0`)."""
+
         def read_operation():
             with open(file_path, "r", encoding="utf-8") as file:
                 for line in file:
@@ -591,14 +603,14 @@ class MakefileVersionHandler(VersionHandler):
     ) -> bool:
         """Updates `variable`'s value in place (accepts both `VAR = value` and `VAR := value`)."""
         new_version = self._format_version_with_standard(new_version, **kwargs)
-        version_pattern = re.compile(
-            rf"^({re.escape(variable)}\s*[:]?=\s*)(.*)$", re.MULTILINE
-        )
+        version_pattern = re.compile(rf"^({re.escape(variable)}\s*[:]?=\s*)(.*)$", re.MULTILINE)
 
         def replacement(match):
             return f"{match.group(1)}{new_version}"
 
-        return self._handle_regex_update(file_path, version_pattern, replacement, new_version, variable)
+        return self._handle_regex_update(
+            file_path, version_pattern, replacement, new_version, variable
+        )
 
 
 class PropertiesVersionHandler(VersionHandler):
@@ -687,9 +699,9 @@ class SetupCfgVersionHandler(VersionHandler):
                 return True
 
         # If not found in any section, add to metadata section
-        if 'metadata' not in config:
-            config.add_section('metadata')
-        config['metadata'][variable] = new_version
+        if "metadata" not in config:
+            config.add_section("metadata")
+        config["metadata"][variable] = new_version
         return False  # Variable was not found, so we created it
 
     def update_version(
@@ -778,9 +790,13 @@ class RegexVersionHandler(VersionHandler):
             full_start = match.start(0)
             group_start, group_end = match.span(1)
             full = match.group(0)
-            return f"{full[: group_start - full_start]}{new_version}{full[group_end - full_start :]}"
+            return (
+                f"{full[: group_start - full_start]}{new_version}{full[group_end - full_start :]}"
+            )
 
-        return self._handle_regex_update(file_path, pattern, replacement, new_version, variable or "pattern")
+        return self._handle_regex_update(
+            file_path, pattern, replacement, new_version, variable or "pattern"
+        )
 
     def _compile_pattern(self, pattern_str: str, file_path: str) -> Optional[re.Pattern]:
         """Compile the user-supplied pattern, reporting a clear error if it's missing/invalid.
@@ -939,9 +955,7 @@ def get_version_handler(file_type: str) -> VersionHandler:
     return handler_class()
 
 
-def update_version_in_files(
-    new_version: str, file_configs: List[Dict[str, Any]]
-) -> List[str]:
+def update_version_in_files(new_version: str, file_configs: List[Dict[str, Any]]) -> List[str]:
     """Updates the version string in multiple files based on the provided configurations.
 
     This function iterates over the provided file configurations, updates the version

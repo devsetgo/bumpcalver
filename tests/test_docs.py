@@ -11,7 +11,6 @@ import re
 from pathlib import Path
 
 from click.testing import CliRunner
-
 from src.bumpcalver.cli import main
 
 DOCS_DIR = Path(__file__).resolve().parent.parent / "docs"

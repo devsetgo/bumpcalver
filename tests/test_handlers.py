@@ -9,18 +9,18 @@ import tomlkit
 from ruamel.yaml import YAMLError
 from src.bumpcalver.handlers import (
     DockerfileVersionHandler,
+    EnvVersionHandler,
     JsonVersionHandler,
     MakefileVersionHandler,
+    PropertiesVersionHandler,
     PythonVersionHandler,
+    RegexVersionHandler,
+    SetupCfgVersionHandler,
+    TextVersionHandler,
     TomlVersionHandler,
     VersionHandler,
     XmlVersionHandler,
     YamlVersionHandler,
-    PropertiesVersionHandler,
-    EnvVersionHandler,
-    SetupCfgVersionHandler,
-    TextVersionHandler,
-    RegexVersionHandler,
     get_version_handler,
     update_version_in_files,
 )
@@ -73,9 +73,7 @@ def test_python_handler_update_version_exception(monkeypatch, capsys):
     assert result is False
 
     captured = capsys.readouterr()
-    assert (
-        "Error updating dummy_file.py: Unable to open file for writing" in captured.out
-    )
+    assert "Error updating dummy_file.py: Unable to open file for writing" in captured.out
 
 
 def test_toml_handler_read_version(monkeypatch):
@@ -86,9 +84,7 @@ version = "2023-10-10"
 """
     mock_open = mock.mock_open(read_data=toml_content)
     monkeypatch.setattr("builtins.open", mock_open)
-    monkeypatch.setattr(
-        tomlkit, "load", lambda f: {"tool": {"poetry": {"version": "2023-10-10"}}}
-    )
+    monkeypatch.setattr(tomlkit, "load", lambda f: {"tool": {"poetry": {"version": "2023-10-10"}}})
 
     version = handler.read_version("pyproject.toml", "tool.poetry.version")
     assert version == "2023-10-10"
@@ -107,9 +103,7 @@ version = "2023-10-10"
     dump_mock = mock.Mock()
     monkeypatch.setattr(tomlkit, "dump", dump_mock)
 
-    result = handler.update_version(
-        "pyproject.toml", "tool.poetry.version", "2023-10-11"
-    )
+    result = handler.update_version("pyproject.toml", "tool.poetry.version", "2023-10-11")
     assert result is True
 
     expected_data = {"tool": {"poetry": {"version": "2023-10-11"}}}
@@ -343,9 +337,7 @@ def test_xml_handler_update_version(monkeypatch):
     assert result is True
 
     assert mock_element.text == "2023-10-11"
-    mock_tree.write.assert_called_once_with(
-        "config.xml", xml_declaration=True, encoding="UTF-8"
-    )
+    mock_tree.write.assert_called_once_with("config.xml", xml_declaration=True, encoding="UTF-8")
 
 
 def test_xml_handler_read_version_exception(monkeypatch, capsys):
@@ -427,9 +419,7 @@ ARG VERSION=2023-10-10
     mock_open = mock.mock_open(read_data=dockerfile_content)
     monkeypatch.setattr("builtins.open", mock_open)
 
-    result = handler.update_version(
-        "Dockerfile", "VERSION", "2023-10-11", directive="ARG"
-    )
+    result = handler.update_version("Dockerfile", "VERSION", "2023-10-11", directive="ARG")
     assert result is True
 
     handle = mock_open()
@@ -441,16 +431,11 @@ ARG VERSION=2023-10-10
 def test_dockerfile_handler_update_version_invalid_directive(capsys):
     handler = DockerfileVersionHandler()
 
-    result = handler.update_version(
-        "Dockerfile", "VERSION", "2023-10-11", directive="INVALID"
-    )
+    result = handler.update_version("Dockerfile", "VERSION", "2023-10-11", directive="INVALID")
     assert result is False
 
     captured = capsys.readouterr()
-    assert (
-        "Invalid or missing directive for variable 'VERSION' in Dockerfile."
-        in captured.out
-    )
+    assert "Invalid or missing directive for variable 'VERSION' in Dockerfile." in captured.out
 
 
 def test_dockerfile_handler_read_version_invalid_directive(capsys):
@@ -460,10 +445,7 @@ def test_dockerfile_handler_read_version_invalid_directive(capsys):
     assert version is None
 
     captured = capsys.readouterr()
-    assert (
-        "Invalid or missing directive for variable 'VERSION' in Dockerfile."
-        in captured.out
-    )
+    assert "Invalid or missing directive for variable 'VERSION' in Dockerfile." in captured.out
 
 
 def test_dockerfile_handler_update_version_exception(monkeypatch, capsys):
@@ -475,9 +457,7 @@ def test_dockerfile_handler_update_version_exception(monkeypatch, capsys):
 
     monkeypatch.setattr("builtins.open", mock_open)
 
-    result = handler.update_version(
-        "Dockerfile", "VERSION", "2023-10-11", directive="ARG"
-    )
+    result = handler.update_version("Dockerfile", "VERSION", "2023-10-11", directive="ARG")
     assert result is False
 
     captured = capsys.readouterr()
@@ -581,9 +561,7 @@ def test_makefile_handler_read_version_uses_explicit_utf8_encoding(monkeypatch):
 def test_makefile_handler_read_version_non_ascii_content(tmp_path):
     handler = MakefileVersionHandler()
     makefile = tmp_path / "Makefile"
-    makefile.write_text(
-        "# Réglages généraux — see docs\nVERSION = 2023-10-10\n", encoding="utf-8"
-    )
+    makefile.write_text("# Réglages généraux — see docs\nVERSION = 2023-10-10\n", encoding="utf-8")
 
     version = handler.read_version(str(makefile), "VERSION")
     assert version == "2023-10-10"
@@ -610,10 +588,7 @@ def test_python_handler_read_version_exception(monkeypatch, capsys):
     assert version is None
 
     captured = capsys.readouterr()
-    assert (
-        "Error reading version from nonexistent_file.py: Unable to open file"
-        in captured.out
-    )
+    assert "Error reading version from nonexistent_file.py: Unable to open file" in captured.out
 
 
 def test_python_handler_update_version_variable_not_found(monkeypatch, capsys):
@@ -666,9 +641,7 @@ def test_toml_handler_update_version_exception(monkeypatch, capsys):
     mock_open = mock.mock_open()
     monkeypatch.setattr("builtins.open", mock_open)
 
-    result = handler.update_version(
-        "pyproject.toml", "tool.poetry.version", "2023-10-11"
-    )
+    result = handler.update_version("pyproject.toml", "tool.poetry.version", "2023-10-11")
     assert result is False
 
     captured = capsys.readouterr()
@@ -685,10 +658,7 @@ def test_toml_handler_update_version_preserves_comments(tmp_path):
     handler = TomlVersionHandler()
     toml_file = tmp_path / "pyproject.toml"
     toml_file.write_text(
-        "# top-level comment\n"
-        "[tool.poetry]\n"
-        'version = "1.0.0"  # inline comment\n'
-        'name = "demo"\n',
+        '# top-level comment\n[tool.poetry]\nversion = "1.0.0"  # inline comment\nname = "demo"\n',
         encoding="utf-8",
     )
 
@@ -732,9 +702,7 @@ name = "example"
 """
     mock_open = mock.mock_open(read_data=toml_content)
     monkeypatch.setattr("builtins.open", mock_open)
-    monkeypatch.setattr(
-        tomlkit, "load", lambda f: {"tool": {"poetry": {"name": "example"}}}
-    )
+    monkeypatch.setattr(tomlkit, "load", lambda f: {"tool": {"poetry": {"name": "example"}}})
 
     version = handler.read_version("pyproject.toml", "tool.poetry.version")
     assert version is None
@@ -756,9 +724,7 @@ name = "example"
     dump_mock = mock.Mock()
     monkeypatch.setattr(tomlkit, "dump", dump_mock)
 
-    result = handler.update_version(
-        "pyproject.toml", "tool.poetry.version", "2023-10-11"
-    )
+    result = handler.update_version("pyproject.toml", "tool.poetry.version", "2023-10-11")
     assert result is False
 
     captured = capsys.readouterr()
@@ -824,9 +790,7 @@ FROM python:3.8
     mock_open = mock.mock_open(read_data=dockerfile_content)
     monkeypatch.setattr("builtins.open", mock_open)
 
-    result = handler.update_version(
-        "Dockerfile", "VERSION", "2023-10-11", directive="ARG"
-    )
+    result = handler.update_version("Dockerfile", "VERSION", "2023-10-11", directive="ARG")
     assert result is False
 
     captured = capsys.readouterr()
@@ -904,14 +868,18 @@ sonar.sources=src
     mock_open = mock.mock_open(read_data=properties_content)
     monkeypatch.setattr("builtins.open", mock_open)
 
-    result = handler.update_version("sonar-project.properties", "sonar.projectVersion", "2025-08-01-001")
+    result = handler.update_version(
+        "sonar-project.properties", "sonar.projectVersion", "2025-08-01-001"
+    )
     assert result is True
 
     handle = mock_open()
     handle.writelines.assert_called_once()
     written_lines = handle.writelines.call_args[0][0]
     # Check that the version line was updated
-    version_line_found = any("sonar.projectVersion=2025-08-01-001" in line for line in written_lines)
+    version_line_found = any(
+        "sonar.projectVersion=2025-08-01-001" in line for line in written_lines
+    )
     assert version_line_found
 
 
@@ -937,7 +905,9 @@ sonar.organization=devsetgo
     mock_open = mock.mock_open(read_data=properties_content)
     monkeypatch.setattr("builtins.open", mock_open)
 
-    result = handler.update_version("sonar-project.properties", "sonar.projectVersion", "2025-08-01-001")
+    result = handler.update_version(
+        "sonar-project.properties", "sonar.projectVersion", "2025-08-01-001"
+    )
     assert result is False
 
     captured = capsys.readouterr()
@@ -969,7 +939,9 @@ def test_properties_handler_update_version_exception(monkeypatch, capsys):
 
     monkeypatch.setattr("builtins.open", mock_open)
 
-    result = handler.update_version("sonar-project.properties", "sonar.projectVersion", "2025-08-01-001")
+    result = handler.update_version(
+        "sonar-project.properties", "sonar.projectVersion", "2025-08-01-001"
+    )
     assert result is False
 
     captured = capsys.readouterr()
@@ -1095,9 +1067,9 @@ def test_setup_cfg_handler_read_version(monkeypatch):
 
     # Mock configparser
     mock_config = mock.Mock()
-    mock_config.sections.return_value = ['metadata', 'options']
-    mock_config.__contains__ = lambda self, key: key == 'metadata'
-    mock_config.__getitem__ = lambda self, key: {'version': '0.1.0'} if key == 'metadata' else {}
+    mock_config.sections.return_value = ["metadata", "options"]
+    mock_config.__contains__ = lambda self, key: key == "metadata"
+    mock_config.__getitem__ = lambda self, key: {"version": "0.1.0"} if key == "metadata" else {}
 
     mock_configparser = mock.Mock()
     mock_configparser.ConfigParser.return_value = mock_config
@@ -1113,10 +1085,10 @@ def test_setup_cfg_handler_read_version_simple_key(monkeypatch):
     handler = SetupCfgVersionHandler()
 
     # Mock configparser
-    mock_section = {'version': '0.1.0', 'name': 'test'}
+    mock_section = {"version": "0.1.0", "name": "test"}
     mock_config = mock.Mock()
-    mock_config.sections.return_value = ['metadata']
-    mock_config.__getitem__ = lambda self, key: mock_section if key == 'metadata' else {}
+    mock_config.sections.return_value = ["metadata"]
+    mock_config.__getitem__ = lambda self, key: mock_section if key == "metadata" else {}
 
     mock_configparser = mock.Mock()
     mock_configparser.ConfigParser.return_value = mock_config
@@ -1132,11 +1104,11 @@ def test_setup_cfg_handler_update_version(monkeypatch):
     handler = SetupCfgVersionHandler()
 
     # Mock configparser
-    mock_section = {'version': '0.1.0'}
+    mock_section = {"version": "0.1.0"}
     mock_config = mock.Mock()
-    mock_config.sections.return_value = ['metadata']
-    mock_config.__contains__ = lambda self, key: key == 'metadata'
-    mock_config.__getitem__ = lambda self, key: mock_section if key == 'metadata' else {}
+    mock_config.sections.return_value = ["metadata"]
+    mock_config.__contains__ = lambda self, key: key == "metadata"
+    mock_config.__getitem__ = lambda self, key: mock_section if key == "metadata" else {}
     mock_config.read = mock.Mock()
     mock_config.write = mock.Mock()
 
@@ -1152,7 +1124,7 @@ def test_setup_cfg_handler_update_version(monkeypatch):
     assert result is True
 
     # Verify the version was set
-    assert mock_section['version'] == "2025-08-01-001"
+    assert mock_section["version"] == "2025-08-01-001"
     mock_config.write.assert_called_once()
 
 
@@ -1162,7 +1134,7 @@ def test_setup_cfg_handler_read_version_not_found(monkeypatch):
 
     # Mock configparser
     mock_config = mock.Mock()
-    mock_config.sections.return_value = ['metadata']
+    mock_config.sections.return_value = ["metadata"]
     mock_config.__contains__ = lambda self, key: False
     mock_config.__getitem__ = lambda self, key: {}
 
@@ -1199,7 +1171,7 @@ def test_setup_cfg_handler_update_version_create_section(monkeypatch):
     result = handler.update_version("setup.cfg", "metadata.version", "2025-08-01-001")
     assert result is True
 
-    mock_config.add_section.assert_called_with('metadata')
+    mock_config.add_section.assert_called_with("metadata")
 
 
 def test_setup_cfg_handler_read_version_exception(monkeypatch, capsys):
@@ -1239,11 +1211,11 @@ def test_setup_cfg_handler_update_version_simple_key_found(monkeypatch):
     handler = SetupCfgVersionHandler()
 
     # Mock configparser - version exists in metadata section
-    mock_section = {'version': '0.1.0', 'name': 'test'}
+    mock_section = {"version": "0.1.0", "name": "test"}
     mock_config = mock.Mock()
-    mock_config.sections.return_value = ['metadata', 'options']
+    mock_config.sections.return_value = ["metadata", "options"]
     mock_config.__contains__ = lambda self, key: False  # No dot notation
-    mock_config.__getitem__ = lambda self, key: mock_section if key == 'metadata' else {}
+    mock_config.__getitem__ = lambda self, key: mock_section if key == "metadata" else {}
     mock_config.read = mock.Mock()
     mock_config.write = mock.Mock()
 
@@ -1259,7 +1231,7 @@ def test_setup_cfg_handler_update_version_simple_key_found(monkeypatch):
     assert result is True
 
     # Verify the version was set
-    assert mock_section['version'] == "2025-08-01-001"
+    assert mock_section["version"] == "2025-08-01-001"
     mock_config.write.assert_called_once()
 
 
@@ -1268,11 +1240,11 @@ def test_setup_cfg_handler_update_version_simple_key_not_found_add_to_metadata(m
     handler = SetupCfgVersionHandler()
 
     # Mock configparser - version doesn't exist in any section, metadata section exists
-    mock_metadata_section = {'name': 'test'}
+    mock_metadata_section = {"name": "test"}
     mock_config = mock.Mock()
-    mock_config.sections.return_value = ['metadata', 'options']
-    mock_config.__contains__ = lambda self, key: key == 'metadata'  # metadata exists
-    mock_config.__getitem__ = lambda self, key: mock_metadata_section if key == 'metadata' else {}
+    mock_config.sections.return_value = ["metadata", "options"]
+    mock_config.__contains__ = lambda self, key: key == "metadata"  # metadata exists
+    mock_config.__getitem__ = lambda self, key: mock_metadata_section if key == "metadata" else {}
     mock_config.read = mock.Mock()
     mock_config.write = mock.Mock()
 
@@ -1288,7 +1260,7 @@ def test_setup_cfg_handler_update_version_simple_key_not_found_add_to_metadata(m
     assert result is True
 
     # Verify the version was added to metadata section
-    assert mock_metadata_section['version'] == "2025-08-01-001"
+    assert mock_metadata_section["version"] == "2025-08-01-001"
     mock_config.write.assert_called_once()
 
 
@@ -1299,9 +1271,9 @@ def test_setup_cfg_handler_update_version_simple_key_no_metadata_section(monkeyp
     # Mock configparser - no metadata section exists
     mock_metadata_section = {}
     mock_config = mock.Mock()
-    mock_config.sections.return_value = ['options']
+    mock_config.sections.return_value = ["options"]
     mock_config.__contains__ = lambda self, key: False  # metadata doesn't exist
-    mock_config.__getitem__ = lambda self, key: mock_metadata_section if key == 'metadata' else {}
+    mock_config.__getitem__ = lambda self, key: mock_metadata_section if key == "metadata" else {}
     mock_config.add_section = mock.Mock()
     mock_config.read = mock.Mock()
     mock_config.write = mock.Mock()
@@ -1318,52 +1290,56 @@ def test_setup_cfg_handler_update_version_simple_key_no_metadata_section(monkeyp
     assert result is True
 
     # Verify metadata section was created and version was added
-    mock_config.add_section.assert_called_with('metadata')
-    assert mock_metadata_section['version'] == "2025-08-01-001"
+    mock_config.add_section.assert_called_with("metadata")
+    assert mock_metadata_section["version"] == "2025-08-01-001"
     mock_config.write.assert_called_once()
 
 
 def test_setup_cfg_handler_update_dot_notation_variable():
     """Test _update_dot_notation_variable helper method."""
     import configparser
+
     from src.bumpcalver.handlers import SetupCfgVersionHandler
 
     handler = SetupCfgVersionHandler()
     config = configparser.ConfigParser()
 
     # Test with existing section
-    config.add_section('metadata')
+    config.add_section("metadata")
     result = handler._update_dot_notation_variable(config, "metadata.version", "1.0.0")
     assert result is True
-    assert config['metadata']['version'] == "1.0.0"
+    assert config["metadata"]["version"] == "1.0.0"
 
     # Test with non-existing section
     result = handler._update_dot_notation_variable(config, "tool.version", "2.0.0")
     assert result is True
-    assert config['tool']['version'] == "2.0.0"
+    assert config["tool"]["version"] == "2.0.0"
 
 
 def test_setup_cfg_handler_update_simple_variable():
     """Test _update_simple_variable helper method."""
     import configparser
+
     from src.bumpcalver.handlers import SetupCfgVersionHandler
 
     handler = SetupCfgVersionHandler()
     config = configparser.ConfigParser()
 
     # Test with existing variable in existing section - should return True
-    config.add_section('metadata')
-    config['metadata']['version'] = "0.1.0"
+    config.add_section("metadata")
+    config["metadata"]["version"] = "0.1.0"
     result = handler._update_simple_variable(config, "version", "1.0.0")
     assert result is True  # Found and updated existing variable
-    assert config['metadata']['version'] == "1.0.0"
+    assert config["metadata"]["version"] == "1.0.0"
 
     # Test with non-existing variable - should return False but still create the variable
     config2 = configparser.ConfigParser()
-    config2.add_section('options')
+    config2.add_section("options")
     result = handler._update_simple_variable(config2, "version", "2.0.0")
     assert result is False  # Variable was not found, so it was created
-    assert config2['metadata']['version'] == "2.0.0"  # But variable was still created
+    assert config2["metadata"]["version"] == "2.0.0"  # But variable was still created
+
+
 def test_get_version_handler_properties():
     """Test getting properties version handler."""
     handler = get_version_handler("properties")
@@ -1439,6 +1415,7 @@ def test_version_handler_read_file_safe_success(monkeypatch):
     class TestHandler(VersionHandler):
         def read_version(self, file_path: str, variable: str, **kwargs):
             pass
+
         def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
             pass
 
@@ -1459,6 +1436,7 @@ def test_version_handler_read_file_safe_exception(monkeypatch, capsys):
     class TestHandler(VersionHandler):
         def read_version(self, file_path: str, variable: str, **kwargs):
             pass
+
         def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
             pass
 
@@ -1484,6 +1462,7 @@ def test_version_handler_write_file_safe_success(monkeypatch, capsys):
     class TestHandler(VersionHandler):
         def read_version(self, file_path: str, variable: str, **kwargs):
             pass
+
         def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
             pass
 
@@ -1510,6 +1489,7 @@ def test_version_handler_write_file_safe_exception(monkeypatch, capsys):
     class TestHandler(VersionHandler):
         def read_version(self, file_path: str, variable: str, **kwargs):
             pass
+
         def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
             pass
 
@@ -1535,6 +1515,7 @@ def test_version_handler_format_version_with_standard():
     class TestHandler(VersionHandler):
         def read_version(self, file_path: str, variable: str, **kwargs):
             pass
+
         def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
             pass
 
@@ -1549,7 +1530,9 @@ def test_version_handler_format_version_with_standard():
     assert result == "2024.1.15"  # PEP 440 format
 
     # Test with custom kwargs
-    result = handler._format_version_with_standard("2024-01-15", version_standard="default", other_param="test")
+    result = handler._format_version_with_standard(
+        "2024-01-15", version_standard="default", other_param="test"
+    )
     assert result == "2024-01-15"
 
 
@@ -1561,6 +1544,7 @@ def test_version_handler_find_key_value_in_lines():
     class TestHandler(VersionHandler):
         def read_version(self, file_path: str, variable: str, **kwargs):
             pass
+
         def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
             pass
 
@@ -1572,7 +1556,7 @@ def test_version_handler_find_key_value_in_lines():
         "VERSION=1.0.0",
         "",
         "DATABASE_URL=postgresql://localhost/mydb",
-        "# Another comment"
+        "# Another comment",
     ]
 
     # Test finding existing variable
@@ -1604,6 +1588,7 @@ def test_version_handler_log_variable_not_found(capsys):
     class TestHandler(VersionHandler):
         def read_version(self, file_path: str, variable: str, **kwargs):
             pass
+
         def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
             pass
 
@@ -1628,6 +1613,7 @@ def test_version_handler_log_success_update(capsys):
     class TestHandler(VersionHandler):
         def read_version(self, file_path: str, variable: str, **kwargs):
             pass
+
         def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
             pass
 
@@ -1652,6 +1638,7 @@ def test_version_handler_handle_read_operation_success():
     class TestHandler(VersionHandler):
         def read_version(self, file_path: str, variable: str, **kwargs):
             pass
+
         def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
             pass
 
@@ -1672,6 +1659,7 @@ def test_version_handler_handle_read_operation_exception(capsys):
     class TestHandler(VersionHandler):
         def read_version(self, file_path: str, variable: str, **kwargs):
             pass
+
         def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
             pass
 
@@ -1690,12 +1678,14 @@ def test_version_handler_handle_read_operation_exception(capsys):
 def test_version_handler_handle_regex_update_success(monkeypatch, capsys):
     """Test _handle_regex_update method with successful update."""
     import re
+
     from src.bumpcalver.handlers import VersionHandler
 
     # Create a concrete implementation for testing
     class TestHandler(VersionHandler):
         def read_version(self, file_path: str, variable: str, **kwargs):
             pass
+
         def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
             pass
 
@@ -1704,12 +1694,14 @@ def test_version_handler_handle_regex_update_success(monkeypatch, capsys):
     mock_open = mock.mock_open(read_data=file_content)
     monkeypatch.setattr("builtins.open", mock_open)
 
-    pattern = re.compile(r'VERSION=(.+)')
+    pattern = re.compile(r"VERSION=(.+)")
 
     def replacement_func(match):
         return "VERSION=2.0.0"
 
-    result = handler._handle_regex_update("test_file.txt", pattern, replacement_func, "2.0.0", "VERSION")
+    result = handler._handle_regex_update(
+        "test_file.txt", pattern, replacement_func, "2.0.0", "VERSION"
+    )
     assert result is True
 
     captured = capsys.readouterr()
@@ -1719,12 +1711,14 @@ def test_version_handler_handle_regex_update_success(monkeypatch, capsys):
 def test_version_handler_handle_regex_update_no_match(monkeypatch, capsys):
     """Test _handle_regex_update method with no pattern match."""
     import re
+
     from src.bumpcalver.handlers import VersionHandler
 
     # Create a concrete implementation for testing
     class TestHandler(VersionHandler):
         def read_version(self, file_path: str, variable: str, **kwargs):
             pass
+
         def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
             pass
 
@@ -1733,12 +1727,14 @@ def test_version_handler_handle_regex_update_no_match(monkeypatch, capsys):
     mock_open = mock.mock_open(read_data=file_content)
     monkeypatch.setattr("builtins.open", mock_open)
 
-    pattern = re.compile(r'VERSION=(.+)')
+    pattern = re.compile(r"VERSION=(.+)")
 
     def replacement_func(match):
         return "VERSION=2.0.0"
 
-    result = handler._handle_regex_update("test_file.txt", pattern, replacement_func, "2.0.0", "VERSION")
+    result = handler._handle_regex_update(
+        "test_file.txt", pattern, replacement_func, "2.0.0", "VERSION"
+    )
     assert result is False
 
     captured = capsys.readouterr()
@@ -1748,12 +1744,14 @@ def test_version_handler_handle_regex_update_no_match(monkeypatch, capsys):
 def test_version_handler_handle_regex_update_custom_message(monkeypatch, capsys):
     """Test _handle_regex_update method with custom not found message."""
     import re
+
     from src.bumpcalver.handlers import VersionHandler
 
     # Create a concrete implementation for testing
     class TestHandler(VersionHandler):
         def read_version(self, file_path: str, variable: str, **kwargs):
             pass
+
         def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
             pass
 
@@ -1762,13 +1760,15 @@ def test_version_handler_handle_regex_update_custom_message(monkeypatch, capsys)
     mock_open = mock.mock_open(read_data=file_content)
     monkeypatch.setattr("builtins.open", mock_open)
 
-    pattern = re.compile(r'VERSION=(.+)')
+    pattern = re.compile(r"VERSION=(.+)")
 
     def replacement_func(match):
         return "VERSION=2.0.0"
 
     custom_message = "Custom variable not found message"
-    result = handler._handle_regex_update("test_file.txt", pattern, replacement_func, "2.0.0", "VERSION", custom_message)
+    result = handler._handle_regex_update(
+        "test_file.txt", pattern, replacement_func, "2.0.0", "VERSION", custom_message
+    )
     assert result is False
 
     captured = capsys.readouterr()
@@ -1778,12 +1778,14 @@ def test_version_handler_handle_regex_update_custom_message(monkeypatch, capsys)
 def test_version_handler_handle_regex_update_read_exception(monkeypatch, capsys):
     """Test _handle_regex_update method with file read exception."""
     import re
+
     from src.bumpcalver.handlers import VersionHandler
 
     # Create a concrete implementation for testing
     class TestHandler(VersionHandler):
         def read_version(self, file_path: str, variable: str, **kwargs):
             pass
+
         def update_version(self, file_path: str, variable: str, new_version: str, **kwargs):
             pass
 
@@ -1794,12 +1796,14 @@ def test_version_handler_handle_regex_update_read_exception(monkeypatch, capsys)
 
     monkeypatch.setattr("builtins.open", mock_open)
 
-    pattern = re.compile(r'VERSION=(.+)')
+    pattern = re.compile(r"VERSION=(.+)")
 
     def replacement_func(match):
         return "VERSION=2.0.0"
 
-    result = handler._handle_regex_update("test_file.txt", pattern, replacement_func, "2.0.0", "VERSION")
+    result = handler._handle_regex_update(
+        "test_file.txt", pattern, replacement_func, "2.0.0", "VERSION"
+    )
     assert result is False
 
     captured = capsys.readouterr()
@@ -1810,6 +1814,7 @@ def test_version_handler_handle_regex_update_read_exception(monkeypatch, capsys)
 # TextVersionHandler — bare, whole-file version content (Capability
 # Expansion §5.1: e.g. a plain `VERSION` file used by shell release scripts)
 # ---------------------------------------------------------------------------
+
 
 def test_text_handler_read_version(tmp_path):
     version_file = tmp_path / "VERSION"
@@ -1850,9 +1855,10 @@ def test_text_handler_update_version_applies_pep440_standard(tmp_path):
     version_file.write_text("1.2.3\n", encoding="utf-8")
 
     handler = TextVersionHandler()
-    assert handler.update_version(
-        str(version_file), "", "2026-01-01", version_standard="python"
-    ) is True
+    assert (
+        handler.update_version(str(version_file), "", "2026-01-01", version_standard="python")
+        is True
+    )
     assert version_file.read_text(encoding="utf-8") == "2026.1.1\n"
 
 
@@ -1874,30 +1880,28 @@ def test_text_handler_update_version_write_failure(monkeypatch, capsys):
 # Expansion §5.1: Ruby/Rust/Go/etc. with no dedicated handler)
 # ---------------------------------------------------------------------------
 
+
 def test_regex_handler_read_version_ruby_style(tmp_path):
     # Real-world shape: examples/version.rb in this repo.
     version_file = tmp_path / "version.rb"
-    version_file.write_text(
-        'module MyGem\n  VERSION = "2026.03.08.001"\nend\n', encoding="utf-8"
-    )
+    version_file.write_text('module MyGem\n  VERSION = "2026.03.08.001"\nend\n', encoding="utf-8")
 
     handler = RegexVersionHandler()
-    result = handler.read_version(
-        str(version_file), "VERSION", pattern=r'VERSION = "(.+?)"'
-    )
+    result = handler.read_version(str(version_file), "VERSION", pattern=r'VERSION = "(.+?)"')
     assert result == "2026.03.08.001"
 
 
 def test_regex_handler_update_version_ruby_style_preserves_surrounding_code(tmp_path):
     version_file = tmp_path / "version.rb"
-    version_file.write_text(
-        'module MyGem\n  VERSION = "2026.03.08.001"\nend\n', encoding="utf-8"
-    )
+    version_file.write_text('module MyGem\n  VERSION = "2026.03.08.001"\nend\n', encoding="utf-8")
 
     handler = RegexVersionHandler()
-    assert handler.update_version(
-        str(version_file), "VERSION", "2026.99.99.001", pattern=r'VERSION = "(.+?)"'
-    ) is True
+    assert (
+        handler.update_version(
+            str(version_file), "VERSION", "2026.99.99.001", pattern=r'VERSION = "(.+?)"'
+        )
+        is True
+    )
     assert version_file.read_text(encoding="utf-8") == (
         'module MyGem\n  VERSION = "2026.99.99.001"\nend\n'
     )
@@ -1957,9 +1961,10 @@ def test_regex_handler_no_capture_group_rejected_for_read_and_update(tmp_path, c
     no_group_pattern = r'VERSION = ".+?"'
 
     assert handler.read_version(str(version_file), "VERSION", pattern=no_group_pattern) is None
-    assert handler.update_version(
-        str(version_file), "VERSION", "2.0.0", pattern=no_group_pattern
-    ) is False
+    assert (
+        handler.update_version(str(version_file), "VERSION", "2.0.0", pattern=no_group_pattern)
+        is False
+    )
 
     captured = capsys.readouterr()
     assert captured.out.count("must contain exactly one capture group") == 2
@@ -1981,13 +1986,16 @@ def test_regex_handler_update_version_applies_pep440_standard(tmp_path):
     version_file.write_text('VERSION = "1.0.0"\n', encoding="utf-8")
 
     handler = RegexVersionHandler()
-    assert handler.update_version(
-        str(version_file),
-        "VERSION",
-        "2026-01-01",
-        pattern=r'VERSION = "(.+?)"',
-        version_standard="python",
-    ) is True
+    assert (
+        handler.update_version(
+            str(version_file),
+            "VERSION",
+            "2026-01-01",
+            pattern=r'VERSION = "(.+?)"',
+            version_standard="python",
+        )
+        is True
+    )
     assert 'VERSION = "2026.1.1"' in version_file.read_text(encoding="utf-8")
 
 
@@ -2014,6 +2022,7 @@ def test_update_version_in_files_passes_pattern_to_regex_handler(tmp_path):
 # Plugin handlers via the "bumpcalver.handlers" entry-point group
 # (Capability Expansion §5.2)
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture(autouse=True)
 def _clear_plugin_handler_cache():
@@ -2056,9 +2065,7 @@ def _make_fake_entry_point(name: str, value: str, load_result):
 
 def test_get_version_handler_discovers_plugin(monkeypatch):
     ep = _make_fake_entry_point("myformat", "my_pkg.handlers:MyFormatHandler", _FakePluginHandler)
-    monkeypatch.setattr(
-        "src.bumpcalver.handlers._iter_plugin_entry_points", lambda: [ep]
-    )
+    monkeypatch.setattr("src.bumpcalver.handlers._iter_plugin_entry_points", lambda: [ep])
 
     handler = get_version_handler("myformat")
     assert isinstance(handler, _FakePluginHandler)
@@ -2067,9 +2074,7 @@ def test_get_version_handler_discovers_plugin(monkeypatch):
 
 def test_available_file_types_includes_builtins_and_plugins(monkeypatch):
     ep = _make_fake_entry_point("myformat", "my_pkg.handlers:MyFormatHandler", _FakePluginHandler)
-    monkeypatch.setattr(
-        "src.bumpcalver.handlers._iter_plugin_entry_points", lambda: [ep]
-    )
+    monkeypatch.setattr("src.bumpcalver.handlers._iter_plugin_entry_points", lambda: [ep])
 
     from src.bumpcalver.handlers import available_file_types
 
@@ -2096,9 +2101,7 @@ def test_plugin_cannot_override_a_builtin_file_type(monkeypatch, capsys):
     # some unrelated package can't silently change how your existing files
     # are handled.
     ep = _make_fake_entry_point("toml", "evil_pkg:EvilHandler", _FakePluginHandler)
-    monkeypatch.setattr(
-        "src.bumpcalver.handlers._iter_plugin_entry_points", lambda: [ep]
-    )
+    monkeypatch.setattr("src.bumpcalver.handlers._iter_plugin_entry_points", lambda: [ep])
 
     # get_version_handler() short-circuits on a match in the built-in registry
     # without ever consulting plugins, so trigger discovery explicitly via
@@ -2117,12 +2120,8 @@ def test_plugin_cannot_override_a_builtin_file_type(monkeypatch, capsys):
 
 
 def test_plugin_that_fails_to_load_is_skipped_not_fatal(monkeypatch, capsys):
-    ep = _make_fake_entry_point(
-        "broken", "nope.module:Nope", ImportError("No module named 'nope'")
-    )
-    monkeypatch.setattr(
-        "src.bumpcalver.handlers._iter_plugin_entry_points", lambda: [ep]
-    )
+    ep = _make_fake_entry_point("broken", "nope.module:Nope", ImportError("No module named 'nope'"))
+    monkeypatch.setattr("src.bumpcalver.handlers._iter_plugin_entry_points", lambda: [ep])
 
     with pytest.raises(ValueError, match="Unsupported file type: broken"):
         get_version_handler("broken")
@@ -2134,9 +2133,7 @@ def test_plugin_that_fails_to_load_is_skipped_not_fatal(monkeypatch, capsys):
 
 def test_plugin_entry_point_not_a_version_handler_subclass_is_skipped(monkeypatch, capsys):
     ep = _make_fake_entry_point("notahandler", "some_pkg:NotAHandler", str)
-    monkeypatch.setattr(
-        "src.bumpcalver.handlers._iter_plugin_entry_points", lambda: [ep]
-    )
+    monkeypatch.setattr("src.bumpcalver.handlers._iter_plugin_entry_points", lambda: [ep])
 
     with pytest.raises(ValueError, match="Unsupported file type: notahandler"):
         get_version_handler("notahandler")
@@ -2157,9 +2154,7 @@ def test_two_plugins_registering_same_name_first_one_wins(monkeypatch, capsys):
 
     ep1 = _make_fake_entry_point("dup", "pkg_one:HandlerOne", _FakePluginHandler)
     ep2 = _make_fake_entry_point("dup", "pkg_two:HandlerTwo", _OtherFakeHandler)
-    monkeypatch.setattr(
-        "src.bumpcalver.handlers._iter_plugin_entry_points", lambda: [ep1, ep2]
-    )
+    monkeypatch.setattr("src.bumpcalver.handlers._iter_plugin_entry_points", lambda: [ep1, ep2])
 
     handler = get_version_handler("dup")
     assert isinstance(handler, _FakePluginHandler)
@@ -2184,9 +2179,7 @@ def test_discover_plugin_handlers_is_cached(monkeypatch):
         call_count["n"] += 1
         return []
 
-    monkeypatch.setattr(
-        "src.bumpcalver.handlers._iter_plugin_entry_points", counting_entry_points
-    )
+    monkeypatch.setattr("src.bumpcalver.handlers._iter_plugin_entry_points", counting_entry_points)
 
     _discover_plugin_handlers()
     _discover_plugin_handlers()
@@ -2196,7 +2189,7 @@ def test_discover_plugin_handlers_is_cached(monkeypatch):
 
 
 def test_iter_plugin_entry_points_python310_plus_select_api():
-    from src.bumpcalver.handlers import _iter_plugin_entry_points, PLUGIN_ENTRY_POINT_GROUP
+    from src.bumpcalver.handlers import PLUGIN_ENTRY_POINT_GROUP, _iter_plugin_entry_points
 
     fake_eps = mock.Mock()
     fake_eps.select.return_value = ["sentinel"]
@@ -2209,7 +2202,7 @@ def test_iter_plugin_entry_points_python310_plus_select_api():
 
 
 def test_iter_plugin_entry_points_python39_dict_api():
-    from src.bumpcalver.handlers import _iter_plugin_entry_points, PLUGIN_ENTRY_POINT_GROUP
+    from src.bumpcalver.handlers import PLUGIN_ENTRY_POINT_GROUP, _iter_plugin_entry_points
 
     # Python 3.9's entry_points() returns a plain dict with no .select().
     fake_eps = {PLUGIN_ENTRY_POINT_GROUP: ["sentinel"]}

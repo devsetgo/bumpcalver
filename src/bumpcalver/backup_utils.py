@@ -83,7 +83,7 @@ class BackupManager:
         git_tag: bool = False,
         git_commit: bool = False,
         git_commit_hash: Optional[str] = None,
-        git_tag_name: Optional[str] = None
+        git_tag_name: Optional[str] = None,
     ) -> None:
         """Store metadata about a version bump operation.
 
@@ -111,7 +111,7 @@ class BackupManager:
                 "git_tag": git_tag,
                 "git_commit": git_commit,
                 "git_commit_hash": git_commit_hash,
-                "git_tag_name": git_tag_name
+                "git_tag_name": git_tag_name,
             }
 
             # Add to history (newest first)
@@ -188,7 +188,7 @@ class BackupManager:
             return []
 
         try:
-            with open(self.history_file, 'r', encoding='utf-8') as f:
+            with open(self.history_file, "r", encoding="utf-8") as f:
                 # json.load's return type is Any (JSON is untyped by nature);
                 # the declared List[Dict[str, Any]] here is a trusted contract
                 # with _save_history, not something mypy can verify at this
@@ -200,7 +200,7 @@ class BackupManager:
     def _save_history(self, history: List[Dict[str, Any]]) -> None:
         """Save operation history to JSON file."""
         try:
-            with open(self.history_file, 'w', encoding='utf-8') as f:
+            with open(self.history_file, "w", encoding="utf-8") as f:
                 json.dump(history, f, indent=2, ensure_ascii=False)
         except IOError as e:
             print(f"Failed to save history: {e}")
@@ -216,8 +216,7 @@ def generate_operation_id() -> str:
 
 
 def backup_files_before_update(
-    file_configs: List[Dict[str, Any]],
-    backup_manager: Optional[BackupManager] = None
+    file_configs: List[Dict[str, Any]], backup_manager: Optional[BackupManager] = None
 ) -> Tuple[Dict[str, str], BackupManager]:
     """Create backups for all files that will be updated.
 

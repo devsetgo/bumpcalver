@@ -7,6 +7,7 @@ BumpCalver Library
 Author: Mike Ryan
 License: MIT
 """
+
 from datetime import date
 
 __version__ = "2026.5.24.1"

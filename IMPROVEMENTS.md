@@ -139,11 +139,55 @@ The codebase is in good shape overall — the gaps below are refinements, not fi
    of an if/else.** Consolidated to a single annotation at
    [config.py:43](src/bumpcalver/config.py#L43).
 
-9. **Not done — tooling overlap** (`ruff`'s `I` rule vs. standalone `isort`/`flake8`/`autoflake`
-   scripts). Deliberately deferred: this is a dev-tooling/CI consolidation rather than library
-   code, touches multiple scripts and `.pre-commit-config.yaml`, and is more of a project
-   convention decision than a correctness fix — worth doing as its own separate, deliberate
-   change rather than folding into this pass.
+9. ✅ **DONE (2026-07-25) — tooling overlap** (`ruff`'s `I` rule left disabled while a separate
+   `isort` + `[tool.isort]` config did the same job; `black`/`autoflake`/`flake8`/`autopep8`/
+   `pylint` all present as unpinned/unused/redundant tooling alongside `ruff`, which already
+   covers all of their jobs). Consolidated onto `ruff` as the single tool for linting, import
+   sorting, unused-import/variable removal, and formatting:
+   - `pyproject.toml`: added `"I"` to `[tool.ruff.lint].select` (ruff's isort-equivalent rule
+     group) and removed the now-redundant `[tool.isort]` section entirely. Ran
+     `ruff check --select I --fix` once across `src/`/`tests/`/`examples/` to actually sort
+     the 20 files that were out of order under the new rule (pure import-order changes,
+     verified against the full test suite before/after).
+   - Also enabled `ruff format` (previously configured via `[tool.ruff.format]` but never
+     actually invoked — the Makefile's `ruff` target only ran `ruff check --fix`, so that
+     format config had silently never been enforced) and ran it repo-wide, since retiring
+     `black` in favor of it is meaningless if the codebase isn't actually reformatted to
+     match. This is the largest diff in this item (~1400 lines changed across 29 files) but
+     is purely mechanical whitespace/quote-style — autoformatters are AST-preserving by
+     construction, and 388/388 tests passed unchanged before and after. Flagged the size/
+     nature of this diff to the user before applying it rather than assuming; user chose to
+     apply it in full rather than defer the format migration.
+   - Discovered `[tool.ruff.format].quote-style` was already set to `"single"` but, per the
+     above, had never actually been enforced — the real codebase convention (via the previous
+     `black` runs) was double quotes. Changed the config to `"double"` to match reality
+     instead of mass-rewriting every string literal's quote character for no functional
+     reason.
+   - Removed `autoflake`/`black`/`isort` Makefile targets; `format` now runs
+     `ruff check --fix` + `ruff format` directly, `validate` runs `ruff format --check` +
+     `ruff check` + `mypy`, and `ruff` is kept as a thin alias for `format` (muscle memory).
+     Also deleted three fully orphaned scripts (`scripts/autoflake.sh`, `scripts/flake8.sh`,
+     `scripts/isort_run.sh`) invoking the now-retired tools, and stripped the same dead
+     references out of `scripts/tests.sh`.
+   - `requirements.txt`: removed `autoflake`, `autopep8`, `black`, `flake8`, `pylint` — none
+     were referenced by any Makefile target, pre-commit hook, or CI workflow after the above
+     (confirmed by grepping before removing, not assumed).
+   - `.pre-commit-config.yaml`: the `ruff-pre-commit` mirror was pinned at `v0.1.5` — over
+     four years stale relative to the `ruff==0.15.12` actually installed via `requirements.txt`,
+     meaning `pre-commit run -a` (what `make test` gates on) was silently checking with a
+     wildly different ruff version than the one used for local `ruff` invocations. Bumped to
+     `v0.15.12` (the matching tag) and split the single `ruff` hook into `ruff-check` +
+     `ruff-format` (the old `ruff` id is now a deprecated legacy alias for check-only).
+   - Added `tests/test_tooling_config.py` (3 tests) asserting `"I"` stays selected, no
+     `[tool.isort]` section reappears, and `requirements.txt` doesn't re-declare any of the
+     five retired packages — a regression guard against this fragmenting again, not just a
+     one-time fix. Confirmed these fail against the pre-fix config.
+   - Verified `make format`, `make validate`, `make test`, and a real `pre-commit run -a` all
+     work end-to-end post-change (not just `pytest`) — 397/397 tests pass (391 + the 6 new
+     mkdocs-hook tests from item below, since both landed in the same session), 100% coverage
+     maintained, `mypy`/`ruff check`/`ruff format --check` all clean.
+   - **Docs**: `docs/development-guide.md`'s "Code Formatting" section rewritten to describe
+     the single-tool ruff workflow instead of the old isort/black/autoflake/ruff/mypy list.
 
 ---
 
@@ -176,13 +220,36 @@ The codebase is in good shape overall — the gaps below are refinements, not fi
    adding a fake `--dry-run` option to a scratch copy of `cli.py` and confirming both tests
    fail with a clear message, then restored the real file and confirmed a clean pass.
 
-3. **Not done — `docs/timezones.md` is 3,071 lines, duplicating `timezones_table.html`.**
-   Investigated rather than assumed: extracted and diffed the timezone sets from both
-   files — 598 zones each, identical sets, no drift between them. So unlike items 1/2 this
-   isn't a live bug, just static duplication of data that essentially never changes.
-   Properly fixing it would mean building a real generate-at-build-time pipeline (a new
-   mkdocs hook or pre-build script); given the low payoff versus that effort, deliberately
-   deferring rather than doing a partial/risky job on a 3,000-line generated file.
+3. ✅ **DONE (2026-07-25) — `docs/timezones.md` was 3,071 lines, duplicating
+   `timezones_table.html`.** Built the real generate-at-build-time pipeline previously
+   deferred: `scripts/mkdocs_hooks.py` (new) has `get_timezone_rows()`/
+   `generate_timezone_table_html()` — the single source of truth for the (timezone name, UTC
+   offset) table, built from `zoneinfo.available_timezones()` — plus an `on_page_markdown()`
+   mkdocs event hook that substitutes a `<!-- TIMEZONE_TABLE -->` placeholder in
+   `docs/timezones.md` with the freshly generated table at `mkdocs build` time. Registered via
+   `mkdocs.yml`'s `hooks:` key (supported since mkdocs 1.4; this repo pins 1.6.1).
+   - `docs/timezones.md` shrank from 3,071 lines to 11 (header, intro paragraph, and the
+     placeholder) — the ~600-row table is no longer hand-maintained/duplicated in the repo at
+     all.
+   - Deleted `docs/timezones_table.html` outright rather than also generating it: confirmed by
+     grepping `mkdocs.yml`'s nav, every `.md` file, and every snippet-include for
+     `timezones_table` that nothing actually referenced it as an include — it was a fully
+     orphaned duplicate, not a second real consumer, going all the way back to
+     `examples/example.py` (a standalone zoneinfo demo script, kept mostly as-is but given a
+     comment clarifying it's not the real docs source) which used to write it as a byproduct.
+   - **Verified with a real `mkdocs build --strict`**: same 4 pre-existing, unrelated warnings
+     as before (no regressions), and the built `site/timezones/index.html` was inspected
+     directly — contains a real `<table id="timezonesTable">` with 487 `<tr>` rows including
+     `America/New_York`, and zero occurrences of the literal placeholder string, proving the
+     hook actually ran rather than just being registered.
+   - Tests: `tests/test_mkdocs_hooks.py` (6 tests) — `get_timezone_rows()` covers every name
+     `zoneinfo.available_timezones()` returns (not a hardcoded count, so it can't silently
+     drift from the interpreter's own tzdata), UTC offset formatting, the generated HTML
+     contains the table/script/every sampled zone, and `on_page_markdown()` correctly
+     substitutes only on `timezones.md` and is a no-op on every other page or when the
+     placeholder is absent. 100% coverage on the new module (one genuinely defensive,
+     practically-unreachable branch — `ZoneInfo.utcoffset()` formally returning `None` — is
+     marked `# pragma: no cover`, matching the same pattern already used in `cli.py`).
 
 4. **Correction, not a fix — the claimed missing contributor extension guide already
    existed.** On inspection, `docs/development-guide.md`'s existing "File Format Support"
@@ -296,8 +363,8 @@ across every file in `src/bumpcalver` as of this pass.
 
 ## 5. Capability Expansion Opportunities
 
-**Status (2026-07-25): items 1, 2, 3, 4, and 6 fully done — code, tests, and docs. Item 5
-deliberately deferred with rationale (see its entry).**
+**Status (2026-07-25): all 6 items fully done — code, tests, and docs. This section is
+closed out.**
 
 1. ✅ **DONE — No "generic"/plain-text version handler.**
    Added two new handlers to `handlers.py` (registered as `"text"` and `"regex"` in
@@ -465,12 +532,49 @@ deliberately deferred with rationale (see its entry).**
      guard). 100% coverage maintained. Documented in README.md's "Version Bump Options" list
      and in the generated `docs/cli-reference.md`.
 
-5. **NOT STARTED — No machine-readable output mode.** A `--json` flag emitting the computed
-   version/updated files/operation ID as structured JSON. Deliberately deferred — it requires
-   restructuring the scattered `print()` calls throughout `main()` (need to either suppress
-   them or route them to stderr under `--json`), which is more invasive than the other items
-   here for comparatively speculative value (no forcing function like a discovered bug pushed
-   this one, unlike most other items this session).
+5. ✅ **DONE (2026-07-25) — No machine-readable output mode.** Added `--json` to `cli.py`,
+   emitting exactly one JSON object on stdout with the computed version/updated files/
+   operation ID (or the dry-run/no-op/error equivalent) instead of the human-readable log
+   lines.
+   - **The actual restructuring problem was bigger than originally scoped**: it's not just
+     `main()`'s own scattered `print()` calls — `config.py`'s `load_config()` and
+     `backup_utils.py`'s backup/write helpers print their own diagnostic lines too, and none
+     of those modules know about `--json`. Threading a `json_mode`/`emit` parameter through
+     every one of them would have meant changing call signatures across module boundaries for
+     a purely cosmetic concern. Solved instead with `contextlib.redirect_stdout(sys.stderr)`
+     wrapped around the whole version-bump code path when `--json` is set: every plain
+     `print()` anywhere in the call graph transparently lands on stderr, and the one real
+     JSON payload is written directly to a `real_stdout` reference captured *before* the
+     redirect takes effect. This was found empirically, not designed upfront — an earlier
+     version that only rewrote `cli.py`'s own prints left `config.py`'s "Original path: ...
+     -> Converted path: ..." line leaking onto stdout ahead of the JSON, caught by an
+     end-to-end test actually parsing `result.stdout` as JSON rather than checking for a
+     substring.
+   - Payload shapes: success —
+     `{"version", "files_updated", "operation_id", "git_tag", "git_commit_hash"}`; `--dry-run`
+     — `{"dry_run": true, "version", "files_that_would_change", "git_tag_would_create",
+     "auto_commit"}`; no-op (already up to date, or the update itself changed nothing) —
+     `{"version", "files_updated": [], "operation_id": null, "no_op": true}`; error —
+     `{"error": "..."}` with exit code 1. `--json` is rejected in combination with
+     `--undo`/`--undo-id`/`--list-history` (same pattern as `--dry-run`/`--config-file`
+     above) since those commands print their own output and don't return structured data yet.
+   - Tests: 9 new tests in `tests/test_cli.py` — three real end-to-end filesystem tests (no
+     mocking of `update_version_in_files`) for the success/dry-run/no-op paths, each parsing
+     `result.stdout` with `json.loads()` and separately asserting the log lines landed on
+     `result.stderr` instead; plus mocked tests for the git-tag fields, the error path, the
+     empty-`files_updated`-after-write-attempt edge case (this one specifically needed to
+     restore the 100% coverage the redirect refactor temporarily cost), and both undo-conflict
+     rejections. 388/388 (later 397/397, once items 2 and 3 below also landed) tests pass,
+     100% coverage maintained throughout, `ruff`/`mypy` clean.
+   - **Docs**: new "Machine-Readable Output" sections in `docs/cli-reference.md` (with the
+     payload shape for each case) and mirrored in README.md/`docs/index.md`, a `--json` bullet
+     in each file's option list, a "Capturing the New Version in CI" example
+     (`bumpcalver --build --json 2>/dev/null | jq -r '.version'`) added to both
+     README.md/`docs/index.md`'s Examples sections, and a matching example in the module
+     docstring. Every doc example was actually run (including the `jq` pipeline) rather than
+     just written by inspection. `docs/cli-reference.md`'s literal `--help` block was
+     regenerated from the real `CliRunner` output and the drift test
+     (`test_cli_reference_matches_help_output`) confirmed passing, not just visually matched.
 
 6. ✅ **DONE — Undo/backup storage gitignore guidance.** Investigated rather than assumed:
    `docs/undo.md` **already has** a complete, correct "Recommended .gitignore Entries"
@@ -674,19 +778,22 @@ If tackling incrementally, the highest-leverage fixes are:
 3. ✅ Regenerate/fix `docs/modules.md` (§3.1) — it used to misrepresent the public API,
    including omitting the undo and hybrid-versioning features entirely; now generated live
    from source via `mkdocstrings` so it can't drift again. **Done 2026-07-25**, alongside
-   the rest of the Documentation Improvements pass (§3.1, §3.2, §3.5 done; §3.3 deferred
-   with rationale; §3.4 was already covered, corrected and enriched instead — see their
-   entries above).
+   the rest of the Documentation Improvements pass — all of §3.1–§3.5 are now done (§3.3's
+   `docs/timezones.md`/`timezones_table.html` duplication, the last open item in this
+   section, was closed out **2026-07-25** by generating the table at `mkdocs build` time
+   instead of hand-duplicating it — see its entry above).
 4. ✅ Add `mypy` to CI (§4.3) — **done 2026-07-25**, alongside the rest of the Testing pass
    (§4.1, §4.2, §4.3, §4.5 done; §4.4 confirmed already covered — see their entries above).
    The Makefile encoding gap (§2.7) — **done 2026-07-25**, alongside the rest of the
-   Refactoring Opportunities pass (§2.1–2.8; §2.9 tooling-consolidation intentionally
-   deferred, see its entry above).
-5. ✅ Capability Expansion pass (§5) — `text`/`regex` generic handlers, `--dry-run`,
-   `--config-file`/`BUMPCALVER_CONFIG`, the `bumpcalver-history.json` gitignore-tracking fix,
-   and the plugin/entry-point mechanism (§5 item 2, including a real installable example
-   package, tests, and docs) are all done — the last of these **done 2026-07-25**. Only a
-   `--json` output mode (§5 item 5) remains deliberately deferred — see its entry above for
-   why. Everything else in this document beyond §5 and the still-open items called out inline
-   (§2.9 tooling consolidation, §3.3 timezones.md dedup, §4.4 n/a) is genuinely additive and
-   can be prioritized against actual user requests.
+   Refactoring Opportunities pass — all of §2.1–§2.9 are now done (§2.9's isort/black/
+   autoflake/flake8/pylint tooling overlap, the last open item in this section, was closed
+   out **2026-07-25** by consolidating onto `ruff` alone — see its entry above).
+5. ✅ Capability Expansion pass (§5) — all 6 items are now done, including the plugin/
+   entry-point mechanism (item 2: a real installable example package, tests, and docs) and a
+   `--json` output mode (item 5: structured stdout via a stdout-redirect around the whole
+   version-bump path, tests, and docs) — both closed out **2026-07-25**. This section is
+   fully closed.
+
+Everything in this document is now done except §6 (AI-assistant integration instructions),
+which was explicitly scoped as a separate, later initiative from the start (see its own
+section for the detailed plan) and was never part of this improvement pass's priority order.

@@ -20,7 +20,6 @@ from datetime import date
 
 from hypothesis import given, settings
 from hypothesis import strategies as st
-
 from src.bumpcalver.utils import parse_version
 
 _REASONABLE_DATES = st.dates(min_value=date(2000, 1, 1), max_value=date(2099, 12, 31))

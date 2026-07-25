@@ -253,7 +253,9 @@ def test_load_config_reads_suffix_formats(monkeypatch):
 
 def test_load_config_suffix_format_defaults(monkeypatch):
     monkeypatch.setattr(os.path, "exists", lambda x: x == "pyproject.toml")
-    content = {"tool": {"bumpcalver": {"version_format": "{current_date}.{build_count}", "file": []}}}
+    content = {
+        "tool": {"bumpcalver": {"version_format": "{current_date}.{build_count}", "file": []}}
+    }
     monkeypatch.setattr(toml, "load", lambda f: content)
     monkeypatch.setattr("src.bumpcalver.config.parse_dot_path", lambda x, y: x)
 
@@ -270,6 +272,7 @@ def test_load_config_suffix_format_defaults(monkeypatch):
 # mocking os.path.exists/toml.load, since the whole point of this parameter
 # is bypassing auto-discovery — a real file proves that directly.
 # ---------------------------------------------------------------------------
+
 
 def test_load_config_explicit_path_not_found(capsys):
     config = load_config("/nonexistent/path/to/bumpcalver.toml")
@@ -288,7 +291,7 @@ def test_load_config_explicit_path_flat_style_arbitrary_filename(tmp_path):
     config_file.write_text(
         'version_format = "{current_date}.{build_count:03}"\n'
         'timezone = "UTC"\n\n'
-        '[[file]]\n'
+        "[[file]]\n"
         'path = "src/__init__.py"\n'
         'file_type = "python"\n'
         'variable = "__version__"\n',
@@ -311,10 +314,10 @@ def test_load_config_explicit_path_pyproject_toml_elsewhere_is_nested(tmp_path):
     config_file = tmp_path / "other-project" / "pyproject.toml"
     config_file.parent.mkdir()
     config_file.write_text(
-        '[tool.bumpcalver]\n'
+        "[tool.bumpcalver]\n"
         'version_format = "{current_date}-{build_count:03}"\n'
         'timezone = "Europe/London"\n'
-        'file = []\n',
+        "file = []\n",
         encoding="utf-8",
     )
 

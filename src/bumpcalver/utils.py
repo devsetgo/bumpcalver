@@ -72,15 +72,15 @@ _TWO_DIGITS = r"\d{2}"
 _STRFTIME_CODES = [
     ("%-m", r"\d{1,2}"),
     ("%-d", r"\d{1,2}"),
-    ("%Y",  r"\d{4}"),
-    ("%y",  _TWO_DIGITS),
-    ("%m",  _TWO_DIGITS),
-    ("%d",  _TWO_DIGITS),
-    ("%j",  r"\d{3}"),
-    ("%H",  _TWO_DIGITS),
-    ("%M",  _TWO_DIGITS),
-    ("%S",  _TWO_DIGITS),
-    ("%q",  r"\d"),
+    ("%Y", r"\d{4}"),
+    ("%y", _TWO_DIGITS),
+    ("%m", _TWO_DIGITS),
+    ("%d", _TWO_DIGITS),
+    ("%j", r"\d{3}"),
+    ("%H", _TWO_DIGITS),
+    ("%M", _TWO_DIGITS),
+    ("%S", _TWO_DIGITS),
+    ("%q", r"\d"),
 ]
 
 
@@ -105,29 +105,29 @@ def _compile_hybrid_pattern(version_format: str, date_format: str) -> re.Pattern
     compiling this once per distinct pair (instead of on every ``parse_version`` call)
     avoids repeated string-building and regex compilation for repeated/bulk parsing.
     """
-    temp = re.sub(r'\{build_count:[^}]+\}', "__BUILD_SPEC__", version_format)
-    temp = (temp
-            .replace("{major}",        "__MAJOR__")
-            .replace("{minor}",        "__MINOR__")
-            .replace("{patch}",        "__PATCH__")
-            .replace(_CURRENT_DATE_KEY, "__DATE__")
-            .replace("{build_count}",  "__BUILD__"))
+    temp = re.sub(r"\{build_count:[^}]+\}", "__BUILD_SPEC__", version_format)
+    temp = (
+        temp.replace("{major}", "__MAJOR__")
+        .replace("{minor}", "__MINOR__")
+        .replace("{patch}", "__PATCH__")
+        .replace(_CURRENT_DATE_KEY, "__DATE__")
+        .replace("{build_count}", "__BUILD__")
+    )
 
     pattern = re.escape(temp)
     date_rx = _date_format_to_regex(date_format)
-    pattern = (pattern
-               .replace("__MAJOR__",      r"(?P<major>\d+)")
-               .replace("__MINOR__",      r"(?P<minor>\d+)")
-               .replace("__PATCH__",      r"(?P<patch>\d+)")
-               .replace("__DATE__",       f"(?P<current_date>{date_rx})")
-               .replace("__BUILD_SPEC__", r"(?P<build_count>\d+)")
-               .replace("__BUILD__",      r"(?P<build_count>\d+)"))
+    pattern = (
+        pattern.replace("__MAJOR__", r"(?P<major>\d+)")
+        .replace("__MINOR__", r"(?P<minor>\d+)")
+        .replace("__PATCH__", r"(?P<patch>\d+)")
+        .replace("__DATE__", f"(?P<current_date>{date_rx})")
+        .replace("__BUILD_SPEC__", r"(?P<build_count>\d+)")
+        .replace("__BUILD__", r"(?P<build_count>\d+)")
+    )
     return re.compile(pattern)
 
 
-def _parse_hybrid_version(
-    version: str, version_format: str, date_format: str
-) -> Optional[tuple]:
+def _parse_hybrid_version(version: str, version_format: str, date_format: str) -> Optional[tuple]:
     """Parse a hybrid semantic+calendar version string.
 
     Returns (date_str, build_count) or None.
@@ -148,13 +148,13 @@ def _parse_hybrid_version(
 
 def _is_invalid_version_prefix(version: str) -> bool:
     """Check if version has invalid prefixes that indicate non-CalVer patterns."""
-    return version.startswith(('v', 'release'))
+    return version.startswith(("v", "release"))
 
 
-_DOT_SUFFIX_RE = re.compile(r'\.(alpha|beta|rc\d*|release)$')
+_DOT_SUFFIX_RE = re.compile(r"\.(alpha|beta|rc\d*|release)$")
 # PEP 440 attached directly after a digit: b1, a1, rc1, etc.
 # Explicit alternation avoids backtracking ambiguity on [a-zA-Z]+\d*.
-_ATTACHED_SUFFIX_RE = re.compile(r'(?<=\d)(alpha|beta|rc|a|b)\d*$')
+_ATTACHED_SUFFIX_RE = re.compile(r"(?<=\d)(alpha|beta|rc|a|b)\d*$")
 
 
 def _clean_version_suffixes(version: str) -> str:
@@ -163,10 +163,10 @@ def _clean_version_suffixes(version: str) -> str:
     Handles dot-prefixed forms (.beta, .rc1) and PEP 440 attached forms
     (b1, rc2, a1) where letters follow immediately after a digit.
     """
-    cleaned = _DOT_SUFFIX_RE.sub('', version)
+    cleaned = _DOT_SUFFIX_RE.sub("", version)
     if cleaned != version:
         return cleaned
-    return _ATTACHED_SUFFIX_RE.sub('', version)
+    return _ATTACHED_SUFFIX_RE.sub("", version)
 
 
 def apply_prerelease_suffix(
@@ -181,7 +181,7 @@ def apply_prerelease_suffix(
     if it starts with *base_version* + the suffix prefix the existing count is
     incremented; otherwise the count starts at 1.
     """
-    count_match = re.search(r'\{[^}]+\}', suffix_format)
+    count_match = re.search(r"\{[^}]+\}", suffix_format)
     if not count_match:
         return base_version + suffix_format
 
@@ -193,9 +193,9 @@ def apply_prerelease_suffix(
         pattern = (
             re.escape(base_version)
             + re.escape(literal_prefix)
-            + r'(\d+)'
+            + r"(\d+)"
             + re.escape(literal_after)
-            + '$'
+            + "$"
         )
         m = re.match(pattern, current_raw_version)
         if m:
@@ -206,7 +206,7 @@ def apply_prerelease_suffix(
 
 def _validate_date_format(version: str) -> bool:
     """Validate that version looks like a reasonable date format."""
-    return bool(re.match(r'^\d+[\.\-/]', version))
+    return bool(re.match(r"^\d+[\.\-/]", version))
 
 
 def _validate_year_format(year_part: str) -> bool:
@@ -217,7 +217,7 @@ def _validate_year_format(year_part: str) -> bool:
     # - YYMMDD (e.g. 241207)
     # - YYYYMMDD (e.g. 20241207)
     # Keep rejecting 1-digit segments like "1" (SemVer-ish patterns).
-    return bool(re.match(r'^\d{2}(?:\d{2}){0,3}$', year_part))
+    return bool(re.match(r"^\d{2}(?:\d{2}){0,3}$", year_part))
 
 
 def _parse_dot_separated_version(version_parts: list[str]) -> Optional[tuple[str, int]]:
@@ -241,7 +241,9 @@ def _parse_dot_separated_version(version_parts: list[str]) -> Optional[tuple[str
     return date_str, count
 
 
-def _parse_dynamic_version(version: str, version_format: str, date_format: str = "") -> Optional[tuple]:
+def _parse_dynamic_version(
+    version: str, version_format: str, date_format: str = ""
+) -> Optional[tuple]:
     """Parse version using dynamic format rules."""
     if _is_hybrid_format(version_format):
         return _parse_hybrid_version(version, version_format, date_format)
@@ -255,7 +257,7 @@ def _parse_dynamic_version(version: str, version_format: str, date_format: str =
     if _CURRENT_DATE_KEY in version_format and "{build_count" not in version_format:
         if _validate_date_format(clean_version):
             return clean_version, 0
-        return None # pragma: no cover
+        return None  # pragma: no cover
 
     # Handle dot-separated formats
     if _CURRENT_DATE_KEY in version_format and "." in version_format:
@@ -285,15 +287,23 @@ def _parse_legacy_version(version: str) -> Optional[tuple]:
     return None
 
 
-def _print_version_error(version: str, version_format: Optional[str], date_format: Optional[str]) -> None:
+def _print_version_error(
+    version: str, version_format: Optional[str], date_format: Optional[str]
+) -> None:
     """Print appropriate error message for version parsing failure."""
     if version_format and date_format:
-        print(f"Version '{version}' does not match format '{version_format}' with date format '{date_format}'.")
+        print(
+            f"Version '{version}' does not match format '{version_format}' with date format '{date_format}'."
+        )
     else:
-        print(f"Version '{version}' does not match expected format 'YYYY-MM-DD' or 'YYYY-MM-DD-XXX'.")
+        print(
+            f"Version '{version}' does not match expected format 'YYYY-MM-DD' or 'YYYY-MM-DD-XXX'."
+        )
 
 
-def parse_version(version: str, version_format: Optional[str] = None, date_format: Optional[str] = None) -> Optional[tuple]:
+def parse_version(
+    version: str, version_format: Optional[str] = None, date_format: Optional[str] = None
+) -> Optional[tuple]:
     """Parses a version string and returns a tuple of date and count.
 
     This function can parse version strings in various formats. If version_format and date_format
@@ -331,9 +341,7 @@ def parse_version(version: str, version_format: Optional[str] = None, date_forma
     return None
 
 
-def get_current_date(
-    timezone: str = default_timezone, date_format: str = "%Y.%m.%d"
-) -> str:
+def get_current_date(timezone: str = default_timezone, date_format: str = "%Y.%m.%d") -> str:
     """Returns the current date in the specified timezone.
 
     Falls back to `default_timezone` (printing a warning) if `timezone` isn't
@@ -390,14 +398,15 @@ def get_current_datetime_version(
 
     return now.strftime(date_format)
 
+
 def update_semantic_in_config(key: str, value: int) -> bool:
     """Update major/minor/patch integer in pyproject.toml or bumpcalver.toml."""
     for config_file in ("pyproject.toml", "bumpcalver.toml"):
         if os.path.exists(config_file):
             with open(config_file, "r", encoding="utf-8") as f:
                 content = f.read()
-            pattern = rf'^({re.escape(key)}\s*=\s*)\d+'
-            new_content = re.sub(pattern, rf'\g<1>{value}', content, flags=re.MULTILINE)
+            pattern = rf"^({re.escape(key)}\s*=\s*)\d+"
+            new_content = re.sub(pattern, rf"\g<1>{value}", content, flags=re.MULTILINE)
             if new_content != content:
                 with open(config_file, "w", encoding="utf-8") as f:
                     f.write(new_content)
@@ -471,13 +480,19 @@ def get_build_version(
                 else:
                     build_count = 1
             else:
-                print(f"File '{file_path}': Version '{version}' does not match expected format. Expected format: '{version_format}' with date format: '{date_format}'.")
+                print(
+                    f"File '{file_path}': Version '{version}' does not match expected format. Expected format: '{version_format}' with date format: '{date_format}'."
+                )
                 build_count = 1
         else:
-            print(f"File '{file_path}': Could not read version. Starting new versioning with format 'YYYY-MM-DD-XXX'.")
+            print(
+                f"File '{file_path}': Could not read version. Starting new versioning with format 'YYYY-MM-DD-XXX'."
+            )
             build_count = 1
     except Exception as e:
-        print(f"File '{file_path}': Error reading version - {e}. Starting new versioning with format 'YYYY-MM-DD-XXX'.")
+        print(
+            f"File '{file_path}': Error reading version - {e}. Starting new versioning with format 'YYYY-MM-DD-XXX'."
+        )
         build_count = 1
 
     # Return the formatted build version string

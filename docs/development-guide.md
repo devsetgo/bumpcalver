@@ -100,20 +100,25 @@ bumpcalver/
 
 #### Code Formatting
 
-We use several tools to maintain code quality:
+[Ruff](https://docs.astral.sh/ruff/) is the single tool for linting, import
+sorting, unused-import/variable removal, and formatting — it replaced a
+previous stack of isort/black/autoflake/flake8/autopep8 that all did
+overlapping parts of the same job with separate, easy-to-drift configs (see
+IMPROVEMENTS.md §2.9). `[tool.ruff.lint]` in `pyproject.toml` selects rule
+groups `C`/`F`/`E`/`W`/`B`/`I` (the `I` group is ruff's isort-compatible
+import sorter); `[tool.ruff.format]` configures its Black-compatible
+formatter.
 
 ```bash
-# Format code (runs all formatters)
+# Fix lint issues (incl. import order) and reformat code
 make format
 
-# Individual tools:
-make isort      # Sort imports
-make black      # Code formatting
-make autoflake  # Remove unused imports
-make ruff       # Lint and fix
+# make ruff is an alias for the same thing, kept for muscle memory
+make ruff
+
 make mypy       # Type-check src/bumpcalver
 
-# Validate without changes (includes mypy)
+# Validate without changes (ruff format --check, ruff check, mypy)
 make validate
 ```
 

@@ -27,8 +27,12 @@ class TestCalendarVersioningPatterns:
             result = parse_version(version, version_format, date_format)
             assert result is not None, f"Failed to parse {version}"
             date_part, build_count = result
-            assert date_part == expected_date, f"Date mismatch for {version}: got {date_part}, expected {expected_date}"
-            assert build_count == expected_count, f"Count mismatch for {version}: got {build_count}, expected {expected_count}"
+            assert date_part == expected_date, (
+                f"Date mismatch for {version}: got {date_part}, expected {expected_date}"
+            )
+            assert build_count == expected_count, (
+                f"Count mismatch for {version}: got {build_count}, expected {expected_count}"
+            )
 
     def test_hyphen_separated_patterns(self):
         """Test hyphen-separated patterns (legacy format)."""
@@ -94,7 +98,7 @@ class TestCalendarVersioningPatterns:
         """Test that invalid formats are properly rejected."""
         invalid_cases = [
             ("v1.0.0", "{current_date}.{build_count:03}", "%Y.%m.%d"),  # SemVer format
-            ("1.0.0", "{current_date}.{build_count:03}", "%Y.%m.%d"),   # SemVer format
+            ("1.0.0", "{current_date}.{build_count:03}", "%Y.%m.%d"),  # SemVer format
             ("release-1.0", "{current_date}.{build_count:03}", "%Y.%m.%d"),  # Invalid format
         ]
 
@@ -107,7 +111,13 @@ class TestCalendarVersioningPatterns:
         """Test edge cases and unusual patterns."""
         # These are patterns that might not work perfectly but should be handled gracefully
         edge_cases = [
-            ("24.12.1", "{current_date}.{build_count}", "%y.%m", "24.12", 1),  # Non-padded build count
+            (
+                "24.12.1",
+                "{current_date}.{build_count}",
+                "%y.%m",
+                "24.12",
+                1,
+            ),  # Non-padded build count
         ]
 
         for version, version_format, date_format, expected_date, expected_count in edge_cases:
@@ -124,10 +134,14 @@ class TestCalendarVersioningPatterns:
             # Ubuntu-style
             ("24.04", "{current_date}", "%y.%m", "24.04", 0),
             ("24.10", "{current_date}", "%y.%m", "24.10", 0),
-
             # Twisted-style
-            ("24.3.0", "{current_date}.{build_count}", "%y.%m", "24.3", 0),  # Actually uses minor.patch, not build count
-
+            (
+                "24.3.0",
+                "{current_date}.{build_count}",
+                "%y.%m",
+                "24.3",
+                0,
+            ),  # Actually uses minor.patch, not build count
             # VS Code style (YY.M.patch)
             ("24.11.1", "{current_date}.{build_count}", "%y.%m", "24.11", 1),
         ]
