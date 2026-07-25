@@ -21,20 +21,15 @@ import yaml
 class VersionHandler(ABC):
     """Abstract base class for version handlers.
 
-    This class provides the interface for reading and updating version strings
-    in various file formats. Subclasses must implement the `read_version` and
-    `update_version` methods.
-
-    Methods:
-        read_version: Reads the version string from the specified file.
-        update_version: Updates the version string in the specified file.
-        format_version: Formats the version string according to the specified standard.
-        format_pep440_version: Formats the version string according to PEP 440.
+    Subclasses implement `read_version`/`update_version` for one file format;
+    see the [handler extension guide](development-guide.md#file-format-support)
+    for the shared helpers (`_read_key_value_file`, `_update_key_value_file`,
+    `_handle_regex_update`, etc.) available for reuse.
     """
 
     @abstractmethod
     def read_version(
-        self, file_path: str, variable: str, **kwargs
+        self, file_path: str, variable: str, **kwargs: Any
     ) -> Optional[str]:  # pragma: no cover
         """Reads the version string from the specified file.
 
@@ -49,7 +44,7 @@ class VersionHandler(ABC):
 
     @abstractmethod
     def update_version(
-        self, file_path: str, variable: str, new_version: str, **kwargs
+        self, file_path: str, variable: str, new_version: str, **kwargs: Any
     ) -> bool:  # pragma: no cover
         """Updates the version string in the specified file.
 
@@ -132,7 +127,7 @@ class VersionHandler(ABC):
             print(f"Error updating {file_path}: {e}")
             return False
 
-    def _format_version_with_standard(self, new_version: str, **kwargs) -> str:
+    def _format_version_with_standard(self, new_version: str, **kwargs: Any) -> str:
         """Apply version formatting based on version_standard kwarg.
 
         Args:
@@ -281,33 +276,10 @@ class VersionHandler(ABC):
 
 
 class PythonVersionHandler(VersionHandler):
-    """Handler for reading and updating version strings in Python files.
+    """Handler for `variable = "..."`-style assignments in Python files, e.g. `__version__`."""
 
-    This class provides methods to read and update version strings in Python files.
-    It uses regular expressions to locate and modify the version string.
-
-    Methods:
-        read_version: Reads the version string from the specified Python file.
-        update_version: Updates the version string in the specified Python file.
-    """
-
-    def read_version(self, file_path: str, variable: str, **kwargs) -> Optional[str]:
-        """Reads the version string from the specified Python file.
-
-        This method searches for the version string in the specified Python file
-        using a regular expression that matches the variable name.
-
-        Args:
-            file_path (str): The path to the Python file.
-            variable (str): The variable name that holds the version string.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            Optional[str]: The version string if found, otherwise None.
-
-        Raises:
-            Exception: If there is an error reading the file.
-        """
+    def read_version(self, file_path: str, variable: str, **kwargs: Any) -> Optional[str]:
+        """Reads `variable`'s value from a `variable = "..."` (or `'...'`) assignment."""
         version_pattern = re.compile(
             rf'^\s*{re.escape(variable)}\s*=\s*["\'](.+?)["\']\s*$', re.MULTILINE
         )
@@ -324,26 +296,9 @@ class PythonVersionHandler(VersionHandler):
         return self._handle_read_operation(file_path, read_operation)
 
     def update_version(
-        self, file_path: str, variable: str, new_version: str, **kwargs
+        self, file_path: str, variable: str, new_version: str, **kwargs: Any
     ) -> bool:
-        """Updates the version string in the specified Python file.
-
-        This method searches for the version string in the specified Python file
-        using a regular expression that matches the variable name and updates it
-        with the new version string.
-
-        Args:
-            file_path (str): The path to the Python file.
-            variable (str): The variable name that holds the version string.
-            new_version (str): The new version string.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            bool: True if the version was successfully updated, otherwise False.
-
-        Raises:
-            Exception: If there is an error reading or writing the file.
-        """
+        """Updates `variable`'s assignment in place, preserving its quote style and surrounding whitespace."""
         new_version = self._format_version_with_standard(new_version, **kwargs)
         version_pattern = re.compile(
             rf'^(\s*{re.escape(variable)}\s*=\s*)(["\'])(.+?)(["\'])(\s*)$',
@@ -357,37 +312,16 @@ class PythonVersionHandler(VersionHandler):
 
 
 class TomlVersionHandler(VersionHandler):
-    """Handler for reading and updating version strings in TOML files.
+    """Handler for TOML files (e.g. `pyproject.toml`), using `tomlkit`.
 
-    This class provides methods to read and update version strings in TOML files.
-    It uses `tomlkit` (rather than the plain `toml` package) so that comments and
+    Uses `tomlkit` rather than the plain `toml` package so comments and
     formatting elsewhere in the file survive an update — `toml.load`/`toml.dump`
-    round-trip through a plain dict and silently drop every comment, which matters
-    since this handler's primary target is `pyproject.toml`, a file that commonly
-    carries them.
-
-    Methods:
-        read_version: Reads the version string from the specified TOML file.
-        update_version: Updates the version string in the specified TOML file.
+    round-trip through a plain dict and silently drop every comment, which
+    matters since this handler's primary target commonly carries them.
     """
 
-    def read_version(self, file_path: str, variable: str, **kwargs) -> Optional[str]:
-        """Reads the version string from the specified TOML file.
-
-        This method searches for the version string in the specified TOML file
-        using the provided variable name, which can be a dot-separated path.
-
-        Args:
-            file_path (str): The path to the TOML file.
-            variable (str): The variable name that holds the version string, which can be a dot-separated path.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            Optional[str]: The version string if found, otherwise None.
-
-        Raises:
-            Exception: If there is an error reading the file.
-        """
+    def read_version(self, file_path: str, variable: str, **kwargs: Any) -> Optional[str]:
+        """Reads the value at `variable`, a dot-separated key path (e.g. `"tool.project.version"`)."""
         def read_operation():
             with open(file_path, "r", encoding="utf-8") as file:
                 toml_content = tomlkit.load(file)
@@ -403,26 +337,9 @@ class TomlVersionHandler(VersionHandler):
         return self._handle_read_operation(file_path, read_operation)
 
     def update_version(
-        self, file_path: str, variable: str, new_version: str, **kwargs
+        self, file_path: str, variable: str, new_version: str, **kwargs: Any
     ) -> bool:
-        """Updates the version string in the specified TOML file.
-
-        This method searches for the version string in the specified TOML file
-        using the provided variable name, which can be a dot-separated path, and updates it
-        with the new version string.
-
-        Args:
-            file_path (str): The path to the TOML file.
-            variable (str): The variable name that holds the version string, which can be a dot-separated path.
-            new_version (str): The new version string.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            bool: True if the version was successfully updated, otherwise False.
-
-        Raises:
-            Exception: If there is an error reading or writing the file.
-        """
+        """Updates the value at `variable` (a dot-separated key path) in place."""
         new_version = self._format_version_with_standard(new_version, **kwargs)
 
         try:
@@ -456,33 +373,10 @@ class TomlVersionHandler(VersionHandler):
 
 
 class YamlVersionHandler(VersionHandler):
-    """Handler for reading and updating version strings in YAML files.
+    """Handler for YAML files. Preserves key order on write (`sort_keys=False`)."""
 
-    This class provides methods to read and update version strings in YAML files.
-    It uses the `yaml` library to parse and modify the version string.
-
-    Methods:
-        read_version: Reads the version string from the specified YAML file.
-        update_version: Updates the version string in the specified YAML file.
-    """
-
-    def read_version(self, file_path: str, variable: str, **kwargs) -> Optional[str]:
-        """Reads the version string from the specified YAML file.
-
-        This method searches for the version string in the specified YAML file
-        using the provided variable name, which can be a dot-separated path.
-
-        Args:
-            file_path (str): The path to the YAML file.
-            variable (str): The variable name that holds the version string, which can be a dot-separated path.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            Optional[str]: The version string if found, otherwise None.
-
-        Raises:
-            Exception: If there is an error reading the file.
-        """
+    def read_version(self, file_path: str, variable: str, **kwargs: Any) -> Optional[str]:
+        """Reads the value at `variable`, a dot-separated key path (e.g. `"configuration.version"`)."""
         def read_operation():
             with open(file_path, "r", encoding="utf-8") as f:
                 data = yaml.safe_load(f)
@@ -498,26 +392,9 @@ class YamlVersionHandler(VersionHandler):
         return self._handle_read_operation(file_path, read_operation)
 
     def update_version(
-        self, file_path: str, variable: str, new_version: str, **kwargs
+        self, file_path: str, variable: str, new_version: str, **kwargs: Any
     ) -> bool:
-        """Updates the version string in the specified YAML file.
-
-        This method searches for the version string in the specified YAML file
-        using the provided variable name, which can be a dot-separated path, and updates it
-        with the new version string.
-
-        Args:
-            file_path (str): The path to the YAML file.
-            variable (str): The variable name that holds the version string, which can be a dot-separated path.
-            new_version (str): The new version string.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            bool: True if the version was successfully updated, otherwise False.
-
-        Raises:
-            Exception: If there is an error reading or writing the file.
-        """
+        """Updates the value at `variable` (a dot-separated key path) in place."""
         new_version = self._format_version_with_standard(new_version, **kwargs)
 
         try:
@@ -540,33 +417,10 @@ class YamlVersionHandler(VersionHandler):
 
 
 class JsonVersionHandler(VersionHandler):
-    """Handler for reading and updating version strings in JSON files.
+    """Handler for JSON files (e.g. `package.json`); `variable` is a top-level key only."""
 
-    This class provides methods to read and update version strings in JSON files.
-    It uses the `json` library to parse and modify the version string.
-
-    Methods:
-        read_version: Reads the version string from the specified JSON file.
-        update_version: Updates the version string in the specified JSON file.
-    """
-
-    def read_version(self, file_path: str, variable: str, **kwargs) -> Optional[str]:
-        """Reads the version string from the specified JSON file.
-
-        This method searches for the version string in the specified JSON file
-        using the provided variable name.
-
-        Args:
-            file_path (str): The path to the JSON file.
-            variable (str): The variable name that holds the version string.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            Optional[str]: The version string if found, otherwise None.
-
-        Raises:
-            Exception: If there is an error reading the file.
-        """
+    def read_version(self, file_path: str, variable: str, **kwargs: Any) -> Optional[str]:
+        """Reads the top-level key `variable` (unlike Toml/Yaml, this is a plain key, not a dot-separated path)."""
         def read_operation():
             with open(file_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
@@ -575,25 +429,9 @@ class JsonVersionHandler(VersionHandler):
         return self._handle_read_operation(file_path, read_operation)
 
     def update_version(
-        self, file_path: str, variable: str, new_version: str, **kwargs
+        self, file_path: str, variable: str, new_version: str, **kwargs: Any
     ) -> bool:
-        """Updates the version string in the specified JSON file.
-
-        This method searches for the version string in the specified JSON file
-        using the provided variable name and updates it with the new version string.
-
-        Args:
-            file_path (str): The path to the JSON file.
-            variable (str): The variable name that holds the version string.
-            new_version (str): The new version string.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            bool: True if the version was successfully updated, otherwise False.
-
-        Raises:
-            Exception: If there is an error reading or writing the file.
-        """
+        """Updates the top-level key `variable` in place."""
         new_version = self._format_version_with_standard(new_version, **kwargs)
 
         try:
@@ -610,40 +448,18 @@ class JsonVersionHandler(VersionHandler):
 
 
 class XmlVersionHandler(VersionHandler):
-    """Handler for reading and updating version strings in XML files.
-
-    This class provides methods to read and update version strings in XML files.
-    It uses the `xml.etree.ElementTree` library to parse and modify the version string.
+    """Handler for XML files, using `xml.etree.ElementTree`.
 
     `update_version` preserves the `<?xml ?>` declaration and any comments nested
-    *inside* the root element. Comments that appear in the prolog (before the root
-    element's opening tag) are not preserved — that's an `ElementTree` limitation
-    ( `Element`/`TreeBuilder` model the tree from the root element down, so anything
-    outside it is dropped on write regardless of parser options); switching to `lxml`
-    would be required for full prolog fidelity.
-
-    Methods:
-        read_version: Reads the version string from the specified XML file.
-        update_version: Updates the version string in the specified XML file.
+    *inside* the root element. Comments in the prolog (before the root element's
+    opening tag) are not preserved — an `ElementTree` limitation (`Element`/
+    `TreeBuilder` model the tree from the root element down, so anything outside
+    it is dropped on write regardless of parser options); `lxml` would be needed
+    for full prolog fidelity.
     """
 
-    def read_version(self, file_path: str, variable: str, **kwargs) -> Optional[str]:
-        """Reads the version string from the specified XML file.
-
-        This method searches for the version string in the specified XML file
-        using the provided variable name.
-
-        Args:
-            file_path (str): The path to the XML file.
-            variable (str): The variable name that holds the version string.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            Optional[str]: The version string if found, otherwise None.
-
-        Raises:
-            Exception: If there is an error reading the file.
-        """
+    def read_version(self, file_path: str, variable: str, **kwargs: Any) -> Optional[str]:
+        """Reads the text of the element at `variable`, an ElementTree `find()` path (e.g. `"version"` or `"metadata/version"`)."""
         def read_operation():
             tree = ET.parse(file_path)
             root = tree.getroot()
@@ -656,25 +472,9 @@ class XmlVersionHandler(VersionHandler):
         return self._handle_read_operation(file_path, read_operation)
 
     def update_version(
-        self, file_path: str, variable: str, new_version: str, **kwargs
+        self, file_path: str, variable: str, new_version: str, **kwargs: Any
     ) -> bool:
-        """Updates the version string in the specified XML file.
-
-        This method searches for the version string in the specified XML file
-        using the provided variable name and updates it with the new version string.
-
-        Args:
-            file_path (str): The path to the XML file.
-            variable (str): The variable name that holds the version string.
-            new_version (str): The new version string.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            bool: True if the version was successfully updated, otherwise False.
-
-        Raises:
-            Exception: If there is an error reading or writing the file.
-        """
+        """Updates the text of the element at `variable` in place (see class docstring for formatting fidelity)."""
         new_version = self._format_version_with_standard(new_version, **kwargs)
 
         try:
@@ -699,33 +499,10 @@ class XmlVersionHandler(VersionHandler):
 
 
 class DockerfileVersionHandler(VersionHandler):
-    """Handler for reading and updating version strings in Dockerfile files.
+    """Handler for `ARG`/`ENV` directives in Dockerfiles; requires a `directive` kwarg."""
 
-    This class provides methods to read and update version strings in Dockerfile files.
-    It uses regular expressions to locate and modify the version string in ARG or ENV directives.
-
-    Methods:
-        read_version: Reads the version string from the specified Dockerfile.
-        update_version: Updates the version string in the specified Dockerfile.
-    """
-
-    def read_version(self, file_path: str, variable: str, **kwargs) -> Optional[str]:
-        """Reads the version string from the specified Dockerfile.
-
-        This method searches for the version string in the specified Dockerfile
-        using the provided variable name and directive (ARG or ENV).
-
-        Args:
-            file_path (str): The path to the Dockerfile.
-            variable (str): The variable name that holds the version string.
-            **kwargs: Additional keyword arguments, including 'directive' which should be 'ARG' or 'ENV'.
-
-        Returns:
-            Optional[str]: The version string if found, otherwise None.
-
-        Raises:
-            Exception: If there is an error reading the file.
-        """
+    def read_version(self, file_path: str, variable: str, **kwargs: Any) -> Optional[str]:
+        """Reads `variable`'s value from an `ARG`/`ENV` line; requires `directive="ARG"` or `"ENV"` in kwargs."""
         directive = kwargs.get("directive", "").upper()
         if directive not in ["ARG", "ENV"]:
             print(
@@ -749,26 +526,9 @@ class DockerfileVersionHandler(VersionHandler):
         return self._handle_read_operation(file_path, read_operation)
 
     def update_version(
-        self, file_path: str, variable: str, new_version: str, **kwargs
+        self, file_path: str, variable: str, new_version: str, **kwargs: Any
     ) -> bool:
-        """Updates the version string in the specified Dockerfile.
-
-        This method searches for the version string in the specified Dockerfile
-        using the provided variable name and directive (ARG or ENV), and updates it
-        with the new version string.
-
-        Args:
-            file_path (str): The path to the Dockerfile.
-            variable (str): The variable name that holds the version string.
-            new_version (str): The new version string.
-            **kwargs: Additional keyword arguments, including 'directive' which should be 'ARG' or 'ENV'.
-
-        Returns:
-            bool: True if the version was successfully updated, otherwise False.
-
-        Raises:
-            Exception: If there is an error reading or writing the file.
-        """
+        """Updates `variable`'s `ARG`/`ENV` line in place; requires `directive="ARG"` or `"ENV"` in kwargs."""
         directive = kwargs.get("directive", "").upper()
         if directive not in ["ARG", "ENV"]:
             print(
@@ -794,33 +554,10 @@ class DockerfileVersionHandler(VersionHandler):
 
 
 class MakefileVersionHandler(VersionHandler):
-    """Handler for reading and updating version strings in Makefile files.
+    """Handler for `VAR = value` / `VAR := value` lines in Makefiles."""
 
-    This class provides methods to read and update version strings in Makefile files.
-    It uses regular expressions to locate and modify the version string.
-
-    Methods:
-        read_version: Reads the version string from the specified Makefile.
-        update_version: Updates the version string in the specified Makefile.
-    """
-
-    def read_version(self, file_path: str, variable: str, **kwargs) -> Optional[str]:
-        """Reads the version string from the specified Makefile.
-
-        This method searches for the version string in the specified Makefile
-        using the provided variable name.
-
-        Args:
-            file_path (str): The path to the Makefile.
-            variable (str): The variable name that holds the version string.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            Optional[str]: The version string if found, otherwise None.
-
-        Raises:
-            Exception: If there is an error reading the file.
-        """
+    def read_version(self, file_path: str, variable: str, **kwargs: Any) -> Optional[str]:
+        """Reads the value from the first line starting with `variable` (e.g. `VERSION = 1.0`)."""
         def read_operation():
             with open(file_path, "r", encoding="utf-8") as file:
                 for line in file:
@@ -832,25 +569,9 @@ class MakefileVersionHandler(VersionHandler):
         return self._handle_read_operation(file_path, read_operation)
 
     def update_version(
-        self, file_path: str, variable: str, new_version: str, **kwargs
+        self, file_path: str, variable: str, new_version: str, **kwargs: Any
     ) -> bool:
-        """Updates the version string in the specified Makefile.
-
-        This method searches for the version string in the specified Makefile
-        using the provided variable name and updates it with the new version string.
-
-        Args:
-            file_path (str): The path to the Makefile.
-            variable (str): The variable name that holds the version string.
-            new_version (str): The new version string.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            bool: True if the version was successfully updated, otherwise False.
-
-        Raises:
-            Exception: If there is an error reading or writing the file.
-        """
+        """Updates `variable`'s value in place (accepts both `VAR = value` and `VAR := value`)."""
         new_version = self._format_version_with_standard(new_version, **kwargs)
         version_pattern = re.compile(
             rf"^({re.escape(variable)}\s*[:]?=\s*)(.*)$", re.MULTILINE
@@ -863,90 +584,38 @@ class MakefileVersionHandler(VersionHandler):
 
 
 class PropertiesVersionHandler(VersionHandler):
-    """Handler for reading and updating version strings in Properties files.
+    """Handler for `key=value` properties files (e.g. `sonar-project.properties`)."""
 
-    This class provides methods to read and update version strings in properties files
-    such as sonar-project.properties. It handles key=value format where keys and values
-    are separated by equals signs.
-
-    Methods:
-        read_version: Reads the version string from the specified properties file.
-        update_version: Updates the version string in the specified properties file.
-    """
-
-    def read_version(self, file_path: str, variable: str, **kwargs) -> Optional[str]:
-        """Reads the version string from the specified properties file.
-
-        Args:
-            file_path (str): The path to the properties file.
-            variable (str): The property key that holds the version string.
-            **kwargs: Additional keyword arguments (unused).
-
-        Returns:
-            Optional[str]: The version string if found, otherwise None.
-        """
+    def read_version(self, file_path: str, variable: str, **kwargs: Any) -> Optional[str]:
+        """Reads the value of the `variable` key from a `key=value` line."""
         return self._read_key_value_file(file_path, variable)
 
     def update_version(
-        self, file_path: str, variable: str, new_version: str, **kwargs
+        self, file_path: str, variable: str, new_version: str, **kwargs: Any
     ) -> bool:
         new_version = self._format_version_with_standard(new_version, **kwargs)
         return self._update_key_value_file(file_path, variable, new_version, "Property")
 
 
 class EnvVersionHandler(VersionHandler):
-    """Handler for reading and updating version strings in .env files.
+    """Handler for `KEY=VALUE` `.env` files; strips surrounding quotes on read."""
 
-    This class provides methods to read and update version strings in .env files.
-    It handles KEY=VALUE format where keys and values are separated by equals signs.
-
-    Methods:
-        read_version: Reads the version string from the specified .env file.
-        update_version: Updates the version string in the specified .env file.
-    """
-
-    def read_version(self, file_path: str, variable: str, **kwargs) -> Optional[str]:
-        """Reads the version string from the specified .env file.
-
-        Args:
-            file_path (str): The path to the .env file.
-            variable (str): The environment variable name that holds the version string.
-            **kwargs: Additional keyword arguments (unused).
-
-        Returns:
-            Optional[str]: The version string if found, otherwise None.
-        """
+    def read_version(self, file_path: str, variable: str, **kwargs: Any) -> Optional[str]:
+        """Reads the value of the `variable` key from a `KEY=value` line, stripping surrounding quotes if present."""
         return self._read_key_value_file(file_path, variable, strip_quotes=True)
 
     def update_version(
-        self, file_path: str, variable: str, new_version: str, **kwargs
+        self, file_path: str, variable: str, new_version: str, **kwargs: Any
     ) -> bool:
         new_version = self._format_version_with_standard(new_version, **kwargs)
         return self._update_key_value_file(file_path, variable, new_version, "Environment variable")
 
 
 class SetupCfgVersionHandler(VersionHandler):
-    """Handler for reading and updating version strings in setup.cfg files.
+    """Handler for `setup.cfg`'s INI-style sections and `key=value` pairs."""
 
-    This class provides methods to read and update version strings in setup.cfg files.
-    It handles INI format with sections and key=value pairs.
-
-    Methods:
-        read_version: Reads the version string from the specified setup.cfg file.
-        update_version: Updates the version string in the specified setup.cfg file.
-    """
-
-    def read_version(self, file_path: str, variable: str, **kwargs) -> Optional[str]:
-        """Reads the version string from the specified setup.cfg file.
-
-        Args:
-            file_path (str): The path to the setup.cfg file.
-            variable (str): The variable name that holds the version string (e.g., "metadata.version").
-            **kwargs: Additional keyword arguments (unused).
-
-        Returns:
-            Optional[str]: The version string if found, otherwise None.
-        """
+    def read_version(self, file_path: str, variable: str, **kwargs: Any) -> Optional[str]:
+        """Reads `variable`'s value: `"section.key"` reads that section directly, a bare key searches all sections."""
         try:
             config = configparser.ConfigParser()
             config.read(file_path)
@@ -1006,19 +675,9 @@ class SetupCfgVersionHandler(VersionHandler):
         return False  # Variable was not found, so we created it
 
     def update_version(
-        self, file_path: str, variable: str, new_version: str, **kwargs
+        self, file_path: str, variable: str, new_version: str, **kwargs: Any
     ) -> bool:
-        """Updates the version string in the specified setup.cfg file.
-
-        Args:
-            file_path (str): The path to the setup.cfg file.
-            variable (str): The variable name that holds the version string (e.g., "metadata.version").
-            new_version (str): The new version string to set.
-            **kwargs: Additional keyword arguments including version_standard.
-
-        Returns:
-            bool: True if the version was successfully updated, False otherwise.
-        """
+        """Updates `variable`'s value in place; a bare key not found in any section is created under `[metadata]`."""
         new_version = self._format_version_with_standard(new_version, **kwargs)
 
         try:

@@ -14,7 +14,9 @@ nav:
     - Calendar Versioning Guide: 'calendar-versioning-guide.md'
     - Hybrid Versioning Guide: 'hybrid-versioning-guide.md'
     - Timezones: 'timezones.md'
-    # - Modules: 'models.md'
+    - API Reference:
+      - Modules: 'modules.md'
+      - CLI Reference: 'cli-reference.md'
     - Examples:
       - Configuration: 'examples/configuration.md'
       - Filelayout: 'examples/filelayout.md'
@@ -62,6 +64,10 @@ plugins:
       default_handler: python
       handlers:
         python:
+          # Package lives at src/bumpcalver (src layout) and isn't installed
+          # into this environment's site-packages, so mkdocstrings needs an
+          # explicit search path to import it for introspection.
+          paths: [src]
           options:
             heading_level: 2
             docstring_style: google

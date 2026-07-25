@@ -226,6 +226,15 @@ def main(
     list_history: bool,
     bump: Optional[str],
 ) -> None:
+    """Bump this project's version and write it to every configured file.
+
+    Reads `[tool.bumpcalver]` from `pyproject.toml` (or `bumpcalver.toml`) for
+    the file list and defaults; CLI flags override config values where both
+    exist. At most one of `--beta`/`--rc`/`--release`/`--custom` may be set.
+    Optionally creates a git tag and/or commit. Undo a previous run with
+    `--undo`, `--undo-id`, or `--list-history` (mutually exclusive with every
+    version-bump option).
+    """
     # Check for conflicting undo options with version bump options FIRST
     version_bump_options = [beta, rc, release, build, bool(custom), bool(bump)]
     undo_options = [undo, bool(undo_id), list_history]

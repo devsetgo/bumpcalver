@@ -248,24 +248,46 @@ def test_with_temp_files():
 
 ### File Format Support
 
+Every supported `file_type` is backed by a `VersionHandler` subclass in
+`src/bumpcalver/handlers.py`. All of them implement the same two-method
+contract (`read_version`/`update_version`) defined on the abstract base
+class — see the [API Reference](modules.md#file-handlers) for the full,
+generated list of existing handlers and the base class's shared helpers.
+
 To add support for a new file format:
 
-1. **Create a Handler** in `src/bumpcalver/handlers.py`:
+1. **Check whether you actually need a new handler.** If your format is
+   simple `KEY=value` lines (like `.properties`/`.env`), or the version is
+   guarded by a directive keyword on its own line (like Dockerfile's
+   `ARG`/`ENV`), the base class already has helpers for exactly that — see
+   step 2 before writing a parser from scratch.
+
+2. **Create a Handler**, reusing base-class helpers where they fit your
+   format. For a `KEY=value` file, `_read_key_value_file`/
+   `_update_key_value_file` do the parsing/writing for you (this is a real,
+   tested example — it's exactly how `PropertiesVersionHandler` and
+   `EnvVersionHandler` are implemented):
 
 ```python
-class YourFormatHandler(VersionHandler):
-    """Handler for your custom file format."""
+class IniVersionHandler(VersionHandler):
+    """Handler for INI-style key=value files, e.g. an app.ini VERSION= line."""
 
     def read_version(self, file_path: str, variable: str, **kwargs) -> Optional[str]:
-        """Read version from your file format."""
-        # Implementation
+        return self._read_key_value_file(file_path, variable)
 
     def update_version(self, file_path: str, variable: str, new_version: str, **kwargs) -> bool:
-        """Update version in your file format."""
-        # Implementation
+        new_version = self._format_version_with_standard(new_version, **kwargs)
+        return self._update_key_value_file(file_path, variable, new_version, "Setting")
 ```
 
-2. **Register the Handler** by adding it to `_HANDLER_REGISTRY` in `handlers.py`:
+   If your format instead needs a regex substitution in place (like Python,
+   Makefile, or Dockerfile files), use `_handle_regex_update` the same way
+   `PythonVersionHandler.update_version` does. Either way, call
+   `self._format_version_with_standard(new_version, **kwargs)` first so your
+   handler respects the `version_standard = "python"` config option (PEP 440
+   normalization) the same way every other handler does.
+
+3. **Register the Handler** by adding it to `_HANDLER_REGISTRY` in `handlers.py`:
 
 ```python
 _HANDLER_REGISTRY: Dict[str, type] = {
@@ -274,18 +296,30 @@ _HANDLER_REGISTRY: Dict[str, type] = {
 }
 ```
 
-3. **Add Tests** in `tests/test_handlers.py`:
+4. **Add Tests** in `tests/test_handlers.py`. Prefer a real temporary file
+   over mocking `open`/the underlying parser where practical — that's what
+   actually catches formatting-fidelity bugs (see the YAML/TOML/XML handler
+   tests for examples: they round-trip a real file and assert comments/key
+   order survive, which mocked tests can't verify):
 
 ```python
-def test_your_format_handler():
-    """Test your new file format handler."""
-    # Test reading and writing versions
+def test_your_format_handler_round_trip(tmp_path):
+    handler = YourFormatHandler()
+    config_file = tmp_path / "app.your_format"
+    config_file.write_text("VERSION=1.0.0\n", encoding="utf-8")
+
+    assert handler.read_version(str(config_file), "VERSION") == "1.0.0"
+    assert handler.update_version(str(config_file), "VERSION", "2.0.0") is True
+    assert "VERSION=2.0.0" in config_file.read_text(encoding="utf-8")
 ```
 
-4. **Update Documentation**:
-   - Add to supported file types in README.md
-   - Add examples in docs/examples/
-   - Update configuration documentation
+5. **Update Documentation**:
+   - Add the new `file_type` value to the list in README.md/`docs/index.md`.
+   - Add a `[[tool.bumpcalver.file]]` example to `docs/examples/configuration.md`.
+   - No changes needed to `docs/modules.md`/`cli-reference.md` — those are
+     generated from the code, so your new handler's docstring (and the
+     `_HANDLER_REGISTRY` entry) will show up automatically next time the docs
+     are built.
 
 ### Date Format Support
 
