@@ -57,6 +57,25 @@ def test_read_current_version_passes_directive():
     )
 
 
+def test_read_current_version_passes_pattern():
+    file_config = {
+        "path": "version.rb",
+        "file_type": "regex",
+        "variable": "VERSION",
+        "pattern": r'VERSION = "(.+?)"',
+    }
+    mock_handler = mock.Mock()
+    mock_handler.read_version.return_value = "1.0.0"
+
+    with mock.patch("src.bumpcalver.cli.get_version_handler", return_value=mock_handler):
+        result = _read_current_version(file_config)
+
+    assert result == "1.0.0"
+    mock_handler.read_version.assert_called_once_with(
+        "version.rb", "VERSION", pattern=r'VERSION = "(.+?)"'
+    )
+
+
 def test_read_current_version_unsupported_file_type_returns_none():
     file_config = {"path": "x", "file_type": "nonexistent", "variable": "v"}
     with mock.patch(

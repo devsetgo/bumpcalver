@@ -334,6 +334,66 @@ def test_get_build_version_with_directive(monkeypatch):
     )
 
 
+def test_get_build_version_with_pattern(monkeypatch):
+    # Regression test: get_build_version() has its own separate read path from
+    # cli.py's _read_current_version(), and it didn't thread the "pattern"
+    # config key through to the handler — every regex-handler file looked
+    # unreadable on this path, so --build always reset the build count to 1
+    # instead of incrementing it, even for a same-day second bump. Found by
+    # actually running the Ruby recipe in docs/examples/configuration.md end
+    # to end, not by a unit test (the existing RegexVersionHandler tests only
+    # exercised update_version_in_files()/cli.py, never get_build_version()).
+    current_date = "2023-10-11"
+    monkeypatch.setattr(
+        "src.bumpcalver.utils.get_current_datetime_version", lambda tz, df: current_date
+    )
+
+    mock_handler = mock.Mock()
+    mock_handler.read_version.return_value = "2023-10-11-1"
+    monkeypatch.setattr(
+        "src.bumpcalver.utils.get_version_handler", lambda ft: mock_handler
+    )
+
+    file_config = {
+        "path": "version.rb",
+        "file_type": "regex",
+        "variable": "VERSION",
+        "pattern": 'VERSION = "(.+?)"',
+    }
+    version_format = "{current_date}-{build_count}"
+    result = get_build_version(file_config, version_format, "UTC", "%Y-%m-%d")
+    assert result == "2023-10-11-2"
+
+    mock_handler.read_version.assert_called_with(
+        "version.rb", "VERSION", pattern='VERSION = "(.+?)"'
+    )
+
+
+def test_get_build_version_regex_handler_end_to_end_increments_same_day(tmp_path):
+    # The strongest proof: a real RegexVersionHandler file, through the real
+    # (unmocked) get_build_version(), bumped twice on the same day.
+    version_file = tmp_path / "version.rb"
+    version_file.write_text('VERSION = "1.0.0"\n', encoding="utf-8")
+    file_config = {
+        "path": str(version_file),
+        "file_type": "regex",
+        "variable": "VERSION",
+        "pattern": r'VERSION = "(.+?)"',
+    }
+    version_format = "{current_date}.{build_count}"
+    date_format = "%Y.%m.%d"
+
+    first = get_build_version(file_config, version_format, "UTC", date_format)
+    version_file.write_text(f'VERSION = "{first}"\n', encoding="utf-8")
+
+    second = get_build_version(file_config, version_format, "UTC", date_format)
+
+    first_date, first_count = first.rsplit(".", 1)
+    second_date, second_count = second.rsplit(".", 1)
+    assert first_date == second_date
+    assert int(second_count) == int(first_count) + 1
+
+
 # ---------------------------------------------------------------------------
 # _clean_version_suffixes — PEP 440 attached pre-release forms
 # ---------------------------------------------------------------------------

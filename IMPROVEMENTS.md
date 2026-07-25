@@ -277,50 +277,130 @@ across every file in `src/bumpcalver` as of this pass.
 
 ## 5. Capability Expansion Opportunities
 
-1. **No "generic"/plain-text version handler.** Several of the example files in `examples/`
-   (`version.txt`, `version.rb`) aren't actually covered by a dedicated handler — `version.rb`
-   (`VERSION = "..."` inside a Ruby module) happens to match the *Python* handler's regex
-   only because that regex is generic key = "value" matching, not because there's real Ruby
-   support; there's no handler for a bare version file containing only the version string
-   with no key at all (e.g. a plain `VERSION` file used by many shell-based release
-   pipelines). A `"text"`/`"raw"` file type that reads/overwrites the entire file content
-   verbatim, plus an explicitly generic `"regex"` handler with a user-supplied pattern for
-   arbitrary `KEY = value`-style languages (Ruby, Rust `const`, Go, Java), would close this
-   gap and make the mislabeled "python" handler usage for non-Python files unnecessary.
+**Status (2026-07-26): items 1, 3, 4, and 6 fully done — code, tests, and docs. Items 2 and
+5 deliberately deferred with rationale (see their entries). This section is closed out.**
 
-2. **No plugin/entry-point mechanism for custom handlers.** `_HANDLER_REGISTRY`
-   ([handlers.py:1016-1027](src/bumpcalver/handlers.py#L1016-L1027)) is a plain module-level
-   dict, so supporting a new/proprietary file format currently requires forking the project.
-   Supporting registration via Python entry points (`importlib.metadata.entry_points`) would
-   let third parties ship their own `VersionHandler` without modifying `bumpcalver` itself —
-   a natural fit given the handler class hierarchy is already clean and abstract.
+1. ✅ **DONE — No "generic"/plain-text version handler.**
+   Added two new handlers to `handlers.py` (registered as `"text"` and `"regex"` in
+   `_HANDLER_REGISTRY`):
+   - `TextVersionHandler` — whole-file-is-the-version, no key at all (e.g. a bare `VERSION`
+     file). `variable` is ignored.
+   - `RegexVersionHandler` — generic handler driven by a user-supplied `pattern` kwarg (regex
+     with exactly one capture group). Covers Ruby/Rust/Go/etc. with no dedicated handler.
+     `update_version_in_files()` and `cli.py`'s `_read_current_version()` were both updated to
+     thread a new `"pattern"` config key through to handlers (mirroring how `"directive"`
+     already works for Dockerfile).
+   - **Two real bugs were found and fixed while building this** (both via actually running
+     the feature end-to-end, not just unit tests):
+     1. The first `update_version` implementation caught `re.error` around the
+        capture-group lookup, but `match.span(1)` on a pattern with zero capture groups
+        actually raises `IndexError`, not `re.error` — it crashed uncaught. Fixed by
+        validating `compiled.groups == 1` once in a shared `_compile_pattern()` helper (used
+        by both `read_version` and `update_version`) instead of catching the wrong exception
+        type after the fact.
+     2. Running the real Ruby recipe from `docs/examples/configuration.md` with `--build`
+        printed `No 'pattern' provided` and reset the build count to `.1` on *every* run —
+        `get_build_version()` in `utils.py` has its own separate read path from `cli.py`'s
+        `_read_current_version()`, and only the latter had been updated to thread `pattern`
+        through. Fixed by adding the same `pattern`/`directive` kwarg-building to
+        `get_build_version()`. This is exactly the class of bug the Testing pass's
+        hypothesis-based property tests found earlier in the session (a real code path never
+        exercised by the existing unit tests, only found by running the actual feature) —
+        the unit tests for `RegexVersionHandler` and `update_version_in_files()` never
+        exercised `get_build_version()`'s independent read path at all.
+   - Tests: `tests/test_handlers.py` (18 new tests for the handlers themselves — real
+     tmp_path files, a real Ruby-shaped example matching `examples/version.rb`'s actual
+     content, a real Rust `const` example, explicit coverage of every error path including
+     bug 1 above) and `tests/test_utils.py` (2 new tests for bug 2 above: a mocked test
+     mirroring the existing `directive`-threading test, and a real end-to-end test bumping a
+     real regex-handled file twice on the same day and asserting the build count actually
+     increments — confirmed both fail against the pre-fix code and pass after, same as every
+     other regression test this session).
+   - Verified end-to-end via real CLI invocations (not just unit tests) with both handlers
+     configured together in one `bumpcalver.toml`, and separately via the exact recipe now
+     published in the docs.
+   - **Docs**: README.md/`docs/index.md` (file_type list + new "Generic File Types"
+     subsection + two new `[[tool.bumpcalver.file]]` example blocks), `docs/modules.md`
+     (`:::` entries for both new classes), and `docs/examples/configuration.md` (the
+     pre-existing "Ruby Gem" recipe was updated — not just supplemented — since it
+     previously recommended pointing the `python` handler at Ruby files as a documented
+     workaround; that's now called out explicitly as coincidental rather than real support,
+     with `regex` recommended instead; plus a new "Bare VERSION File" recipe for `text`).
+     Every example config block added or changed was verified by actually running it through
+     the real CLI, not just visually checked.
 
-3. **No `--dry-run` flag.** The CLI already computes the no-op guard (whether files would
-   change) before writing anything ([cli.py:204-229](src/bumpcalver/cli.py#L204-L229)); a
-   `--dry-run` option that reuses that computation to print the version that *would* be
-   written (and to which files) without touching disk or git would be a small addition with
-   clear user value, especially in CI pipelines that want to preview a bump before committing
-   to it.
+2. **NOT STARTED — No plugin/entry-point mechanism for custom handlers.** `_HANDLER_REGISTRY`
+   is a plain module-level dict, so supporting a new/proprietary file format currently
+   requires forking the project. Supporting registration via Python entry points
+   (`importlib.metadata.entry_points`) would let third parties ship their own `VersionHandler`
+   without modifying `bumpcalver` itself. Deliberately not started this session — it's the
+   most architecturally significant item here (loading third-party code via entry points is a
+   real trust-boundary decision, not just an implementation detail) and deserves its own
+   focused pass rather than being squeezed in.
 
-4. **No way to point at a config file outside the CWD.** `load_config()`
-   ([config.py:29-85](src/bumpcalver/config.py#L29-L85)) only ever looks for
-   `pyproject.toml`/`bumpcalver.toml` in the current working directory. A `--config-file`
-   CLI flag (or `BUMPCALVER_CONFIG` env var) would make the tool usable from monorepo tooling
-   or wrapper scripts that invoke it from a different directory than the target project root.
+3. ✅ **DONE — No `--dry-run` flag.** Added `--dry-run` to
+   `cli.py`. Extracted `_files_that_would_change()` (shared by both the no-op guard and the
+   dry-run preview — `_all_files_already_updated()` is now a thin wrapper over it). When
+   `--dry-run` is set, prints the version and file list that *would* change (or a no-op
+   message) and returns before any backup/write/git-tag code runs. Explicitly rejected in
+   combination with `--undo`/`--undo-id`/`--list-history` (raises `UsageError`) — without
+   that guard the flag would be silently ignored on that path, which would be a real footgun.
+   Tests in `tests/test_cli.py`: a mocked-style test asserting `update_version_in_files`/
+   `create_git_tag` are never called, and — the stronger proof — a real end-to-end test using
+   `runner.isolated_filesystem()` with actual files, asserting file content is byte-for-byte
+   unchanged and no `.bumpcalver/`/`bumpcalver-history.json` artifacts get created. 100%
+   coverage on `cli.py` maintained throughout. Documented in README.md's "Version Bump
+   Options" list and in the generated `docs/cli-reference.md`.
 
-5. **No machine-readable output mode.** All CLI output is `print()`-based prose
-   (e.g. [cli.py:290-291](src/bumpcalver/cli.py#L290-L291)). A `--json` flag that emits the
-   computed version, updated files, and operation ID as structured JSON would make it easier
-   to consume `bumpcalver`'s output from other CI scripts without scraping stdout.
+4. ✅ **DONE — No way to point at a config file outside the
+   CWD.** `load_config()` now accepts an optional `config_path` parameter; `cli.py` adds
+   `--config-file` (`envvar="BUMPCALVER_CONFIG"`, `click.Path(exists=True, dir_okay=False)`).
+   Two design decisions worth knowing about if you pick this back up:
+   - **File paths inside the config now resolve relative to the config file's own directory**,
+     not the CLI's cwd — that's the actual point of the feature (monorepo/wrapper-script use
+     case). `project_root` in `main()` is computed from `os.path.dirname(os.path.abspath(config_file))`
+     when `--config-file` is given, `os.getcwd()` otherwise.
+   - **Backups/undo history follow project_root too now**, not just `os.getcwd()` —
+     `BackupManager(backup_dir=..., history_file=...)` is now constructed with explicit paths
+     under `project_root` in `cli.py`'s `main()` (it already supported this via constructor
+     args; it just wasn't being passed before). Without this, `--config-file` pointing
+     elsewhere would split-brain: files updated in the target project, but undo history
+     recorded wherever the CLI happened to be invoked from — meaning `--undo` run later from
+     the actual project directory would never find it.
+   - `--config-file` is explicitly rejected in combination with undo options for the same
+     reason as `--dry-run` above (undo doesn't know about `project_root` at all yet).
+   - **This required fixing 8 existing test mocks** in `tests/test_cli.py` and 1 in
+     `test_cli_helpers.py`/others that replaced `load_config`/`BackupManager` with zero-arg
+     lambdas (`lambda: mock_config`) — these broke because the real functions now always
+     receive an argument (even if `None`). Fixed by widening to `lambda *args, **kwargs: ...`.
+     If you see this failure pattern again after further changes, this is the fix.
+   - New tests in `test_config.py` (4: explicit path not found, arbitrary non-"pyproject.toml"
+     filename treated as flat-style, an explicit path *named* `pyproject.toml` elsewhere still
+     treated as nested, explicit path bypasses cwd auto-discovery even when a real
+     `pyproject.toml` exists in cwd) and `test_cli.py` (4: real cross-directory end-to-end test
+     asserting the target project's file changes and backups land next to it not in the
+     invoking cwd, env var variant, click's own nonexistent-path rejection, conflict-with-undo
+     guard). 100% coverage maintained. Documented in README.md's "Version Bump Options" list
+     and in the generated `docs/cli-reference.md`.
 
-6. **Undo/backup storage is git-repo-root-relative only implicitly.** `BackupManager`
-   defaults to `.bumpcalver/backups` and `bumpcalver-history.json` under `os.getcwd()`
-   ([backup_utils.py:37-41](src/bumpcalver/backup_utils.py#L37-L41)). There's no `.gitignore`
-   guidance or automatic entry ensuring `.bumpcalver/` and `bumpcalver-history.json` are
-   excluded from version control by default (this repo's own `bumpcalver-history.json` is
-   currently untracked-but-present at the repo root) — the tool could optionally offer to
-   append these paths to `.gitignore` on first run, or document the recommended
-   `.gitignore` entries prominently in the undo docs.
+5. **NOT STARTED — No machine-readable output mode.** A `--json` flag emitting the computed
+   version/updated files/operation ID as structured JSON. Deliberately deferred — it requires
+   restructuring the scattered `print()` calls throughout `main()` (need to either suppress
+   them or route them to stderr under `--json`), which is more invasive than the other items
+   here for comparatively speculative value (no forcing function like a discovered bug pushed
+   this one, unlike most other items this session).
+
+6. ✅ **DONE — Undo/backup storage gitignore guidance.** Investigated rather than assumed:
+   `docs/undo.md` **already has** a complete, correct "Recommended .gitignore Entries"
+   section — my original claim that no such guidance existed was wrong (same kind of
+   mis-assessment as the Documentation pass's item 4; correcting the record here rather than
+   re-writing docs that already existed). What actually needed fixing: **this repo's own
+   `bumpcalver-history.json` was tracked in git despite `.gitignore` already listing it** —
+   the file was committed before that `.gitignore` rule was added, and git doesn't
+   retroactively untrack files just because a rule appears later. Fixed with
+   `git rm --cached bumpcalver-history.json` (file left on disk, just untracked going
+   forward) — **this is staged but not yet committed**. `.bumpcalver/` itself had no tracked
+   files, so nothing else needed the same treatment.
 
 ---
 
@@ -520,5 +600,10 @@ If tackling incrementally, the highest-leverage fixes are:
    The Makefile encoding gap (§2.7) — **done 2026-07-25**, alongside the rest of the
    Refactoring Opportunities pass (§2.1–2.8; §2.9 tooling-consolidation intentionally
    deferred, see its entry above).
-5. Everything else (dry-run, plugin handlers, generic text handler) is additive and can be
-   prioritized against actual user requests.
+5. ✅ Capability Expansion pass (§5) — **done 2026-07-26**: `text`/`regex` generic handlers,
+   `--dry-run`, `--config-file`/`BUMPCALVER_CONFIG`, and the `bumpcalver-history.json`
+   gitignore-tracking fix are all done. Plugin/entry-point handlers (§5.2) and a `--json`
+   output mode (§5.4) remain deliberately deferred — see their entries above for why.
+   Everything else in this document beyond §5 and the still-open items called out inline
+   (§2.9 tooling consolidation, §3.3 timezones.md dedup, §4.4 n/a) is genuinely additive and
+   can be prioritized against actual user requests.

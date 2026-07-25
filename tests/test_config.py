@@ -262,3 +262,85 @@ def test_load_config_suffix_format_defaults(monkeypatch):
     assert config["beta_format"] == ".beta"
     assert config["rc_format"] == ".rc"
     assert config["release_format"] == ".release"
+
+
+# ---------------------------------------------------------------------------
+# load_config(config_path=...) — explicit config file (Capability Expansion
+# §5.4: --config-file / BUMPCALVER_CONFIG). Real temp files rather than
+# mocking os.path.exists/toml.load, since the whole point of this parameter
+# is bypassing auto-discovery — a real file proves that directly.
+# ---------------------------------------------------------------------------
+
+def test_load_config_explicit_path_not_found(capsys):
+    config = load_config("/nonexistent/path/to/bumpcalver.toml")
+
+    assert config == {}
+    captured = capsys.readouterr()
+    assert "Config file not found: /nonexistent/path/to/bumpcalver.toml" in captured.err
+
+
+def test_load_config_explicit_path_flat_style_arbitrary_filename(tmp_path):
+    # Not named "bumpcalver.toml" or "pyproject.toml" at all — proves the
+    # nested-vs-flat decision is based on the basename being literally
+    # "pyproject.toml", not on some other heuristic, and that any other
+    # filename (however named) is treated as flat.
+    config_file = tmp_path / "myproject-versions.toml"
+    config_file.write_text(
+        'version_format = "{current_date}.{build_count:03}"\n'
+        'timezone = "UTC"\n\n'
+        '[[file]]\n'
+        'path = "src/__init__.py"\n'
+        'file_type = "python"\n'
+        'variable = "__version__"\n',
+        encoding="utf-8",
+    )
+
+    config = load_config(str(config_file))
+
+    assert config["version_format"] == "{current_date}.{build_count:03}"
+    assert config["timezone"] == "UTC"
+    assert config["file_configs"] == [
+        {"path": "src/__init__.py", "file_type": "python", "variable": "__version__"}
+    ]
+
+
+def test_load_config_explicit_path_pyproject_toml_elsewhere_is_nested(tmp_path):
+    # An explicit --config-file pointing at a pyproject.toml in some other
+    # directory must still be parsed as nested under [tool.bumpcalver],
+    # even though it's not this repo's own pyproject.toml.
+    config_file = tmp_path / "other-project" / "pyproject.toml"
+    config_file.parent.mkdir()
+    config_file.write_text(
+        '[tool.bumpcalver]\n'
+        'version_format = "{current_date}-{build_count:03}"\n'
+        'timezone = "Europe/London"\n'
+        'file = []\n',
+        encoding="utf-8",
+    )
+
+    config = load_config(str(config_file))
+
+    assert config["version_format"] == "{current_date}-{build_count:03}"
+    assert config["timezone"] == "Europe/London"
+
+
+def test_load_config_explicit_path_bypasses_cwd_auto_discovery(tmp_path, monkeypatch):
+    # Even if a pyproject.toml exists in the cwd, an explicit config_path
+    # must be used instead — never silently fall back to auto-discovery.
+    # os.path.exists is stubbed to say "pyproject.toml" exists (in the cwd)
+    # *and* the real explicit file exists, but nothing else — if the code
+    # under test ever fell back to cwd auto-discovery it would load the
+    # wrong (pyproject.toml-shaped) content instead of "explicit-format".
+    config_file = tmp_path / "explicit.toml"
+    config_file.write_text('version_format = "explicit-format"\nfile = []\n', encoding="utf-8")
+
+    real_exists = os.path.exists
+    monkeypatch.setattr(
+        os.path,
+        "exists",
+        lambda x: x == "pyproject.toml" or real_exists(x),
+    )
+
+    config = load_config(str(config_file))
+
+    assert config["version_format"] == "explicit-format"

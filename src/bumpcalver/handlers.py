@@ -701,6 +701,95 @@ class SetupCfgVersionHandler(VersionHandler):
             return False
 
 
+class TextVersionHandler(VersionHandler):
+    """Handler for bare version files whose entire content *is* the version
+    (e.g. a `VERSION` file containing just `1.2.3`, as used by many
+    shell-based release pipelines). `variable` is ignored — there is no key,
+    the whole file is the value.
+    """
+
+    def read_version(self, file_path: str, variable: str, **kwargs: Any) -> Optional[str]:
+        """Reads the entire file, stripped of surrounding whitespace, as the version."""
+        content = self._read_file_safe(file_path)
+        return content.strip() if content is not None else None
+
+    def update_version(
+        self, file_path: str, variable: str, new_version: str, **kwargs: Any
+    ) -> bool:
+        """Overwrites the entire file with `new_version` plus a trailing newline."""
+        new_version = self._format_version_with_standard(new_version, **kwargs)
+        return self._write_file_safe(file_path, f"{new_version}\n")
+
+
+class RegexVersionHandler(VersionHandler):
+    """Generic handler for formats with no dedicated handler (Ruby `VERSION = "..."`,
+    Rust `const VERSION: &str = "...";`, Go `var Version = "..."`, etc.).
+
+    Driven entirely by a `pattern` kwarg: a regex string with exactly one capture
+    group around the version. Set `file_type = "regex"` and pass `pattern` in the
+    file's config, e.g. `pattern = 'VERSION = "(.+?)"'` for a Ruby file. `variable`
+    is not used for matching — it only appears in log messages — since the pattern
+    itself locates the version.
+    """
+
+    def read_version(self, file_path: str, variable: str, **kwargs: Any) -> Optional[str]:
+        """Reads the text captured by `pattern`'s first group."""
+        pattern = self._compile_pattern(kwargs.get("pattern", ""), file_path)
+        if pattern is None:
+            return None
+
+        def read_operation():
+            with open(file_path, "r", encoding="utf-8") as file:
+                content = file.read()
+            match = pattern.search(content)
+            if match:
+                return match.group(1)
+            self._log_variable_not_found(variable or "pattern", file_path)
+            return None
+
+        return self._handle_read_operation(file_path, read_operation)
+
+    def update_version(
+        self, file_path: str, variable: str, new_version: str, **kwargs: Any
+    ) -> bool:
+        """Replaces the text captured by `pattern`'s first group with `new_version`, leaving everything else on the line untouched."""
+        new_version = self._format_version_with_standard(new_version, **kwargs)
+        pattern = self._compile_pattern(kwargs.get("pattern", ""), file_path)
+        if pattern is None:
+            return False
+
+        def replacement(match: re.Match) -> str:
+            full_start = match.start(0)
+            group_start, group_end = match.span(1)
+            full = match.group(0)
+            return f"{full[: group_start - full_start]}{new_version}{full[group_end - full_start :]}"
+
+        return self._handle_regex_update(file_path, pattern, replacement, new_version, variable or "pattern")
+
+    def _compile_pattern(self, pattern_str: str, file_path: str) -> Optional[re.Pattern]:
+        """Compile the user-supplied pattern, reporting a clear error if it's missing/invalid.
+
+        Validates the capture-group count here (rather than catching the
+        IndexError that match.span(1) would raise later) so both read_version
+        and update_version get the same clear error message from one place.
+        """
+        if not pattern_str:
+            print(f"No 'pattern' provided for regex handler on {file_path}.")
+            return None
+        try:
+            compiled = re.compile(pattern_str, re.MULTILINE)
+        except re.error as e:
+            print(f"Invalid regex pattern for {file_path}: {e}")
+            return None
+        if compiled.groups != 1:
+            print(
+                f"Pattern for {file_path} must contain exactly one capture group "
+                f"(found {compiled.groups})."
+            )
+            return None
+        return compiled
+
+
 _HANDLER_REGISTRY: Dict[str, Type[VersionHandler]] = {
     "python": PythonVersionHandler,
     "toml": TomlVersionHandler,
@@ -712,6 +801,8 @@ _HANDLER_REGISTRY: Dict[str, Type[VersionHandler]] = {
     "properties": PropertiesVersionHandler,
     "env": EnvVersionHandler,
     "setup.cfg": SetupCfgVersionHandler,
+    "text": TextVersionHandler,
+    "regex": RegexVersionHandler,
 }
 
 
@@ -740,9 +831,11 @@ def update_version_in_files(
         file_configs (List[Dict[str, Any]]): A list of dictionaries containing file configuration details.
             Each dictionary should have the following keys:
                 - "path" (str): The path to the file.
-                - "file_type" (str): The type of the file (e.g., "python", "toml", "yaml", "json", "xml", "dockerfile", "makefile").
+                - "file_type" (str): The type of the file (e.g., "python", "toml", "yaml", "json", "xml",
+                  "dockerfile", "makefile", "properties", "env", "setup.cfg", "text", "regex").
                 - "variable" (str, optional): The variable name that holds the version string.
                 - "directive" (str, optional): The directive for Dockerfile (e.g., "ARG" or "ENV").
+                - "pattern" (str, optional): Regex with one capture group, required for file_type="regex".
                 - "version_standard" (str, optional): The versioning standard to follow (default is "default").
 
     Returns:
@@ -762,6 +855,7 @@ def update_version_in_files(
         file_type: str = file_config.get("file_type", "")
         variable: str = file_config.get("variable", "")
         directive: str = file_config.get("directive", "")
+        pattern: str = file_config.get("pattern", "")
         version_standard: str = file_config.get("version_standard", "default")
 
         handler = get_version_handler(file_type)
@@ -770,6 +864,7 @@ def update_version_in_files(
             variable,
             new_version,
             directive=directive,
+            pattern=pattern,
             version_standard=version_standard,
         ):
             files_updated.append(file_path)

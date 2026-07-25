@@ -116,6 +116,18 @@ if you're adding support for a new file format.
     options:
       show_source: false
 
+### Generic handlers
+
+For formats with no dedicated handler above.
+
+::: bumpcalver.handlers.TextVersionHandler
+    options:
+      show_source: false
+
+::: bumpcalver.handlers.RegexVersionHandler
+    options:
+      show_source: false
+
 ## Undo / Backup
 
 ::: bumpcalver.backup_utils.BackupManager
