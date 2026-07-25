@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 from unittest import mock
 
 import pytest
-import toml
+import tomlkit
 import yaml
 from src.bumpcalver.handlers import (
     DockerfileVersionHandler,
@@ -83,7 +83,7 @@ version = "2023-10-10"
     mock_open = mock.mock_open(read_data=toml_content)
     monkeypatch.setattr("builtins.open", mock_open)
     monkeypatch.setattr(
-        toml, "load", lambda f: {"tool": {"poetry": {"version": "2023-10-10"}}}
+        tomlkit, "load", lambda f: {"tool": {"poetry": {"version": "2023-10-10"}}}
     )
 
     version = handler.read_version("pyproject.toml", "tool.poetry.version")
@@ -99,9 +99,9 @@ version = "2023-10-10"
     mock_open = mock.mock_open(read_data=toml_content)
     monkeypatch.setattr("builtins.open", mock_open)
     toml_data = {"tool": {"poetry": {"version": "2023-10-10"}}}
-    monkeypatch.setattr(toml, "load", lambda f: toml_data)
+    monkeypatch.setattr(tomlkit, "load", lambda f: toml_data)
     dump_mock = mock.Mock()
-    monkeypatch.setattr(toml, "dump", dump_mock)
+    monkeypatch.setattr(tomlkit, "dump", dump_mock)
 
     result = handler.update_version(
         "pyproject.toml", "tool.poetry.version", "2023-10-11"
@@ -143,7 +143,37 @@ version: "2023-10-10"
     assert result is True
 
     expected_data = {"version": "2023-10-11"}
-    dump_mock.assert_called_once_with(expected_data, mock.ANY)
+    dump_mock.assert_called_once_with(expected_data, mock.ANY, sort_keys=False)
+
+
+def test_yaml_handler_update_version_preserves_key_order(tmp_path):
+    # Regression test for the real bug: yaml.safe_dump defaults to
+    # sort_keys=True, which would alphabetize every top-level and nested key
+    # on every bump, silently destroying the author's intended file layout.
+    # Uses a real file (no mocking of yaml.safe_dump) so it actually exercises
+    # PyYAML's default behavior rather than assuming it away.
+    handler = YamlVersionHandler()
+    yaml_file = tmp_path / "config.yaml"
+    yaml_file.write_text(
+        "zebra: first\n"
+        "configuration:\n"
+        "  name: app\n"
+        "  version: '1.0'\n"
+        "  alpha: last\n"
+        "apple: second\n",
+        encoding="utf-8",
+    )
+
+    result = handler.update_version(str(yaml_file), "configuration.version", "2.0")
+    assert result is True
+
+    written = yaml_file.read_text(encoding="utf-8")
+    # Original ordering must survive: zebra/configuration/apple at the top
+    # level, and name/version/alpha within the nested mapping.
+    assert written.index("zebra") < written.index("configuration")
+    assert written.index("configuration") < written.index("apple")
+    assert written.index("name") < written.index("version") < written.index("alpha")
+    assert "version: '2.0'" in written
 
 
 def test_yaml_handler_read_version_exception(monkeypatch, capsys):
@@ -273,13 +303,15 @@ def test_xml_handler_update_version(monkeypatch):
     mock_element = mock.Mock()
     mock_root.find.return_value = mock_element
     mock_tree.getroot.return_value = mock_root
-    monkeypatch.setattr(ET, "parse", lambda f: mock_tree)
+    monkeypatch.setattr(ET, "parse", lambda f, parser=None: mock_tree)
 
     result = handler.update_version("config.xml", "version", "2023-10-11")
     assert result is True
 
     assert mock_element.text == "2023-10-11"
-    mock_tree.write.assert_called_once_with("config.xml")
+    mock_tree.write.assert_called_once_with(
+        "config.xml", xml_declaration=True, encoding="UTF-8"
+    )
 
 
 def test_xml_handler_read_version_exception(monkeypatch, capsys):
@@ -302,7 +334,7 @@ def test_xml_handler_update_version_exception(monkeypatch, capsys):
     handler = XmlVersionHandler()
 
     # Simulate an exception during ET.parse
-    def mock_et_parse(file):
+    def mock_et_parse(file, parser=None):
         raise ET.ParseError("Malformed XML")
 
     monkeypatch.setattr("xml.etree.ElementTree.parse", mock_et_parse)
@@ -312,6 +344,31 @@ def test_xml_handler_update_version_exception(monkeypatch, capsys):
 
     captured = capsys.readouterr()
     assert "Error updating config.xml: Malformed XML" in captured.out
+
+
+def test_xml_handler_update_version_preserves_declaration_and_comments(tmp_path):
+    # Regression test for the real bug: ET.parse()/tree.write() silently drop
+    # the <?xml ?> declaration and all comments on a plain round-trip. Uses
+    # real files (no mocking of ET.parse/tree.write) so it actually exercises
+    # ElementTree's behavior rather than assuming it away.
+    handler = XmlVersionHandler()
+    xml_file = tmp_path / "config.xml"
+    xml_file.write_text(
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        "<project>\n"
+        "    <!-- inner comment describing the version below -->\n"
+        "    <version>1.0.0</version>\n"
+        "</project>\n",
+        encoding="utf-8",
+    )
+
+    result = handler.update_version(str(xml_file), "version", "2.0.0")
+    assert result is True
+
+    written = xml_file.read_text(encoding="utf-8")
+    assert written.startswith("<?xml version=")
+    assert "inner comment describing the version below" in written
+    assert "<version>2.0.0</version>" in written
 
 
 def test_dockerfile_handler_read_version(monkeypatch):
@@ -470,6 +527,34 @@ def test_makefile_handler_update_version_exception(monkeypatch, capsys):
     assert "Error updating Makefile: Unable to open file" in captured.out
 
 
+def test_makefile_handler_read_version_uses_explicit_utf8_encoding(monkeypatch):
+    # Regression test: read_version() must open the file with an explicit
+    # utf-8 encoding rather than relying on the platform default (which is
+    # locale-dependent on Windows), so content parses consistently across
+    # the CI matrix's ubuntu/windows runners. Asserting the open() call
+    # arguments directly is what actually pins this down — merely reading
+    # ASCII content back correctly would pass even without the fix, since
+    # this sandbox's own default encoding is already utf-8.
+    handler = MakefileVersionHandler()
+    mock_open = mock.mock_open(read_data="VERSION = 2023-10-10\n")
+    monkeypatch.setattr("builtins.open", mock_open)
+
+    version = handler.read_version("Makefile", "VERSION")
+    assert version == "2023-10-10"
+    mock_open.assert_called_once_with("Makefile", "r", encoding="utf-8")
+
+
+def test_makefile_handler_read_version_non_ascii_content(tmp_path):
+    handler = MakefileVersionHandler()
+    makefile = tmp_path / "Makefile"
+    makefile.write_text(
+        "# Réglages généraux — see docs\nVERSION = 2023-10-10\n", encoding="utf-8"
+    )
+
+    version = handler.read_version(str(makefile), "VERSION")
+    assert version == "2023-10-10"
+
+
 def test_get_version_handler():
     handler = get_version_handler("python")
     assert isinstance(handler, PythonVersionHandler)
@@ -519,10 +604,10 @@ def test_toml_handler_read_version_malformed_toml(monkeypatch, capsys):
 
     # Simulate malformed TOML content
     def mock_toml_load(f):
-        raise handlers.toml.TomlDecodeError("Malformed TOML", "", 0)
+        raise handlers.tomlkit.exceptions.TOMLKitError("Malformed TOML")
 
-    # Monkeypatch the 'toml.load' function in the handlers module
-    monkeypatch.setattr(handlers.toml, "load", mock_toml_load)
+    # Monkeypatch the 'tomlkit.load' function in the handlers module
+    monkeypatch.setattr(handlers.tomlkit, "load", mock_toml_load)
 
     mock_open = mock.mock_open()
     monkeypatch.setattr("builtins.open", mock_open)
@@ -539,11 +624,11 @@ def test_toml_handler_update_version_exception(monkeypatch, capsys):
 
     handler = handlers.TomlVersionHandler()
 
-    # Simulate an exception during toml.load
+    # Simulate an exception during tomlkit.load
     def mock_toml_load(f):
-        raise handlers.toml.TomlDecodeError("Malformed TOML", "", 0)
+        raise handlers.tomlkit.exceptions.TOMLKitError("Malformed TOML")
 
-    monkeypatch.setattr(handlers.toml, "load", mock_toml_load)
+    monkeypatch.setattr(handlers.tomlkit, "load", mock_toml_load)
     mock_open = mock.mock_open()
     monkeypatch.setattr("builtins.open", mock_open)
 
@@ -554,6 +639,33 @@ def test_toml_handler_update_version_exception(monkeypatch, capsys):
 
     captured = capsys.readouterr()
     assert "Error updating pyproject.toml: Malformed TOML" in captured.out
+
+
+def test_toml_handler_update_version_preserves_comments(tmp_path):
+    # Regression test for the real bug: toml.load()/toml.dump() round-trip
+    # through a plain dict, which has no comment model, so every comment in
+    # the file was silently dropped on write. Uses a real file (no mocking of
+    # tomlkit.load/dump) so it actually exercises tomlkit's style-preserving
+    # behavior rather than assuming it away. This matters most for this
+    # handler's primary target, pyproject.toml, which commonly has comments.
+    handler = TomlVersionHandler()
+    toml_file = tmp_path / "pyproject.toml"
+    toml_file.write_text(
+        "# top-level comment\n"
+        "[tool.poetry]\n"
+        'version = "1.0.0"  # inline comment\n'
+        'name = "demo"\n',
+        encoding="utf-8",
+    )
+
+    result = handler.update_version(str(toml_file), "tool.poetry.version", "2.0.0")
+    assert result is True
+
+    written = toml_file.read_text(encoding="utf-8")
+    assert "# top-level comment" in written
+    assert "# inline comment" in written
+    assert 'version = "2.0.0"' in written
+    assert 'name = "demo"' in written
 
 
 def test_get_version_handler_unsupported_file_type():
@@ -587,7 +699,7 @@ name = "example"
     mock_open = mock.mock_open(read_data=toml_content)
     monkeypatch.setattr("builtins.open", mock_open)
     monkeypatch.setattr(
-        toml, "load", lambda f: {"tool": {"poetry": {"name": "example"}}}
+        tomlkit, "load", lambda f: {"tool": {"poetry": {"name": "example"}}}
     )
 
     version = handler.read_version("pyproject.toml", "tool.poetry.version")
@@ -606,9 +718,9 @@ name = "example"
     mock_open = mock.mock_open(read_data=toml_content)
     monkeypatch.setattr("builtins.open", mock_open)
     toml_data = {"tool": {"poetry": {"name": "example"}}}
-    monkeypatch.setattr(toml, "load", lambda f: toml_data)
+    monkeypatch.setattr(tomlkit, "load", lambda f: toml_data)
     dump_mock = mock.Mock()
-    monkeypatch.setattr(toml, "dump", dump_mock)
+    monkeypatch.setattr(tomlkit, "dump", dump_mock)
 
     result = handler.update_version(
         "pyproject.toml", "tool.poetry.version", "2023-10-11"
@@ -645,7 +757,7 @@ def test_xml_handler_update_version_variable_not_found(monkeypatch, capsys):
     mock_open = mock.mock_open(read_data=xml_content)
     monkeypatch.setattr("builtins.open", mock_open)
     monkeypatch.setattr(
-        ET, "parse", lambda f: ET.ElementTree(ET.fromstring(xml_content))
+        ET, "parse", lambda f, parser=None: ET.ElementTree(ET.fromstring(xml_content))
     )
 
     result = handler.update_version("config.xml", "nonexistent_variable", "2023-10-11")
