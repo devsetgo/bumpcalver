@@ -48,6 +48,19 @@ from .undo_utils import list_undo_history, undo_last_operation, undo_operation_b
 from .utils import apply_prerelease_suffix, default_timezone, get_build_version, get_current_datetime_version, update_semantic_in_config
 
 
+def _read_current_version(file_config: Dict[str, Any]) -> Optional[str]:
+    """Read a file's current version, returning None if the handler/read fails."""
+    try:
+        handler = get_version_handler(file_config.get("file_type", ""))
+        variable = file_config.get("variable", "")
+        directive = file_config.get("directive", "")
+        if directive:
+            return handler.read_version(file_config["path"], variable, directive=directive)
+        return handler.read_version(file_config["path"], variable)
+    except Exception:
+        return None
+
+
 @click.command()
 @click.version_option(__version__, "--version", "-V")
 @click.option("--beta", is_flag=True, help="Add -beta to version")
@@ -165,6 +178,19 @@ def main(
     for file_config in file_configs:
         file_config["path"] = os.path.join(project_root, file_config["path"])
 
+    # Cache each file's current version per (path, variable, directive) so it's read
+    # at most once per invocation, even though it's needed both for the pre-release
+    # suffix lookup and the no-op guard below. Keyed on the triple (not just path)
+    # because a single file can have multiple configured entries with different
+    # variables/directives (e.g. a Dockerfile with separate ARG and ENV entries).
+    _version_cache: Dict[tuple, Optional[str]] = {}
+
+    def _cached_current_version(file_config: Dict[str, Any]) -> Optional[str]:
+        key = (file_config["path"], file_config.get("variable", ""), file_config.get("directive", ""))
+        if key not in _version_cache:
+            _version_cache[key] = _read_current_version(file_config)
+        return _version_cache[key]
+
     try:
         if build:
             print("Build option is set. Calling get_build_version.")
@@ -178,17 +204,7 @@ def main(
             new_version = get_current_datetime_version(timezone, date_format)
 
         if beta or rc or release:
-            current_raw_version = ""
-            try:
-                first_cfg = file_configs[0]
-                handler = get_version_handler(first_cfg.get("file_type", ""))
-                directive = first_cfg.get("directive", "")
-                if directive:
-                    current_raw_version = handler.read_version(first_cfg["path"], first_cfg.get("variable", ""), directive=directive) or ""
-                else:
-                    current_raw_version = handler.read_version(first_cfg["path"], first_cfg.get("variable", "")) or ""
-            except Exception:
-                pass
+            current_raw_version = _cached_current_version(file_configs[0]) or ""
 
         if beta:
             new_version = apply_prerelease_suffix(new_version, config.get("beta_format", ".beta"), current_raw_version)
@@ -203,23 +219,7 @@ def main(
         # do not create backups, write undo history, or attempt git operations.
         all_files_already_updated = True
         for file_config in file_configs:
-            file_path: str = file_config["path"]
-            file_type: str = file_config.get("file_type", "")
-            variable: str = file_config.get("variable", "")
-            directive: str = file_config.get("directive", "")
-
-            try:
-                handler = get_version_handler(file_type)
-                if directive:
-                    current_version = handler.read_version(
-                        file_path, variable, directive=directive
-                    )
-                else:
-                    current_version = handler.read_version(file_path, variable)
-            except Exception:
-                all_files_already_updated = False
-                break
-
+            current_version = _cached_current_version(file_config)
             if current_version != new_version:
                 all_files_already_updated = False
                 break

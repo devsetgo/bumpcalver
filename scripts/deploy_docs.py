@@ -63,60 +63,89 @@ def run_command(command, check=True):
         raise
 
 
+def _mike_branch_args(branch):
+    return ["--branch", branch] if branch else []
+
+
+def _clear_aliases(aliases, branch, ignore_remote_status):
+    """Delete aliases that are currently owned by any other version.
+
+    mike rejects assigning an alias that already belongs to a different
+    version, even with --update-aliases. This removes the conflict first.
+    """
+    import json
+    list_result = subprocess.run(
+        ["mike", "list", "--json"] + _mike_branch_args(branch),
+        capture_output=True, text=True,
+    )
+    if list_result.returncode != 0:
+        return
+    try:
+        versions = json.loads(list_result.stdout)
+    except json.JSONDecodeError:
+        return
+
+    conflict = set(aliases)
+    for entry in versions:
+        owned = set(entry.get("aliases", []))
+        to_remove = owned & conflict
+        if not to_remove:
+            continue
+        for alias in to_remove:
+            cmd = ["mike", "delete", alias] + _mike_branch_args(branch)
+            if ignore_remote_status:
+                cmd.append("--ignore-remote-status")
+            print(f"Removing alias '{alias}' from {entry['version']}")
+            subprocess.run(cmd, capture_output=True, text=True)
+
+
 def deploy_documentation(version, aliases=None, push=False, title=None, is_dev=False, ignore_remote_status=False, branch=None):
     """Deploy documentation for a specific version using mike."""
     print(f"Deploying documentation for version: {version}")
 
-    # Validate version format
     if not version or version.strip() == "":
         raise ValueError("Version cannot be empty")
 
-    # Ensure we're in the correct directory
+    import os
     original_dir = Path.cwd()
     project_root = Path(__file__).parent.parent
 
     try:
-        # Change to project root for mike deployment
-        import os
         os.chdir(project_root)
 
-        # Prepare mike command
-        cmd = ["mike", "deploy"]
+        aliases = aliases or []
 
-        # Add version
-        cmd.append(version)
-
-        # Add aliases if provided
+        # Remove any aliases currently owned by other versions so mike
+        # won't reject them as conflicts.
         if aliases:
-            cmd.extend(aliases)
+            _clear_aliases(aliases, branch, ignore_remote_status)
 
-        # Add title if provided
+        # Deploy version without aliases first (always safe).
+        cmd = ["mike", "deploy", version]
         if title:
             cmd.extend(["--title", title])
-
-        # Add update-aliases flag for non-dev versions
-        if not is_dev:
-            cmd.append("--update-aliases")
-
-        # Add push flag if requested
         if push:
             cmd.append("--push")
-
-        # Handle remote status conflicts
         if ignore_remote_status:
-            cmd.extend(["--ignore-remote-status"])
-
-        # Target branch (defaults to mike's own default, typically gh-pages)
-        if branch:
-            cmd.extend(["--branch", branch])
+            cmd.append("--ignore-remote-status")
+        cmd += _mike_branch_args(branch)
 
         print(f"Running command: {' '.join(cmd)}")
         print(f"Working directory: {os.getcwd()}")
+        subprocess.run(cmd, check=True, capture_output=True, text=True)
 
-        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+        # Assign aliases separately — clean after the pre-clear above.
+        if aliases:
+            alias_cmd = ["mike", "alias", version, "--update-aliases"] + aliases
+            if push:
+                alias_cmd.append("--push")
+            if ignore_remote_status:
+                alias_cmd.append("--ignore-remote-status")
+            alias_cmd += _mike_branch_args(branch)
+            print(f"Running command: {' '.join(alias_cmd)}")
+            subprocess.run(alias_cmd, check=True, capture_output=True, text=True)
+
         print("Documentation deployed successfully!")
-        if result.stdout:
-            print(f"Output: {result.stdout}")
         return True
     except subprocess.CalledProcessError as e:
         print(f"Error deploying documentation: {e}")
@@ -126,7 +155,6 @@ def deploy_documentation(version, aliases=None, push=False, title=None, is_dev=F
             print(f"Stderr: {e.stderr}")
         raise
     finally:
-        # Always return to original directory
         os.chdir(original_dir)
 
 
