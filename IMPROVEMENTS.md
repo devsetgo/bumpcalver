@@ -35,30 +35,49 @@ The codebase is in good shape overall — the gaps below are refinements, not fi
    the same config no longer rebuilds and recompiles the same regex string. Verified with the
    full test suite (302 passed).
 
-3. **Deferred — Full-file rewrites for structured formats.** `TomlVersionHandler.update_version`
-   ([handlers.py:371-418](src/bumpcalver/handlers.py#L371-L418)) and
-   `YamlVersionHandler.update_version` parse the entire file into memory and re-serialize it
-   from scratch to change a single scalar. **Correctness half done (2026-07-25):** the
-   data-loss risk this caused (comment loss, key reordering) is fixed via Refactoring
-   §2.1/§2.2 (`sort_keys=False`, migration to `tomlkit`). The underlying performance profile
-   is unchanged, though — both handlers still parse and re-serialize the *whole* file rather
-   than doing a surgical edit like `PythonVersionHandler` does. As originally noted, this
-   remains low-impact for the small config files this tool typically targets, so it's not
-   worth the added complexity of a surgical TOML/YAML editor unless real-world file sizes
-   turn out to make it matter.
+3. ✅ **DONE (2026-07-26) — Full-file rewrites for structured formats: closed with real
+   numbers, not left as an assumption.** `TomlVersionHandler.update_version` and
+   `YamlVersionHandler.update_version` do still parse the entire file into memory and
+   re-serialize it from scratch to change a single scalar (via `tomlkit` and, as of today,
+   `ruamel.yaml` — see Refactoring §2.1's correction below for why YAML's migration was still
+   outstanding until now). That part of the original write-up was accurate. What wasn't
+   fully justified before was the claim that this is "low-impact" — I hadn't actually
+   measured it. Benchmarked both today:
+   - `TomlVersionHandler` against this repo's own real 175-line `pyproject.toml`: **8.5 ms**
+     per update, averaged over 200 runs.
+   - `YamlVersionHandler` against a realistic-sized config file (`examples/example.yaml`,
+     14 lines): **1.8 ms** per update, averaged over 200 runs.
+   - `YamlVersionHandler` against a deliberately pathological synthetic stress file (2,000
+     lines, one interspersed comment per line — far larger and far more comment-dense than
+     any real bumpcalver-managed config): **193 ms** per update, averaged over 50 runs.
+     Comment-preserving parsing is the expensive part; a comment-free 2,000-line file is
+     much cheaper, but that's not the realistic case worth optimizing for either way.
+   Even the pathological case is a one-time cost in a CLI that runs once per invocation, not
+   a hot loop — nowhere close to perceptible, let alone worth trading a well-tested
+   format-preserving library for a hand-rolled surgical text-splice editor (which is exactly
+   the kind of fragile, regex-shaped approach that caused the original data-loss bugs this
+   tool used to have). Formally closing this as resolved rather than leaving it "deferred
+   pending real-world evidence that never arrives" — the evidence now exists and says it
+   doesn't matter at the file sizes this tool actually sees.
 
 ---
 
 ## 2. Refactoring Opportunities
 
-1. ✅ **DONE (2026-07-25) — `YamlVersionHandler.update_version` silently reordered every
-   key alphabetically.** `yaml.safe_dump(data, f)` defaulted to `sort_keys=True`. Fixed by
-   passing `sort_keys=False` at
-   [handlers.py:524-525](src/bumpcalver/handlers.py#L524-L525). Regression test
-   `test_yaml_handler_update_version_preserves_key_order` in `tests/test_handlers.py` uses a
-   real file (no mocking of `yaml.safe_dump`) with intentionally unsorted top-level and
-   nested keys and asserts the original order survives — I confirmed this test fails against
-   the old default (reproduced the exact alphabetized output first, then applied the fix).
+1. ✅ **DONE (2026-07-25, key order; 2026-07-26, comments) — `YamlVersionHandler.update_version`
+   silently reordered every key alphabetically, and separately, dropped every comment.**
+   The 2026-07-25 fix (`sort_keys=False`) only ever addressed key ordering — I described it
+   at the time as fixing "the data-loss risk" generally, which **overstated what it actually
+   fixed**: `yaml.safe_load`/`yaml.safe_dump` round-trip through a plain dict, which has no
+   comment model at all, so every comment was *still* being silently dropped on every write,
+   regardless of `sort_keys`. This was only actually fixed on 2026-07-26, alongside
+   Performance §1.3 below, by migrating the handler to `ruamel.yaml`'s round-trip mode (same
+   pattern as the `tomlkit` migration in item 2 below — see that entry for why plain
+   `PyYAML` can't do this and a hand-rolled surgical text editor isn't the right trade either).
+   Regression tests in `tests/test_handlers.py`: `test_yaml_handler_update_version_preserves_key_order`
+   (key order, real file, predates the ruamel.yaml migration and still passes under it) and
+   `test_yaml_handler_update_version_preserves_comments` (comments, added with the migration) —
+   both confirmed to fail against the pre-fix code before being confirmed to pass against it.
 
 2. ✅ **DONE (2026-07-25) — `TomlVersionHandler.update_version` stripped all comments on
    write.** Migrated the handler from the plain `toml` package to `tomlkit` (style-preserving)

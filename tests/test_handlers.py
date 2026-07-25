@@ -5,7 +5,7 @@ from unittest import mock
 
 import pytest
 import tomlkit
-import yaml
+from ruamel.yaml import YAMLError
 from src.bumpcalver.handlers import (
     DockerfileVersionHandler,
     JsonVersionHandler,
@@ -117,43 +117,42 @@ version = "2023-10-10"
 
 
 def test_yaml_handler_read_version(monkeypatch):
+    from src.bumpcalver import handlers
+
     handler = YamlVersionHandler()
-    yaml_content = """
-version: "2023-10-10"
-"""
-    mock_open = mock.mock_open(read_data=yaml_content)
+    mock_open = mock.mock_open(read_data='version: "2023-10-10"\n')
     monkeypatch.setattr("builtins.open", mock_open)
-    monkeypatch.setattr(yaml, "safe_load", lambda f: {"version": "2023-10-10"})
+    monkeypatch.setattr(handlers._yaml, "load", lambda f: {"version": "2023-10-10"})
 
     version = handler.read_version("config.yaml", "version")
     assert version == "2023-10-10"
 
 
 def test_yaml_handler_update_version(monkeypatch):
+    from src.bumpcalver import handlers
+
     handler = YamlVersionHandler()
-    yaml_content = """
-version: "2023-10-10"
-"""
-    mock_open = mock.mock_open(read_data=yaml_content)
+    mock_open = mock.mock_open(read_data='version: "2023-10-10"\n')
     monkeypatch.setattr("builtins.open", mock_open)
     yaml_data = {"version": "2023-10-10"}
-    monkeypatch.setattr(yaml, "safe_load", lambda f: yaml_data)
+    monkeypatch.setattr(handlers._yaml, "load", lambda f: yaml_data)
     dump_mock = mock.Mock()
-    monkeypatch.setattr(yaml, "safe_dump", dump_mock)
+    monkeypatch.setattr(handlers._yaml, "dump", dump_mock)
 
     result = handler.update_version("config.yaml", "version", "2023-10-11")
     assert result is True
 
     expected_data = {"version": "2023-10-11"}
-    dump_mock.assert_called_once_with(expected_data, mock.ANY, sort_keys=False)
+    dump_mock.assert_called_once_with(expected_data, mock.ANY)
 
 
 def test_yaml_handler_update_version_preserves_key_order(tmp_path):
-    # Regression test for the real bug: yaml.safe_dump defaults to
+    # Regression test for the real bug: yaml.safe_dump (the plain PyYAML
+    # package this handler used before migrating to ruamel.yaml) defaults to
     # sort_keys=True, which would alphabetize every top-level and nested key
     # on every bump, silently destroying the author's intended file layout.
-    # Uses a real file (no mocking of yaml.safe_dump) so it actually exercises
-    # PyYAML's default behavior rather than assuming it away.
+    # Uses a real file (no mocking of ruamel.yaml) so it actually exercises
+    # real round-trip behavior rather than assuming it away.
     handler = YamlVersionHandler()
     yaml_file = tmp_path / "config.yaml"
     yaml_file.write_text(
@@ -178,6 +177,35 @@ def test_yaml_handler_update_version_preserves_key_order(tmp_path):
     assert "version: '2.0'" in written
 
 
+def test_yaml_handler_update_version_preserves_comments(tmp_path):
+    # Regression test for a real bug that predated the ruamel.yaml migration:
+    # yaml.safe_load()/yaml.safe_dump() round-trip through a plain dict, which
+    # has no comment model, so every comment in the file was silently dropped
+    # on write — sort_keys=False (the earlier fix) only ever addressed key
+    # ordering, not this. Uses a real file (no mocking of ruamel.yaml) so it
+    # actually exercises real round-trip behavior rather than assuming it away.
+    handler = YamlVersionHandler()
+    yaml_file = tmp_path / "config.yaml"
+    yaml_file.write_text(
+        "# top-level comment\n"
+        "zebra: first  # inline comment\n"
+        "configuration:\n"
+        "  # nested comment\n"
+        "  name: app\n"
+        "  version: '1.0'\n",
+        encoding="utf-8",
+    )
+
+    result = handler.update_version(str(yaml_file), "configuration.version", "2.0")
+    assert result is True
+
+    written = yaml_file.read_text(encoding="utf-8")
+    assert "# top-level comment" in written
+    assert "# inline comment" in written
+    assert "# nested comment" in written
+    assert "version: '2.0'" in written
+
+
 def test_yaml_handler_read_version_exception(monkeypatch, capsys):
     handler = YamlVersionHandler()
 
@@ -195,13 +223,15 @@ def test_yaml_handler_read_version_exception(monkeypatch, capsys):
 
 
 def test_yaml_handler_update_version_exception(monkeypatch, capsys):
+    from src.bumpcalver import handlers
+
     handler = YamlVersionHandler()
 
-    # Simulate an exception during yaml.safe_load
+    # Simulate an exception during _yaml.load
     def mock_yaml_load(f):
-        raise yaml.YAMLError("Malformed YAML")
+        raise YAMLError("Malformed YAML")
 
-    monkeypatch.setattr("yaml.safe_load", mock_yaml_load)
+    monkeypatch.setattr(handlers._yaml, "load", mock_yaml_load)
     mock_open = mock.mock_open()
     monkeypatch.setattr("builtins.open", mock_open)
 
@@ -734,13 +764,12 @@ name = "example"
 
 
 def test_yaml_handler_read_version_variable_not_found(monkeypatch, capsys):
+    from src.bumpcalver import handlers
+
     handler = YamlVersionHandler()
-    yaml_content = """
-version: "2023-10-10"
-"""
-    mock_open = mock.mock_open(read_data=yaml_content)
+    mock_open = mock.mock_open(read_data='version: "2023-10-10"\n')
     monkeypatch.setattr("builtins.open", mock_open)
-    monkeypatch.setattr(yaml, "safe_load", lambda f: {"version": "2023-10-10"})
+    monkeypatch.setattr(handlers._yaml, "load", lambda f: {"version": "2023-10-10"})
 
     version = handler.read_version("config.yaml", "nonexistent_variable")
     assert version is None

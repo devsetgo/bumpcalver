@@ -14,7 +14,14 @@ from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, List, Optional, Type
 
 import tomlkit
-import yaml
+from ruamel.yaml import YAML
+
+# Shared, reusable round-trip YAML instance (the ruamel.yaml-recommended
+# pattern — cheap to reuse, no per-call setup cost). Round-trip ("rt") is the
+# default `typ`; preserve_quotes keeps the source's choice of quoted vs.
+# unquoted scalars intact too.
+_yaml = YAML()
+_yaml.preserve_quotes = True
 
 
 # Abstract base class for version handlers
@@ -375,13 +382,21 @@ class TomlVersionHandler(VersionHandler):
 
 
 class YamlVersionHandler(VersionHandler):
-    """Handler for YAML files. Preserves key order on write (`sort_keys=False`)."""
+    """Handler for YAML files, using `ruamel.yaml`'s round-trip mode.
+
+    Uses `ruamel.yaml` rather than the plain `PyYAML` package so comments,
+    key order, and quote style elsewhere in the file survive an update —
+    `yaml.safe_load`/`yaml.safe_dump` round-trip through plain dicts and
+    silently drop every comment (and, unless `sort_keys=False` is passed,
+    alphabetize every key too). Mirrors why `TomlVersionHandler` uses
+    `tomlkit` instead of the plain `toml` package.
+    """
 
     def read_version(self, file_path: str, variable: str, **kwargs: Any) -> Optional[str]:
         """Reads the value at `variable`, a dot-separated key path (e.g. `"configuration.version"`)."""
         def read_operation():
             with open(file_path, "r", encoding="utf-8") as f:
-                data = yaml.safe_load(f)
+                data = _yaml.load(f)
             keys = variable.split(".")
             temp = data
             for key in keys:
@@ -389,7 +404,7 @@ class YamlVersionHandler(VersionHandler):
                 if temp is None:
                     self._log_variable_not_found(variable, file_path)
                     return None
-            return temp
+            return str(temp)
 
         return self._handle_read_operation(file_path, read_operation)
 
@@ -401,16 +416,14 @@ class YamlVersionHandler(VersionHandler):
 
         try:
             with open(file_path, "r", encoding="utf-8") as f:
-                data = yaml.safe_load(f)
+                data = _yaml.load(f)
             keys = variable.split(".")
             temp = data
             for key in keys[:-1]:
                 temp = temp.setdefault(key, {}) # no pragma: no cover
             temp[keys[-1]] = new_version
             with open(file_path, "w", encoding="utf-8") as f:
-                # sort_keys=False: yaml.safe_dump defaults to alphabetizing every
-                # key, which would silently reorder the whole file on every bump.
-                yaml.safe_dump(data, f, sort_keys=False)
+                _yaml.dump(data, f)
             print(f"Updated {file_path}")
             return True
         except Exception as e:
