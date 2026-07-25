@@ -262,6 +262,16 @@ def _parse_dynamic_version(version: str, version_format: str, date_format: str =
         version_parts = clean_version.split(".")
         return _parse_dot_separated_version(version_parts)
 
+    # Handle current_date + build_count joined by any other literal separator
+    # (e.g. "{current_date}-{build_count:03}", the CLI's own built-in
+    # zero-config fallback). The legacy parser below only recognizes a literal
+    # YYYY-MM-DD date shape, so combining this with a non-ISO date_format like
+    # the CLI's other fallback default ("%Y.%m.%d") would otherwise never
+    # match anything — silently resetting build_count to 1 on every run
+    # instead of incrementing it, even for a second bump on the same day.
+    if _CURRENT_DATE_KEY in version_format and "{build_count" in version_format:
+        return _parse_hybrid_version(version, version_format, date_format)
+
     return None
 
 

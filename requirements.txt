@@ -7,10 +7,12 @@ flake8==7.3.0 # Vulnerabilities: None
 genbadge[all]==1.1.3 # Vulnerabilities: None
 hatchling==1.29.0 # From 1.28.0 | Vulnerabilities: None
 httpx==0.28.1 # Vulnerabilities: None
+hypothesis==6.161.2 # Vulnerabilities: None
 mike==2.2.0 # From 2.1.3 | Vulnerabilities: None
 mkdocs-material==9.7.6 # From 9.7.3 | Vulnerabilities: None
 mkdocs-print-site-plugin==2.8 # Vulnerabilities: None
 mkdocstrings[python,shell]==1.0.3 # Vulnerabilities: None
+mypy==2.3.0 # Vulnerabilities: None
 packaging==26.2 # Vulnerabilities: None
 pre-commit==4.5.1 # Vulnerabilities: None
 pylint==4.0.5 # From 4.0.4 | Vulnerabilities: None
@@ -26,4 +28,6 @@ toml==0.10.2 # Vulnerabilities: None
 tomlkit==0.15.1 # Vulnerabilities: None
 tox==4.52.0 # From 4.34.1 | Vulnerabilities: None
 twine==6.2.0 # Vulnerabilities: None
+types-PyYAML==6.0.12.20260724 # Vulnerabilities: None
+types-toml==0.10.8.20260518 # Vulnerabilities: None
 wheel==0.47.0 # Vulnerabilities: None

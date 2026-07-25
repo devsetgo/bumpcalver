@@ -189,7 +189,11 @@ class BackupManager:
 
         try:
             with open(self.history_file, 'r', encoding='utf-8') as f:
-                return json.load(f)
+                # json.load's return type is Any (JSON is untyped by nature);
+                # the declared List[Dict[str, Any]] here is a trusted contract
+                # with _save_history, not something mypy can verify at this
+                # boundary.
+                return json.load(f)  # type: ignore[no-any-return]
         except (json.JSONDecodeError, IOError):
             return []
 

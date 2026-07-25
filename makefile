@@ -49,7 +49,7 @@ MAKEFLAGS += --warn-undefined-variables
 # =============================================================================
 .PHONY: help all autoflake black build bump check-deps clean cleanup create-docs create-docs-dev \
         create-docs-local delete-version dev-setup format install isort list-docs \
-        migrate-legacy-docs pre-commit quick-test rebase reinstall ruff serve-docs \
+        migrate-legacy-docs mypy pre-commit quick-test rebase reinstall ruff serve-docs \
         set-default-version sync-docs-branch test test-coverage tests validate
 
 # =============================================================================
@@ -115,6 +115,11 @@ isort: ## Sort imports in Python code
 	isort $(SERVICE_PATH) $(TESTS_PATH) $(EXAMPLE_PATH)
 	@printf "\033[0;32m✅ Import sorting completed!\033[0m\n"
 
+mypy: ## Type-check src/bumpcalver with mypy
+	@printf "\033[1;33m🔎 Type-checking with mypy...\033[0m\n"
+	mypy
+	@printf "\033[0;32m✅ Type checking completed!\033[0m\n"
+
 ruff: ## Format Python code with Ruff
 	@printf "\033[1;33m🦀 Linting and fixing with Ruff...\033[0m\n"
 	ruff check --fix --exit-non-zero-on-fix --show-fixes $(SERVICE_PATH) || true
@@ -127,6 +132,7 @@ validate: ## Validate code without making changes
 	black --check $(SERVICE_PATH) $(TESTS_PATH) $(EXAMPLE_PATH)
 	isort --check-only $(SERVICE_PATH) $(TESTS_PATH) $(EXAMPLE_PATH)
 	ruff check $(SERVICE_PATH) $(TESTS_PATH) $(EXAMPLE_PATH)
+	mypy
 	@printf "\033[0;32m✅ Code validation passed!\033[0m\n"
 
 ##@ Documentation Management

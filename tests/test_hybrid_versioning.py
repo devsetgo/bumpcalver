@@ -145,6 +145,26 @@ class TestParseHybridVersionSuccess:
 
 
 # ---------------------------------------------------------------------------
+# _parse_hybrid_version — build_count-less formats
+# ---------------------------------------------------------------------------
+
+class TestParseHybridVersionNoBuildCount:
+    def test_no_build_count_placeholder_defaults_count_to_zero(self):
+        # Regression test for the except (IndexError, ValueError): count = 0
+        # branch: a hybrid format with no {build_count}/{build_count:...}
+        # placeholder at all (pure semver + date, e.g. a project that bumps
+        # major/minor/patch by hand and only wants a date suffix) compiles to
+        # a regex with no "build_count" named group, so m.group("build_count")
+        # raises IndexError rather than a missing/empty match.
+        result = _parse_hybrid_version(
+            "1.2.3-20260518",
+            "{major}.{minor}.{patch}-{current_date}",
+            "%Y%m%d",
+        )
+        assert result == ("20260518", 0)
+
+
+# ---------------------------------------------------------------------------
 # _parse_hybrid_version — failure cases
 # ---------------------------------------------------------------------------
 
@@ -181,6 +201,54 @@ class TestParseHybridVersionFailure:
             "%Y%m%d",
         )
         assert result is None
+
+
+# ---------------------------------------------------------------------------
+# parse_version — non-hybrid current_date + build_count with a non-dot
+# separator (real bug found while writing hypothesis property tests for this
+# module: see IMPROVEMENTS.md Testing §4.5)
+# ---------------------------------------------------------------------------
+
+class TestParseVersionNonHybridNonDotSeparator:
+    def test_dash_separated_build_count_with_dot_date_format_round_trips(self):
+        # This is *exactly* cli.py's own built-in zero-config defaults:
+        # version_format="{current_date}-{build_count:03}" (dash) combined
+        # with date_format="%Y.%m.%d" (dots). Before the fix, _parse_dynamic_version
+        # had no branch for "current_date + build_count, non-dot separator" and
+        # fell through to the legacy YYYY-MM-DD parser, which also can't match
+        # a dot-formatted date — so parse_version always returned None here,
+        # and a second same-day bump would silently reset build_count to 1
+        # instead of incrementing it.
+        result = parse_version(
+            "2026.07.25-001",
+            "{current_date}-{build_count:03}",
+            "%Y.%m.%d",
+        )
+        assert result == ("2026.07.25", 1)
+
+    def test_get_build_version_increments_on_second_bump_same_day(self, tmp_path, monkeypatch):
+        # End-to-end regression test at the level that actually matters: a
+        # real second invocation on the same day must increment, not reset.
+        version_file = tmp_path / "version.py"
+        version_file.write_text('__version__ = "2026.07.25-001"\n', encoding="utf-8")
+        file_config = {"path": str(version_file), "file_type": "python", "variable": "__version__"}
+
+        monkeypatch.setattr(
+            "src.bumpcalver.utils.get_current_datetime_version",
+            lambda tz, fmt: "2026.07.25",
+        )
+        new_version = get_build_version(
+            file_config, "{current_date}-{build_count:03}", "UTC", "%Y.%m.%d"
+        )
+        assert new_version == "2026.07.25-002"
+
+    def test_no_current_date_placeholder_falls_through_to_none(self):
+        # Companion case for the final `return None` in _parse_dynamic_version:
+        # a version_format with no {current_date} placeholder at all (and no
+        # major/minor/patch, so not hybrid either) never matches any branch.
+        from src.bumpcalver.utils import _parse_dynamic_version
+
+        assert _parse_dynamic_version("42", "{build_count:03}", "%Y.%m.%d") is None
 
 
 # ---------------------------------------------------------------------------

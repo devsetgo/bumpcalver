@@ -201,7 +201,8 @@ The codebase is in good shape overall — the gaps below are refinements, not fi
 ## 4. Testing
 
 Coverage is already excellent (99% line coverage, 302 passing tests), so these are
-targeted gaps rather than a broad call for "more tests."
+targeted gaps rather than a broad call for "more tests." Line coverage is now 100%
+across every file in `src/bumpcalver` as of this pass.
 
 1. ✅ **DONE (2026-07-25) — No regression test for YAML key ordering or TOML/XML comment
    preservation.** Added alongside the fixes in Refactoring §2.1–2.3:
@@ -212,38 +213,65 @@ targeted gaps rather than a broad call for "more tests."
    `yaml`/`tomlkit`/`ElementTree` calls) so they actually exercise the real formatting/library
    behavior instead of assuming it away.
 
-2. **The last few uncovered lines are exactly the exception-handling paths most worth
-   testing directly:**
-   - [cli.py:187, 190-191](src/bumpcalver/cli.py#L187-L191) — the `try/except Exception: pass`
-     around reading `current_raw_version` for `--beta`/`--rc`/`--release`. There's no test
-     exercising what happens when the *first* file config's handler raises while computing a
-     pre-release suffix (e.g. malformed source file).
-   - [utils.py:132-133](src/bumpcalver/utils.py#L132-L133) — the `except (IndexError,
-     ValueError): count = 0` branch inside `_parse_hybrid_version`. Worth a direct unit test
-     of `_parse_hybrid_version` with input that matches the pattern but has a non-numeric or
-     missing `build_count` group.
+2. ✅ **DONE (2026-07-25) — the last uncovered lines, both resolved.** The `cli.py:187,
+   190-191` exception path no longer exists as described — it was extracted into
+   `_read_current_version()`/`_cached_current_version()` during the Refactoring §2.4
+   decomposition, which is now directly unit-tested (`test_read_current_version_handler_exception_returns_none`
+   in `tests/test_cli_helpers.py`) and at 100% coverage as a byproduct, not a deliberate
+   testing-pass fix. The `utils.py` `_parse_hybrid_version` except branch **is** a real,
+   deliberate fix: added `TestParseHybridVersionNoBuildCount` in
+   `tests/test_hybrid_versioning.py`, using a hybrid format with no `{build_count}`
+   placeholder at all (so the compiled regex has no `build_count` named group and
+   `m.group("build_count")` raises `IndexError`) — a realistic case, not a contrived one:
+   a project that bumps major/minor/patch by hand and only wants a date suffix.
 
-3. **No type-checking gate in CI.** The codebase uses type hints extensively
-   (`Dict[str, Any]`, `Optional[str]`, etc.) but nothing verifies they're internally
-   consistent — `mypy`/`pyright` isn't in `requirements.txt`, `pyproject.toml`, or
-   `.pre-commit-config.yaml`. Adding a `mypy` step (even permissive, e.g.
-   `--ignore-missing-imports`) to `.github/workflows/testing.yml` and pre-commit would catch
-   bugs like the duplicate-annotation redeclaration in `config.py` (§2.8) and any future
-   signature drift between callers and handlers.
+3. ✅ **DONE (2026-07-25) — No type-checking gate in CI.** Added `[tool.mypy]` to
+   `pyproject.toml` (`warn_return_any`, `warn_unused_configs`, `warn_redundant_casts`,
+   `no_implicit_optional`, scoped to `src/bumpcalver` only — not `tests/`, which leans on
+   dynamically-typed `mock`/`monkeypatch` patterns that don't pay for themselves under
+   mypy), a `type-check` job in `.github/workflows/testing.yml` (runs once, not across the
+   full OS/Python matrix, since it's a static check against a single pinned target
+   version), a `mirrors-mypy` pre-commit hook (verified for real — installed the hook
+   environment and ran it, not just added the YAML), and a `make mypy`/`make validate`
+   target. A permissive first pass surfaced exactly **one** real bug in the whole
+   codebase — `not_found_message: str = None` in `handlers.py`, an implicit-Optional
+   PEP 484 violation — fixed to `Optional[str] = None`. Installing precise stub packages
+   (`types-PyYAML`, `types-toml`) instead of reaching for a blanket
+   `ignore_missing_imports = True` surfaced 3 more real gaps under `warn_return_any`; fixed
+   2 (an untyped `operation_func` callback parameter in `_handle_read_operation`, and
+   `_HANDLER_REGISTRY: Dict[str, type]` widened to the accurate `Dict[str, Type[VersionHandler]]`)
+   and scoped-suppressed the third (`json.load`'s return type is unavoidably `Any` — a
+   stdlib-boundary limitation, not a bug — with a `# type: ignore[no-any-return]` and a
+   comment explaining why). Zero mypy errors in the final state.
 
-4. **No Windows-specific content test** for the Makefile encoding gap (Refactoring §2.7) —
-   given Windows is already in the CI matrix, a test writing a Makefile with non-ASCII
-   content and reading it back would catch the missing `encoding="utf-8"` before it causes a
-   flaky Windows-only failure.
+4. ✅ **Already resolved — no separate Windows-specific test needed.** The Makefile
+   encoding fix from Refactoring §2.7 already shipped with
+   `test_makefile_handler_read_version_uses_explicit_utf8_encoding`, which asserts the
+   `open()` call arguments directly (`encoding="utf-8"` is actually passed). That's a
+   *stronger* test than the Windows-content test originally proposed here: it fails on
+   any platform the instant the code regresses, rather than only failing when actually
+   executed on a Windows runner with a non-UTF-8 locale.
 
-5. **Version-parsing regex machinery would benefit from property-based tests.**
-   `parse_version` / `_parse_hybrid_version` / `_clean_version_suffixes`
-   ([utils.py:86-305](src/bumpcalver/utils.py#L86-L305)) implement a fairly intricate
-   format-string-to-regex translation. The existing tests (`test_calver_comprehensive.py`,
-   `test_hybrid_versioning.py`) cover specific known formats well, but a `hypothesis`-based
-   test that generates random `date_format`/`version_format` combinations and asserts
-   `parse_version(version_format.format(...))` round-trips correctly would give much broader
-   coverage of this logic's edge cases for comparatively little test code.
+5. ✅ **DONE (2026-07-25) — Property-based tests for the version-parsing regex machinery,
+   which found a real bug.** Added `tests/test_version_parsing_properties.py` with three
+   `hypothesis` properties (dot-separated CalVer, hybrid semver+calendar, and the
+   bare-CLI-defaults dash-separated case), each round-tripping `format → parse_version`
+   across hundreds of randomized date/count/semver combinations against a fixed, known-
+   supported `version_format`/`date_format` pair (deliberately *not* randomizing the format
+   strings themselves — some format combinations are inherently ambiguous by construction,
+   which isn't a bug to find). Writing these surfaced a genuine, previously-undiscovered
+   bug: `parse_version` never round-tripped bumpcalver's **own built-in zero-config CLI
+   defaults** (`version_format="{current_date}-{build_count:03}"` + `date_format="%Y.%m.%d"`)
+   — `_parse_dynamic_version` had no branch for "current_date + build_count with a non-dot
+   separator," so it silently fell through to `None`, and a second same-day bump with no
+   config file at all would reset the build count to `001` forever instead of incrementing.
+   Verified the real-world impact via `get_build_version` (not just `parse_version` in
+   isolation) before fixing, fixed it with a narrowly-scoped addition to
+   `_parse_dynamic_version` that reuses the already-more-robust `_parse_hybrid_version`
+   regex builder, and confirmed the property test actually catches the regression by
+   reverting the fix, watching it fail (shrunk to `2000.01.01-000`), then restoring it.
+   Also documented the pattern in `docs/development-guide.md`'s new "Property-Based Tests"
+   subsection, with a verified-by-running-it excerpt from the real test file.
 
 ---
 
@@ -487,8 +515,10 @@ If tackling incrementally, the highest-leverage fixes are:
    the rest of the Documentation Improvements pass (§3.1, §3.2, §3.5 done; §3.3 deferred
    with rationale; §3.4 was already covered, corrected and enriched instead — see their
    entries above).
-4. Add `mypy` to CI (§4.3) — still open. Fix the Makefile encoding gap (§2.7) — **done
-   2026-07-25**, alongside the rest of the Refactoring Opportunities pass (§2.1–2.8; §2.9
-   tooling-consolidation intentionally deferred, see its entry above).
+4. ✅ Add `mypy` to CI (§4.3) — **done 2026-07-25**, alongside the rest of the Testing pass
+   (§4.1, §4.2, §4.3, §4.5 done; §4.4 confirmed already covered — see their entries above).
+   The Makefile encoding gap (§2.7) — **done 2026-07-25**, alongside the rest of the
+   Refactoring Opportunities pass (§2.1–2.8; §2.9 tooling-consolidation intentionally
+   deferred, see its entry above).
 5. Everything else (dry-run, plugin handlers, generic text handler) is additive and can be
    prioritized against actual user requests.

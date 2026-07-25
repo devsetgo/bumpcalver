@@ -31,3 +31,22 @@ jobs:
         run: |
           pip install pytest
           pytest -n 2
+
+  type-check:
+    # Static check: doesn't depend on OS, and mypy's target [tool.mypy]
+    # python_version is pinned in pyproject.toml, so a single run (rather
+    # than the full OS/Python test matrix above) is sufficient.
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt --use-deprecated=legacy-resolver
+      - name: Type-check with mypy
+        run: mypy

@@ -154,6 +154,17 @@ quote-style = "single"
 [tool.hatch.build]
 exclude = [ "*.json", "pkg/_compat.py", "tests/", "htmlcov/", "_venv/", ".venv/", "__pycache__/", "*.pyc", "*.pyo", "*.pyd", ".pytest_cache/", ".coverage", "coverage.xml", "coverage-badge.svg", "tests-badge.svg", "report.xml", "report.html", "htmlcovreport.html", "htmlreport.html", "docs/", "site/", "latest/", "stable/", "dev/", "v*/", "20*/", "*.*/", ".nojekyll", ".git/", ".github/", ".gitignore", ".gitattributes", "scripts/", "examples/", "makefile", "Makefile", ".pylintrc", "sonar-project.properties", "CONTRIBUTING.md", "CHANGELOG.md", "DOCUMENTATION_MIGRATION.md", "mkdocs.yml", ".vscode/", ".idea/", "*.swp", "*.swo", "*~",]
 
+[tool.mypy]
+# Floor is the oldest Python actually exercised in CI (testing.yml's matrix);
+# mypy itself no longer supports checking against 3.9, the package's real
+# requires-python floor.
+python_version = "3.10"
+files = [ "src/bumpcalver",]
+warn_return_any = true
+warn_unused_configs = true
+warn_redundant_casts = true
+no_implicit_optional = true
+
 [tool.coverage.run]
 source = [ "src/bumpcalver",]
 omit = [ "setup.py", "_venv/*", "tests/*", "examples/*",]
@@ -162,7 +173,7 @@ omit = [ "setup.py", "_venv/*", "tests/*", "examples/*",]
 exclude_lines = [ "pragma: no cover", "if __name__",]
 
 [tool.pytest.ini_options]
-norecursedirs = [ "/tests",]
+norecursedirs = [ "/tests", ".hypothesis",]
 testpaths = [ "tests",]
 python_files = [ "test_*.py", "*_test.py",]
 addopts = [ "--cov=./", "--cov-report=html", "--cov-report=xml", "--junitxml=report.xml", "--html=htmlcov/_test_report.html", "--self-contained-html", "-ra", "--strict-markers", "--tb=short", "-p", "pytester",]
