@@ -26,6 +26,7 @@ Example:
 import os
 import re
 from datetime import datetime
+from functools import lru_cache
 from typing import Any, Dict, Optional
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -96,12 +97,13 @@ def _date_format_to_regex(date_format: str) -> str:
     return result
 
 
-def _parse_hybrid_version(
-    version: str, version_format: str, date_format: str
-) -> Optional[tuple]:
-    """Parse a hybrid semantic+calendar version string.
+@lru_cache(maxsize=256)
+def _compile_hybrid_pattern(version_format: str, date_format: str) -> re.Pattern:
+    """Build (and cache) the regex used to parse a given hybrid version/date format pair.
 
-    Returns (date_str, build_count) or None.
+    ``version_format``/``date_format`` are constant for the life of a single config, so
+    compiling this once per distinct pair (instead of on every ``parse_version`` call)
+    avoids repeated string-building and regex compilation for repeated/bulk parsing.
     """
     temp = re.sub(r'\{build_count:[^}]+\}', "__BUILD_SPEC__", version_format)
     temp = (temp
@@ -120,9 +122,19 @@ def _parse_hybrid_version(
                .replace("__DATE__",       f"(?P<current_date>{date_rx})")
                .replace("__BUILD_SPEC__", r"(?P<build_count>\d+)")
                .replace("__BUILD__",      r"(?P<build_count>\d+)"))
+    return re.compile(pattern)
 
+
+def _parse_hybrid_version(
+    version: str, version_format: str, date_format: str
+) -> Optional[tuple]:
+    """Parse a hybrid semantic+calendar version string.
+
+    Returns (date_str, build_count) or None.
+    """
+    pattern = _compile_hybrid_pattern(version_format, date_format)
     clean = _clean_version_suffixes(version)
-    m = re.fullmatch(pattern, clean)
+    m = pattern.fullmatch(clean)
     if not m:
         return None
 
@@ -139,18 +151,22 @@ def _is_invalid_version_prefix(version: str) -> bool:
     return version.startswith(('v', 'release'))
 
 
+_DOT_SUFFIX_RE = re.compile(r'\.(alpha|beta|rc\d*|release)$')
+# PEP 440 attached directly after a digit: b1, a1, rc1, etc.
+# Explicit alternation avoids backtracking ambiguity on [a-zA-Z]+\d*.
+_ATTACHED_SUFFIX_RE = re.compile(r'(?<=\d)(alpha|beta|rc|a|b)\d*$')
+
+
 def _clean_version_suffixes(version: str) -> str:
     """Remove pre-release suffixes from a version string.
 
     Handles dot-prefixed forms (.beta, .rc1) and PEP 440 attached forms
     (b1, rc2, a1) where letters follow immediately after a digit.
     """
-    cleaned = re.sub(r'\.(alpha|beta|rc\d*|release)$', '', version)
+    cleaned = _DOT_SUFFIX_RE.sub('', version)
     if cleaned != version:
         return cleaned
-    # PEP 440 attached directly after a digit: b1, a1, rc1, etc.
-    # Explicit alternation avoids backtracking ambiguity on [a-zA-Z]+\d*.
-    return re.sub(r'(?<=\d)(alpha|beta|rc|a|b)\d*$', '', version)
+    return _ATTACHED_SUFFIX_RE.sub('', version)
 
 
 def apply_prerelease_suffix(
