@@ -11,7 +11,7 @@ import json
 import re
 import xml.etree.ElementTree as ET
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Type
 
 import tomlkit
 import yaml
@@ -182,7 +182,7 @@ class VersionHandler(ABC):
             print(f"Updated {file_path}")
 
     def _handle_regex_update(self, file_path: str, pattern: re.Pattern, replacement_func, new_version: str,
-                           variable: str, not_found_message: str = None) -> bool:
+                           variable: str, not_found_message: Optional[str] = None) -> bool:
         """Handle regex-based file updates with standardized error handling.
 
         Args:
@@ -266,7 +266,9 @@ class VersionHandler(ABC):
             print(f"Error reading {file_path}: {e}")
         return None
 
-    def _handle_read_operation(self, file_path: str, operation_func) -> Optional[str]:
+    def _handle_read_operation(
+        self, file_path: str, operation_func: Callable[[], Optional[str]]
+    ) -> Optional[str]:
         """Handle read operations with standardized error handling."""
         try:
             return operation_func()
@@ -699,7 +701,7 @@ class SetupCfgVersionHandler(VersionHandler):
             return False
 
 
-_HANDLER_REGISTRY: Dict[str, type] = {
+_HANDLER_REGISTRY: Dict[str, Type[VersionHandler]] = {
     "python": PythonVersionHandler,
     "toml": TomlVersionHandler,
     "yaml": YamlVersionHandler,

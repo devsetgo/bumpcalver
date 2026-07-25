@@ -111,10 +111,22 @@ make isort      # Sort imports
 make black      # Code formatting
 make autoflake  # Remove unused imports
 make ruff       # Lint and fix
+make mypy       # Type-check src/bumpcalver
 
-# Validate without changes
+# Validate without changes (includes mypy)
 make validate
 ```
+
+#### Type Checking
+
+`src/bumpcalver` is type-checked with `mypy` (config in `pyproject.toml`'s
+`[tool.mypy]`), both as a pre-commit hook and as a standalone `type-check`
+job in CI (`.github/workflows/testing.yml`) — it only needs to run once,
+not across the full OS/Python test matrix, since it checks against a single
+pinned `python_version`. Only `src/bumpcalver` is checked, not `tests/`;
+test code leans on `unittest.mock`/`monkeypatch` patterns that are
+dynamically typed by nature, so checking it doesn't pay for itself the way
+checking the library's public surface does.
 
 #### Code Style Guidelines
 
@@ -223,6 +235,53 @@ def test_your_new_format(self):
         assert date_part == expected_date
         assert build_count == expected_count
 ```
+
+#### Property-Based Tests
+
+Hand-picked example cases (as above) are good at pinning down specific
+known formats, but the format-string-to-regex translation in `utils.py`
+(`parse_version`/`_parse_hybrid_version`/`_clean_version_suffixes`) is
+general enough that bugs tend to hide in combinations nobody thought to
+write an example for — that's exactly how the bug fixed alongside
+`tests/test_version_parsing_properties.py` was found (the CLI's own
+built-in zero-config defaults never actually round-tripped). For this kind
+of "any valid input matching this shape should behave correctly" logic,
+prefer a [Hypothesis](https://hypothesis.readthedocs.io/) property test
+over enumerating more examples by hand:
+
+```python
+# tests/test_version_parsing_properties.py
+from datetime import date
+
+from hypothesis import given, settings
+from hypothesis import strategies as st
+
+from src.bumpcalver.utils import parse_version
+
+_REASONABLE_DATES = st.dates(min_value=date(2000, 1, 1), max_value=date(2099, 12, 31))
+_BUILD_COUNTS = st.integers(min_value=0, max_value=9999)
+
+
+@given(the_date=_REASONABLE_DATES, build_count=_BUILD_COUNTS)
+@settings(max_examples=200)
+def test_dot_separated_calver_round_trips(the_date, build_count):
+    version_format = "{current_date}.{build_count:03}"
+    date_format = "%Y.%m.%d"
+    date_str = the_date.strftime(date_format)
+    version_string = version_format.format(current_date=date_str, build_count=build_count)
+
+    assert parse_version(version_string, version_format, date_format) == (date_str, build_count)
+```
+
+Scope the strategy to a **fixed, known-supported `version_format`/
+`date_format` pair** and randomize the *values* plugged into it (dates,
+counts, semver components) — don't also randomize the format strings
+themselves. Some format combinations are inherently ambiguous to parse
+(that's a property of the format, not a bug), so randomizing format
+strings produces spurious failures unrelated to real parsing bugs. If
+Hypothesis finds a failure, it shrinks to the smallest failing example and
+that's usually enough to see the bug immediately; the `.hypothesis/`
+example database it creates locally is gitignored.
 
 ### Test Data and Isolation
 
