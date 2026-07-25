@@ -130,56 +130,71 @@ The codebase is in good shape overall — the gaps below are refinements, not fi
 
 ## 3. Documentation Improvements
 
-1. **`docs/modules.md` is significantly stale** relative to the current API — this is the
-   most impactful documentation gap found:
-   - `main()` is documented with signature
-     `main(beta: bool, build: bool, timezone: str, git_tag: bool, auto_commit: bool) -> None`
-     ([docs/modules.md:198](docs/modules.md#L198)), but the real signature
-     ([cli.py:79-92](src/bumpcalver/cli.py#L79-L92)) also has `rc`, `release`, `custom`,
-     `undo`, `undo_id`, `list_history`, and `bump` — i.e. the undo/history feature and the
-     hybrid semver `--bump` feature are entirely undocumented here.
-   - `get_current_date()` and `get_current_datetime_version()` are documented without the
-     `date_format` parameter ([docs/modules.md:11](docs/modules.md#L11),
-     [docs/modules.md:41](docs/modules.md#L41)), and `get_current_date` is documented as
-     "Raises: `ZoneInfoNotFoundError`" when the real implementation
-     ([utils.py:308-316](src/bumpcalver/utils.py#L308-L316)) catches that exception
-     internally and falls back to the default timezone instead of raising.
-   - `get_build_version()` is documented with 3 parameters
-     ([docs/modules.md:71](docs/modules.md#L71)); the real function
-     ([utils.py:351-359](src/bumpcalver/utils.py#L351-L359)) takes 7
-     (`date_format`, `major`, `minor`, `patch` are missing from the docs).
-   This page should either be regenerated from the actual source (e.g. via `mkdocstrings`,
-   which is already a project dependency per `requirements.txt` and used elsewhere per
-   `mkdocs.yml`) or removed in favor of the auto-generated API docs so it can't drift again.
+1. ✅ **DONE (2026-07-25) — `docs/modules.md` was significantly stale.** Rather than
+   hand-fixing the stale signatures, replaced the page entirely with `mkdocstrings`
+   `:::` directives pulling live from the actual docstrings (see `docs/modules.md`), so it
+   can't drift again by construction. This also surfaced that the page was orphaned —
+   `mkdocs.yml`'s nav had it commented out under the *wrong filename*
+   (`# - Modules: 'models.md'`, but the real file is `modules.md`) — so it wasn't even
+   linked from the site navigation. Fixed the nav entry and added `paths: [src]` to the
+   `mkdocstrings` python handler config, without which it can't import the src-layout
+   package to introspect it. Also added docstrings to `get_current_date()`, and `main()`
+   in `cli.py`, since mkdocstrings had nothing to render for them (that's why the old page
+   showed `get_current_date` as raising `ZoneInfoNotFoundError` — someone was documenting
+   from reading the code, since there was no docstring to pull from — the docs task itself
+   is what made this bug-class visible). Verified with a real `mkdocs build --strict`; the
+   only remaining warnings are 4 pre-existing ones unrelated to this page (a plugin-ordering
+   warning and two broken links in `index.md`/`calendar-versioning-guide.md` that predate
+   this session and weren't touched).
 
-2. **No auto-generated CLI reference.** The CLI options are hand-documented in both
-   `README.md` and `docs/index.md` (kept in sync manually) and could instead be generated
-   from the `click.Command` itself (e.g. via `mkdocs-click` or a small script that dumps
-   `--help`), eliminating a second place where flags like `--bump`, `--undo-id`, or
-   `--list-history` need to be kept current by hand.
+2. ✅ **DONE (2026-07-25) — No auto-generated CLI reference.** Rather than adding a new
+   `mkdocs-click` dependency, added `docs/cli-reference.md` containing the literal,
+   captured `bumpcalver --help` output, paired with a regression test
+   (`tests/test_docs.py::test_cli_reference_matches_help_output`) that invokes
+   `CliRunner().invoke(main, ["--help"])` and asserts it matches byte-for-byte, plus a
+   companion test asserting every declared Click option string appears in the doc. I
+   verified the test actually catches drift (not just passes trivially) by temporarily
+   adding a fake `--dry-run` option to a scratch copy of `cli.py` and confirming both tests
+   fail with a clear message, then restored the real file and confirmed a clean pass.
 
-3. **`docs/timezones.md` is 3,071 lines** of what appears to be a generated reference table,
-   checked directly into the docs source. A generated `timezones_table.html` already exists
-   alongside it (`docs/timezones_table.html`), suggesting duplication of the same data in two
-   formats. Consider generating both at build time from `zoneinfo`'s available zones rather
-   than committing the large Markdown table, or collapsing the Markdown page to link to the
-   HTML table instead of repeating the content.
+3. **Not done — `docs/timezones.md` is 3,071 lines, duplicating `timezones_table.html`.**
+   Investigated rather than assumed: extracted and diffed the timezone sets from both
+   files — 598 zones each, identical sets, no drift between them. So unlike items 1/2 this
+   isn't a live bug, just static duplication of data that essentially never changes.
+   Properly fixing it would mean building a real generate-at-build-time pipeline (a new
+   mkdocs hook or pre-build script); given the low payoff versus that effort, deliberately
+   deferring rather than doing a partial/risky job on a 3,000-line generated file.
 
-4. **No contributor-facing extension guide** for adding a new file-type handler. The handler
-   registry pattern (`_HANDLER_REGISTRY` in
-   [handlers.py:1016-1027](src/bumpcalver/handlers.py#L1016-L1027)) is simple and easy to
-   extend, but nothing in `CONTRIBUTING.md` or `docs/development-guide.md` walks through
-   "how do I add support for a new file type" (subclass `VersionHandler`, implement
-   `read_version`/`update_version`, register in `_HANDLER_REGISTRY`). This is exactly the
-   kind of contribution the project says it welcomes (`CONTRIBUTING.md` invites people to
-   "Add or improve a function"), so documenting the extension point would lower the barrier.
+4. **Correction, not a fix — the claimed missing contributor extension guide already
+   existed.** On inspection, `docs/development-guide.md`'s existing "File Format Support"
+   section (under "Adding New Features") already walked through subclassing
+   `VersionHandler`, registering in `_HANDLER_REGISTRY`, and adding tests — my original
+   review claim that "nothing... walks through this" was wrong, and I'm correcting the
+   record here rather than claiming credit for writing something that already existed.
+   What *was* missing, and what I actually added: the existing guide's example was a
+   generic `# Implementation` stub with no mention of the base class's real shared helpers
+   (`_read_key_value_file`/`_update_key_value_file`/`_handle_regex_update`, added/
+   discovered during the Refactoring pass in §2). Replaced the stub with a real,
+   **verified-by-actually-running-it** `IniVersionHandler` example reusing
+   `_read_key_value_file`/`_update_key_value_file`, and a verified-working test example
+   using `tmp_path` instead of mocks (matching the pattern the YAML/TOML/XML regression
+   tests already established). Also linked the guide from the `VersionHandler` base-class
+   docstring so it's discoverable from the generated API reference too.
 
-5. **Handler docstrings are heavily repetitive** — nearly every `read_version`/
-   `update_version` method in `handlers.py` repeats the same `Args`/`Returns`/`Raises`
-   boilerplate inherited from the abstract base class
-   ([handlers.py:34-63](src/bumpcalver/handlers.py#L34-L63)). This isn't wrong, but it adds
-   ~500 lines of near-duplicate text that must be kept consistent by hand; relying on the ABC
-   docstring plus a one-line per-format note would be easier to maintain.
+5. ✅ **DONE (2026-07-25) — Handler docstrings were heavily repetitive.** Condensed every
+   concrete handler class's docstring and every `read_version`/`update_version` override
+   in `handlers.py` from the repeated `Args`/`Returns`/`Raises` boilerplate down to one
+   line each, relying on the ABC's docstring (left untouched — it's the one canonical copy,
+   not a repetition) for the shared contract. Deliberately *kept* format-specific facts that
+   aren't part of the generic contract and would otherwise be lost — e.g. that
+   `JsonVersionHandler.variable` is a plain top-level key while `Toml`/`Yaml` accept a
+   dot-separated path, or that `DockerfileVersionHandler` requires a `directive` kwarg.
+   Side effect caught by a real `mkdocs build --strict` run (not just `pytest`): rendering
+   the ABC's abstract methods via mkdocstrings surfaced a `griffe` warning that `**kwargs`
+   had no type annotation ("No type or annotation for parameter '**kwargs'") — fixed by
+   annotating all 23 occurrences across the file as `**kwargs: Any`, verified by diffing
+   the strict-build warning count before/after (6 → 4, with the remaining 4 confirmed
+   pre-existing and unrelated per item 1 above).
 
 ---
 
@@ -466,8 +481,12 @@ If tackling incrementally, the highest-leverage fixes are:
 1. ✅ Fix YAML key-reordering and TOML/XML comment/declaration loss (§2.1–2.3) — these were
    silent data-loss bugs, not just style issues. **Done 2026-07-25.**
 2. ✅ Add the regression tests that would have caught them (§4.1). **Done 2026-07-25.**
-3. Regenerate/fix `docs/modules.md` (§3.1) — it currently misrepresents the public API,
-   including omitting the undo and hybrid-versioning features entirely. **Still open.**
+3. ✅ Regenerate/fix `docs/modules.md` (§3.1) — it used to misrepresent the public API,
+   including omitting the undo and hybrid-versioning features entirely; now generated live
+   from source via `mkdocstrings` so it can't drift again. **Done 2026-07-25**, alongside
+   the rest of the Documentation Improvements pass (§3.1, §3.2, §3.5 done; §3.3 deferred
+   with rationale; §3.4 was already covered, corrected and enriched instead — see their
+   entries above).
 4. Add `mypy` to CI (§4.3) — still open. Fix the Makefile encoding gap (§2.7) — **done
    2026-07-25**, alongside the rest of the Refactoring Opportunities pass (§2.1–2.8; §2.9
    tooling-consolidation intentionally deferred, see its entry above).

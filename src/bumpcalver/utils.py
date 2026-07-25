@@ -324,6 +324,21 @@ def parse_version(version: str, version_format: Optional[str] = None, date_forma
 def get_current_date(
     timezone: str = default_timezone, date_format: str = "%Y.%m.%d"
 ) -> str:
+    """Returns the current date in the specified timezone.
+
+    Falls back to `default_timezone` (printing a warning) if `timezone` isn't
+    a recognized IANA name, rather than raising.
+
+    Args:
+        timezone (str): The IANA timezone name to use (e.g. "Europe/London").
+        date_format (str): The strftime format string for the returned date.
+
+    Returns:
+        str: The current date formatted according to date_format.
+
+    Example:
+        current_date = get_current_date(timezone="UTC")
+    """
     try:
         tz = ZoneInfo(timezone)
     except ZoneInfoNotFoundError:
@@ -335,6 +350,22 @@ def get_current_date(
 def get_current_datetime_version(
     timezone: str = default_timezone, date_format: str = "%Y.%m.%d"
 ) -> str:
+    """Returns the current date/time formatted as a version string.
+
+    Falls back to `default_timezone` (printing a warning) if `timezone` isn't
+    a recognized IANA name, rather than raising. Supports the `%q` quarter
+    placeholder (1-4) in `date_format` in addition to standard strftime codes.
+
+    Args:
+        timezone (str): The IANA timezone name to use (e.g. "Europe/London").
+        date_format (str): The strftime format string; may include `%q`.
+
+    Returns:
+        str: The current date/time formatted according to date_format.
+
+    Example:
+        version = get_current_datetime_version(timezone="UTC", date_format="%y.Q%q")
+    """
     try:
         tz = ZoneInfo(timezone)
     except ZoneInfoNotFoundError:
