@@ -12,16 +12,21 @@ import unittest
 from datetime import datetime
 from unittest import mock
 
-from src.bumpcalver.backup_utils import BackupManager, backup_files_before_update, generate_operation_id
+from src.bumpcalver.backup_utils import (
+    BackupManager,
+    backup_files_before_update,
+    generate_operation_id,
+)
 from src.bumpcalver.undo_utils import (
     list_undo_history,
     restore_files_from_backups,
-    undo_last_operation,
-    undo_operation_by_id,
-    undo_operation,
     undo_git_operations,
+    undo_last_operation,
+    undo_operation,
+    undo_operation_by_id,
 )
-from tests.test_utils_isolated import isolated_test_environment, create_test_file
+
+from tests.test_utils_isolated import create_test_file, isolated_test_environment
 
 
 class TestBackupManager(unittest.TestCase):
@@ -32,7 +37,9 @@ class TestBackupManager(unittest.TestCase):
         self.temp_dir = tempfile.mkdtemp()
         # Use a temporary history file to ensure test isolation
         self.history_file = os.path.join(self.temp_dir, "test-history.json")
-        self.backup_manager = BackupManager(backup_dir=self.temp_dir, history_file=self.history_file)
+        self.backup_manager = BackupManager(
+            backup_dir=self.temp_dir, history_file=self.history_file
+        )
 
     def tearDown(self):
         """Clean up test fixtures."""
@@ -53,7 +60,7 @@ class TestBackupManager(unittest.TestCase):
                 self.assertTrue(os.path.exists(backup_path))
 
                 # Verify backup content matches original
-                with open(backup_path, 'r') as f:
+                with open(backup_path, "r") as f:
                     content = f.read()
                 self.assertIn("__version__ = '1.0.0'", content)
 
@@ -79,7 +86,7 @@ class TestBackupManager(unittest.TestCase):
             git_tag=True,
             git_commit=True,
             git_commit_hash="abc123",
-            git_tag_name="v2025.10.12.001"
+            git_tag_name="v2025.10.12.001",
         )
 
         # Retrieve history
@@ -111,7 +118,7 @@ class TestBackupManager(unittest.TestCase):
                 operation_id=f"op_{i}",
                 version=f"2025.10.12.{i:03d}",
                 files_updated=[f"file{i}.py"],
-                backups={f"file{i}.py": f"backup{i}.py"}
+                backups={f"file{i}.py": f"backup{i}.py"},
             )
 
         # Get latest operation
@@ -129,7 +136,7 @@ class TestBackupManager(unittest.TestCase):
                 operation_id=f"op_{i}",
                 version=f"2025.10.12.{i:03d}",
                 files_updated=[f"file{i}.py"],
-                backups={f"file{i}.py": f"backup{i}.py"}
+                backups={f"file{i}.py": f"backup{i}.py"},
             )
 
         # Verify history is limited
@@ -181,13 +188,13 @@ class TestBackupManager(unittest.TestCase):
 
     def test_cleanup_old_backups_exception_handling(self):
         """Test cleanup handles exceptions gracefully."""
-        with mock.patch('os.listdir', side_effect=OSError("Permission denied")):
+        with mock.patch("os.listdir", side_effect=OSError("Permission denied")):
             # Should not raise exception
             self.backup_manager.cleanup_old_backups()
 
     def test_backup_manager_mkdir_exception(self):
         """Test BackupManager handles directory creation exceptions."""
-        with mock.patch('pathlib.Path.mkdir', side_effect=OSError("Permission denied")):
+        with mock.patch("pathlib.Path.mkdir", side_effect=OSError("Permission denied")):
             # Should still create the manager, but directory creation might fail
             try:
                 BackupManager(backup_dir="/invalid/path/backups")
@@ -224,7 +231,7 @@ class TestBackupUtilities(unittest.TestCase):
 
             file_configs = [
                 {"path": file1, "file_type": "python", "variable": "__version__"},
-                {"path": file2, "file_type": "toml", "variable": "version"}
+                {"path": file2, "file_type": "toml", "variable": "version"},
             ]
 
             # Create backups
@@ -252,7 +259,7 @@ class TestBackupUtilities(unittest.TestCase):
 
             file_configs = [
                 {"path": existing_file, "file_type": "python", "variable": "__version__"},
-                {"path": nonexistent_file, "file_type": "python", "variable": "__version__"}
+                {"path": nonexistent_file, "file_type": "python", "variable": "__version__"},
             ]
 
             backups, returned_manager = backup_files_before_update(file_configs, backup_manager)
@@ -261,7 +268,9 @@ class TestBackupUtilities(unittest.TestCase):
             self.assertIsInstance(backups, dict)
             self.assertEqual(len(backups), 1)  # Only the existing file should be backed up
             self.assertIn(existing_file, backups)
-            self.assertNotIn(nonexistent_file, backups)  # Non-existent file should not be in backups
+            self.assertNotIn(
+                nonexistent_file, backups
+            )  # Non-existent file should not be in backups
 
     def test_backup_files_before_update_empty_list(self):
         """Test backup_files_before_update with empty file list."""
@@ -286,7 +295,7 @@ class TestBackupUtilities(unittest.TestCase):
             history_file = os.path.join(temp_dir, "invalid-history.json")
 
             # Create invalid JSON file
-            with open(history_file, 'w') as f:
+            with open(history_file, "w") as f:
                 f.write("invalid json content {")
 
             backup_manager = BackupManager(backup_dir=temp_dir, history_file=history_file)
@@ -301,14 +310,14 @@ class TestBackupUtilities(unittest.TestCase):
             backup_manager = BackupManager(backup_dir=temp_dir, history_file=history_file)
 
             # Mock json.dump to raise exception
-            with mock.patch('json.dump', side_effect=OSError("Permission denied")):
+            with mock.patch("json.dump", side_effect=OSError("Permission denied")):
                 # Should not raise exception
                 backup_manager.store_operation_history(
                     operation_id="test_op",
                     version="1.0.0",
                     files_updated=["test.py"],
                     backups={"test.py": "backup.py"},
-                    git_tag=False
+                    git_tag=False,
                 )
 
     def test_backup_manager_get_latest_operation_empty_history(self):
@@ -329,7 +338,7 @@ class TestBackupUtilities(unittest.TestCase):
             source_file = create_test_file(temp_dir, "source.py", "content")
 
             # Mock shutil.copy2 to raise exception
-            with mock.patch('shutil.copy2', side_effect=OSError("Permission denied")):
+            with mock.patch("shutil.copy2", side_effect=OSError("Permission denied")):
                 result = backup_manager.create_backup(source_file)
                 self.assertIsNone(result)
 
@@ -340,7 +349,7 @@ class TestBackupUtilities(unittest.TestCase):
             backup_manager = BackupManager(backup_dir=temp_dir, history_file=history_file)
 
             # Mock open to raise exception
-            with mock.patch('builtins.open', side_effect=OSError("Permission denied")):
+            with mock.patch("builtins.open", side_effect=OSError("Permission denied")):
                 history = backup_manager.get_operation_history()
                 self.assertEqual(history, [])
 
@@ -355,12 +364,12 @@ class TestBackupUtilities(unittest.TestCase):
 
     def test_undo_git_operations_not_git_repo(self):
         """Test undo_git_operations when not in a git repository."""
-        with mock.patch('subprocess.run', side_effect=subprocess.CalledProcessError(1, ['git'])):
+        with mock.patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, ["git"])):
             operation = {
                 "git_commit": True,
                 "git_commit_hash": "abc123",
                 "git_tag": True,
-                "git_tag_name": "v1.0.0"
+                "git_tag_name": "v1.0.0",
             }
 
             result = undo_git_operations(operation)
@@ -368,6 +377,7 @@ class TestBackupUtilities(unittest.TestCase):
 
     def test_undo_git_operations_commit_hash_mismatch(self):
         """Test undo_git_operations when commit hash doesn't match."""
+
         def mock_run_side_effect(cmd, **kwargs):
             mock_result = mock.Mock()
             mock_result.returncode = 0
@@ -380,18 +390,15 @@ class TestBackupUtilities(unittest.TestCase):
 
             return mock_result
 
-        with mock.patch('subprocess.run', side_effect=mock_run_side_effect):
-            operation = {
-                "git_commit": True,
-                "git_commit_hash": "abc123",
-                "git_tag": False
-            }
+        with mock.patch("subprocess.run", side_effect=mock_run_side_effect):
+            operation = {"git_commit": True, "git_commit_hash": "abc123", "git_tag": False}
 
             result = undo_git_operations(operation)
             self.assertTrue(result)  # Should succeed but skip reset
 
     def test_undo_git_operations_tag_not_found(self):
         """Test undo_git_operations when git tag is not found."""
+
         def mock_run_side_effect(cmd, **kwargs):
             mock_result = mock.Mock()
             mock_result.returncode = 0
@@ -404,15 +411,13 @@ class TestBackupUtilities(unittest.TestCase):
 
             return mock_result
 
-        with mock.patch('subprocess.run', side_effect=mock_run_side_effect):
-            operation = {
-                "git_commit": False,
-                "git_tag": True,
-                "git_tag_name": "v1.0.0"
-            }
+        with mock.patch("subprocess.run", side_effect=mock_run_side_effect):
+            operation = {"git_commit": False, "git_tag": True, "git_tag_name": "v1.0.0"}
 
             result = undo_git_operations(operation)
             self.assertTrue(result)  # Should succeed but skip tag deletion
+
+
 class TestUndoUtilities(unittest.TestCase):
     """Test cases for undo utility functions."""
 
@@ -437,7 +442,7 @@ class TestUndoUtilities(unittest.TestCase):
 
             if backup_path is not None:  # Type guard
                 # Modify original file
-                with open(original_file, 'w') as f:
+                with open(original_file, "w") as f:
                     f.write("__version__ = '2.0.0'\n")
 
                 # Restore from backup
@@ -446,7 +451,7 @@ class TestUndoUtilities(unittest.TestCase):
 
                 # Verify restoration
                 self.assertTrue(success)
-                with open(original_file, 'r') as f:
+                with open(original_file, "r") as f:
                     content = f.read()
                 self.assertIn("__version__ = '1.0.0'", content)
 
@@ -461,8 +466,8 @@ class TestUndoUtilities(unittest.TestCase):
 
             self.assertFalse(success)
 
-    @mock.patch('src.bumpcalver.undo_utils.restore_files_from_backups')
-    @mock.patch('src.bumpcalver.undo_utils.undo_git_operations')
+    @mock.patch("src.bumpcalver.undo_utils.restore_files_from_backups")
+    @mock.patch("src.bumpcalver.undo_utils.undo_git_operations")
     def test_undo_last_operation(self, mock_undo_git, mock_restore_files):
         """Test undoing the last operation."""
         # Set up mock returns
@@ -475,7 +480,7 @@ class TestUndoUtilities(unittest.TestCase):
             version="2025.10.12.001",
             files_updated=["test.py"],
             backups={"test.py": "backup.py"},
-            git_tag=True
+            git_tag=True,
         )
 
         # Test undo
@@ -490,7 +495,7 @@ class TestUndoUtilities(unittest.TestCase):
         success = undo_operation_by_id("nonexistent_id", self.backup_manager)
         self.assertFalse(success)
 
-    @mock.patch('subprocess.run')
+    @mock.patch("subprocess.run")
     def test_undo_git_operations_tag_deletion(self, mock_run):
         """Test undoing git tag operations."""
         from src.bumpcalver.undo_utils import undo_git_operations
@@ -502,14 +507,10 @@ class TestUndoUtilities(unittest.TestCase):
             # git tag -l <tag_name>
             mock.Mock(stdout="v1.0.0\n", returncode=0),
             # git tag -d <tag_name>
-            mock.Mock(returncode=0)
+            mock.Mock(returncode=0),
         ]
 
-        operation = {
-            "git_tag": True,
-            "git_tag_name": "v1.0.0",
-            "git_commit": False
-        }
+        operation = {"git_tag": True, "git_tag_name": "v1.0.0", "git_commit": False}
 
         success = undo_git_operations(operation)
         self.assertTrue(success)
@@ -517,11 +518,12 @@ class TestUndoUtilities(unittest.TestCase):
         # Verify git commands were called
         self.assertEqual(mock_run.call_count, 3)
 
-    @mock.patch('builtins.print')
+    @mock.patch("builtins.print")
     def test_list_undo_history_empty(self, mock_print):
         """Test listing undo history when empty."""
         # Create a fresh backup manager with empty directory and history file
         import tempfile
+
         temp_dir = tempfile.mkdtemp()
         history_file = os.path.join(temp_dir, "test-history.json")
         empty_backup_manager = BackupManager(backup_dir=temp_dir, history_file=history_file)
@@ -531,11 +533,12 @@ class TestUndoUtilities(unittest.TestCase):
         # Should print message about no operations
         mock_print.assert_any_call("No operations found in history")
 
-    @mock.patch('builtins.print')
+    @mock.patch("builtins.print")
     def test_list_undo_history_with_operations(self, mock_print):
         """Test listing undo history with operations."""
         # Create a fresh backup manager with isolated history file
         import tempfile
+
         temp_dir = tempfile.mkdtemp()
         history_file = os.path.join(temp_dir, "test-history.json")
         test_backup_manager = BackupManager(backup_dir=temp_dir, history_file=history_file)
@@ -547,7 +550,7 @@ class TestUndoUtilities(unittest.TestCase):
                 version=f"2025.10.12.{i:03d}",
                 files_updated=[f"file{i}.py"],
                 backups={f"file{i}.py": f"backup{i}.py"},
-                git_tag=(i % 2 == 0)  # Alternate git tag
+                git_tag=(i % 2 == 0),  # Alternate git tag
             )
 
         list_undo_history(test_backup_manager, limit=5)
@@ -570,7 +573,7 @@ class TestUndoUtilities(unittest.TestCase):
             self.assertIsNotNone(backup_path)
 
             # Modify original file
-            with open(original_file, 'w') as f:
+            with open(original_file, "w") as f:
                 f.write("__version__ = '2.0.0'\n")
 
             # Store operation - ensure backup_path is not None
@@ -580,19 +583,20 @@ class TestUndoUtilities(unittest.TestCase):
                     version="2.0.0",
                     files_updated=[original_file],
                     backups={original_file: backup_path},
-                    git_tag=False
-                )            # Undo by ID
+                    git_tag=False,
+                )  # Undo by ID
             result = undo_operation_by_id("test_op_123", backup_manager)
             self.assertTrue(result)
 
             # Verify file was restored
-            with open(original_file, 'r') as f:
+            with open(original_file, "r") as f:
                 content = f.read()
             self.assertIn("1.0.0", content)
 
-    @mock.patch('subprocess.run')
+    @mock.patch("subprocess.run")
     def test_undo_git_operations_commit_and_tag(self, mock_run):
         """Test undoing both git commit and tag."""
+
         # Mock the subprocess calls in order
         def mock_run_side_effect(cmd, **kwargs):
             mock_result = mock.Mock()
@@ -622,7 +626,7 @@ class TestUndoUtilities(unittest.TestCase):
             "git_commit": True,
             "git_commit_hash": "abc123",
             "git_tag": True,
-            "git_tag_name": "v1.0.0"
+            "git_tag_name": "v1.0.0",
         }
 
         result = undo_git_operations(operation)
@@ -639,9 +643,10 @@ class TestUndoUtilities(unittest.TestCase):
         self.assertEqual(calls[3][0][0], ["git", "rev-parse", "HEAD"])
         self.assertEqual(calls[4][0][0], ["git", "reset", "--soft", "HEAD~1"])
 
-    @mock.patch('subprocess.run')
+    @mock.patch("subprocess.run")
     def test_undo_git_operations_commit_only(self, mock_run):
         """Test undoing only git commit."""
+
         def mock_run_side_effect(cmd, **kwargs):
             mock_result = mock.Mock()
             mock_result.returncode = 0
@@ -660,11 +665,7 @@ class TestUndoUtilities(unittest.TestCase):
 
         mock_run.side_effect = mock_run_side_effect
 
-        operation = {
-            "git_commit": True,
-            "git_commit_hash": "abc123",
-            "git_tag": False
-        }
+        operation = {"git_commit": True, "git_commit_hash": "abc123", "git_tag": False}
 
         result = undo_git_operations(operation)
         self.assertTrue(result)
@@ -676,9 +677,10 @@ class TestUndoUtilities(unittest.TestCase):
         self.assertEqual(calls[1][0][0], ["git", "rev-parse", "HEAD"])
         self.assertEqual(calls[2][0][0], ["git", "reset", "--soft", "HEAD~1"])
 
-    @mock.patch('subprocess.run')
+    @mock.patch("subprocess.run")
     def test_undo_git_operations_tag_only(self, mock_run):
         """Test undoing only git tag."""
+
         def mock_run_side_effect(cmd, **kwargs):
             mock_result = mock.Mock()
             mock_result.returncode = 0
@@ -697,11 +699,7 @@ class TestUndoUtilities(unittest.TestCase):
 
         mock_run.side_effect = mock_run_side_effect
 
-        operation = {
-            "git_commit": False,
-            "git_tag": True,
-            "git_tag_name": "v1.0.0"
-        }
+        operation = {"git_commit": False, "git_tag": True, "git_tag_name": "v1.0.0"}
 
         result = undo_git_operations(operation)
         self.assertTrue(result)
@@ -713,9 +711,10 @@ class TestUndoUtilities(unittest.TestCase):
         self.assertEqual(calls[1][0][0], ["git", "tag", "-l", "v1.0.0"])
         self.assertEqual(calls[2][0][0], ["git", "tag", "-d", "v1.0.0"])
 
-    @mock.patch('subprocess.run')
+    @mock.patch("subprocess.run")
     def test_undo_git_operations_failure(self, mock_run):
         """Test handling of git operation failures."""
+
         def mock_run_side_effect(cmd, **kwargs):
             mock_result = mock.Mock()
 
@@ -736,21 +735,14 @@ class TestUndoUtilities(unittest.TestCase):
 
         mock_run.side_effect = mock_run_side_effect
 
-        operation = {
-            "git_commit": False,
-            "git_tag": True,
-            "git_tag_name": "v1.0.0"
-        }
+        operation = {"git_commit": False, "git_tag": True, "git_tag_name": "v1.0.0"}
 
         result = undo_git_operations(operation)
         self.assertFalse(result)
 
     def test_undo_git_operations_no_git_operations(self):
         """Test when no git operations need to be undone."""
-        operation = {
-            "git_commit": False,
-            "git_tag": False
-        }
+        operation = {"git_commit": False, "git_tag": False}
 
         result = undo_git_operations(operation)
         self.assertTrue(result)  # Should succeed when nothing to undo
@@ -762,9 +754,7 @@ class TestUndoUtilities(unittest.TestCase):
 
     def test_restore_files_backup_not_exists(self):
         """Test restore_files_from_backups with non-existent backup."""
-        backups = {
-            "original.py": "/nonexistent/backup.py"
-        }
+        backups = {"original.py": "/nonexistent/backup.py"}
 
         result = restore_files_from_backups(backups)
         self.assertFalse(result)
@@ -775,10 +765,8 @@ class TestUndoUtilities(unittest.TestCase):
             backup_file = create_test_file(temp_dir, "backup.py", "content")
 
             # Mock shutil.copy2 to raise exception
-            with mock.patch('shutil.copy2', side_effect=OSError("Permission denied")):
-                backups = {
-                    "original.py": backup_file
-                }
+            with mock.patch("shutil.copy2", side_effect=OSError("Permission denied")):
+                backups = {"original.py": backup_file}
 
                 result = restore_files_from_backups(backups)
                 self.assertFalse(result)
@@ -790,8 +778,8 @@ class TestUndoUtilities(unittest.TestCase):
             backup_manager = BackupManager(backup_dir=temp_dir, history_file=history_file)
 
             # Mock open to raise IOError to test the print statement (line 225)
-            with mock.patch('builtins.open', side_effect=IOError("Permission denied")):
-                with mock.patch('builtins.print') as mock_print:
+            with mock.patch("builtins.open", side_effect=IOError("Permission denied")):
+                with mock.patch("builtins.print") as mock_print:
                     backup_manager._save_history([{"test": "data"}])
                     # Verify the error message was printed (line 225)
                     mock_print.assert_called_with("Failed to save history: Permission denied")
@@ -802,7 +790,9 @@ class TestUndoUtilities(unittest.TestCase):
             backup_manager = BackupManager(backup_dir=temp_dir)
 
             # Mock _load_history to raise exception
-            with mock.patch.object(backup_manager, '_load_history', side_effect=Exception("Test error")):
+            with mock.patch.object(
+                backup_manager, "_load_history", side_effect=Exception("Test error")
+            ):
                 history = backup_manager.get_operation_history()
                 self.assertEqual(history, [])
 
@@ -836,7 +826,7 @@ class TestUndoUtilities(unittest.TestCase):
             test_file.touch()
 
             # Mock stat to raise exception
-            with mock.patch('pathlib.Path.stat', side_effect=OSError("Permission denied")):
+            with mock.patch("pathlib.Path.stat", side_effect=OSError("Permission denied")):
                 # Should not raise exception
                 backup_manager.cleanup_old_backups()
 
@@ -846,13 +836,15 @@ class TestUndoUtilities(unittest.TestCase):
             backup_manager = BackupManager(backup_dir=temp_dir)
 
             # Mock _save_history to raise exception
-            with mock.patch.object(backup_manager, '_save_history', side_effect=Exception("Save error")):
+            with mock.patch.object(
+                backup_manager, "_save_history", side_effect=Exception("Save error")
+            ):
                 # Should not raise exception
                 backup_manager.store_operation_history(
                     operation_id="test-123",
                     version="1.0.0",
                     files_updated=["test.py"],
-                    backups={"test.py": "backup.py"}
+                    backups={"test.py": "backup.py"},
                 )
 
     def test_undo_operation_by_id_not_found_coverage(self):
@@ -891,7 +883,7 @@ class TestUndoUtilities(unittest.TestCase):
                 git_tag=True,
                 git_commit=True,
                 git_tag_name="v1.0.0",
-                git_commit_hash="abc123"
+                git_commit_hash="abc123",
             )
 
             # Should not raise exception
@@ -920,9 +912,7 @@ class TestUndoUtilities(unittest.TestCase):
             # Create a test file
             test_file = create_test_file(temp_dir, "test.py", "content")
 
-            file_configs = [
-                {"path": test_file, "file_type": "python"}
-            ]
+            file_configs = [{"path": test_file, "file_type": "python"}]
 
             # Call without backup_manager to trigger line 225
             backups, returned_manager = backup_files_before_update(file_configs)
@@ -948,17 +938,18 @@ class TestUndoUtilities(unittest.TestCase):
                 "git_tag": True,
                 "git_commit": True,
                 "git_tag_name": "v1.0.0",
-                "git_commit_hash": "abc123"
+                "git_commit_hash": "abc123",
             }
 
             # Mock undo_git_operations to return False (failure)
-            with mock.patch('src.bumpcalver.undo_utils.undo_git_operations', return_value=False):
+            with mock.patch("src.bumpcalver.undo_utils.undo_git_operations", return_value=False):
                 result = undo_operation(operation, backup_manager)
                 # Should return False because git operations failed (line 99)
                 self.assertFalse(result)
 
     def test_undo_git_operations_commit_safety_check(self):
         """Test undo_git_operations safety check for commit reset."""
+
         def mock_run_side_effect(cmd, **kwargs):
             mock_result = mock.Mock()
             mock_result.returncode = 0
@@ -971,12 +962,12 @@ class TestUndoUtilities(unittest.TestCase):
 
             return mock_result
 
-        with mock.patch('subprocess.run', side_effect=mock_run_side_effect):
-            with mock.patch('builtins.print') as mock_print:
+        with mock.patch("subprocess.run", side_effect=mock_run_side_effect):
+            with mock.patch("builtins.print") as mock_print:
                 operation = {
                     "git_commit": True,
                     "git_tag": False,
-                    "git_commit_hash": "abc123456789abcdef0000"
+                    "git_commit_hash": "abc123456789abcdef0000",
                 }
 
                 result = undo_git_operations(operation)
@@ -984,7 +975,11 @@ class TestUndoUtilities(unittest.TestCase):
                 self.assertTrue(result)
 
                 # Verify the safety messages were printed
-                mock_print.assert_any_call("Current HEAD (differen) is not the expected commit (abc12345)")
+                mock_print.assert_any_call(
+                    "Current HEAD (differen) is not the expected commit (abc12345)"
+                )
                 mock_print.assert_any_call("Skipping commit reset for safety")
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     unittest.main()

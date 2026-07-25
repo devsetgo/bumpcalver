@@ -252,6 +252,23 @@ rather than hand-copied here.
 - `--auto-commit` / `--no-auto-commit`: Forces auto-commit on or off, overriding the configuration.
 - `--dry-run`: Prints the version that would be set and which files would change, without writing anything or creating a git tag/commit.
 - `--config-file PATH`: Use a specific `pyproject.toml`/`bumpcalver.toml` instead of auto-discovering one in the current directory (also settable via the `BUMPCALVER_CONFIG` environment variable). File paths inside that config resolve relative to the config file's own directory — handy for monorepo tooling or wrapper scripts invoking `bumpcalver` from elsewhere. Cannot be combined with the undo options below.
+- `--json`: Emit a single JSON object with the result to stdout instead of human-readable log lines (those move to stderr). See [Machine-Readable Output](#machine-readable-output) below. Cannot be combined with the undo options below.
+
+### Machine-Readable Output
+
+Pass `--json` for a script-friendly result instead of log lines — useful in CI
+to capture the computed version, or to check which files actually changed:
+
+```bash
+bumpcalver --build --json 2>/dev/null
+# {"version": "2026.07.25.001", "files_updated": ["src/myapp/__init__.py"], "operation_id": "20260725_120000_000", "git_tag": null, "git_commit_hash": null}
+```
+
+Works the same way with `--dry-run` (`{"dry_run": true, ...}`), a no-op bump
+(`{"no_op": true, ...}`), or an error (`{"error": "..."}` with a non-zero exit
+code) — stdout is always exactly one JSON object, never a mix of log lines and
+data. See the [CLI Reference](cli-reference.md#machine-readable-output-json)
+for the full payload shape of each case.
 
 ### Undo Options
 
@@ -297,6 +314,16 @@ To bump the version, commit changes, and create a Git tag:
 
 ```bash
 bumpcalver --build --git-tag --auto-commit
+```
+
+### Capturing the New Version in CI
+
+Use `--json` plus [`jq`](https://jqlang.org/) (or any JSON tool) to feed the
+computed version into later pipeline steps, e.g. a GitHub Actions step output:
+
+```bash
+VERSION=$(bumpcalver --build --json 2>/dev/null | jq -r '.version')
+echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 ```
 
 ### Undo Operations

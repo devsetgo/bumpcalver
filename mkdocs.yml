@@ -29,6 +29,12 @@ nav:
       - About: 'about.md'
       - Contributing: 'contribute.md'
     - Release Notes: release-notes.md
+
+# Build hooks (see scripts/mkdocs_hooks.py — generates the timezones.md table
+# at build time instead of it being hand-duplicated in the repo)
+hooks:
+    - scripts/mkdocs_hooks.py
+
 # Theme
 theme:
   features:

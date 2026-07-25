@@ -17,7 +17,8 @@ Usage: bumpcalver [OPTIONS]
   creates a git tag and/or commit — or preview with `--dry-run` instead of
   writing anything. Undo a previous run with `--undo`, `--undo-id`, or `--list-
   history` (mutually exclusive with every version-bump option, including `--dry-
-  run`).
+  run`). Pass `--json` for a single machine-readable JSON result on stdout
+  instead of the log lines below.
 
 Options:
   -V, --version                   Show the version and exit.
@@ -45,6 +46,10 @@ Options:
                                   paths inside it are resolved relative to the
                                   config file's own directory, not the current
                                   directory.
+  --json                          Emit a single JSON object with the result to
+                                  stdout instead of human-readable log lines
+                                  (those move to stderr). Not compatible with
+                                  --undo/--undo-id/--list-history.
   --help                          Show this message and exit.
 ```
 
@@ -64,6 +69,38 @@ Options:
   current directory. File paths inside that config — and the undo
   backups/history for the resulting operation — resolve relative to the
   config file's own directory, not wherever `bumpcalver` was invoked from.
+- `--json` emits exactly one JSON object on stdout and moves every other log
+  line to stderr — see [Machine-Readable Output](#machine-readable-output-json)
+  below for the payload shape and examples. Not compatible with
+  `--undo`/`--undo-id`/`--list-history` (those commands don't return
+  structured data yet).
 - See the [Configuration](index.md#configuration-options) section for the
   corresponding `pyproject.toml`/`bumpcalver.toml` settings (`version_format`,
   `beta_format`, `rc_format`, `release_format`, `major`/`minor`/`patch`, etc.).
+
+## Machine-Readable Output (`--json`)
+
+Pass `--json` to get a single JSON object on stdout instead of the
+human-readable log lines above (those move to stderr — pipe them away with
+`2>/dev/null` for fully quiet output, or keep them for debugging). Useful for
+CI steps that need the computed version, or scripts that want to react to
+which files actually changed.
+
+A normal bump:
+
+```console
+$ bumpcalver --build --json 2>/dev/null
+{"version": "2026.07.25.001", "files_updated": ["src/myapp/__init__.py"], "operation_id": "20260725_120000_000", "git_tag": null, "git_commit_hash": null}
+```
+
+`--dry-run --json` (no files are written):
+
+```console
+$ bumpcalver --build --dry-run --json 2>/dev/null
+{"dry_run": true, "version": "2026.07.25.001", "files_that_would_change": ["src/myapp/__init__.py"], "git_tag_would_create": null, "auto_commit": false}
+```
+
+If every configured file already contains the computed version, or an error
+occurs, `--json` still emits exactly one object (`{"no_op": true, ...}` or
+`{"error": "..."}` respectively, the latter with a non-zero exit code) — a
+caller never has to guess whether stdout is JSON or not.

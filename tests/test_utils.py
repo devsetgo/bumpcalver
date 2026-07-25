@@ -71,7 +71,10 @@ def test_parse_version_invalid_format(capsys):
     result = parse_version(version)
     assert result is None
     captured = capsys.readouterr()
-    assert "Version 'v1.0.0' does not match expected format 'YYYY-MM-DD' or 'YYYY-MM-DD-XXX'." in captured.out
+    assert (
+        "Version 'v1.0.0' does not match expected format 'YYYY-MM-DD' or 'YYYY-MM-DD-XXX'."
+        in captured.out
+    )
 
 
 def test_parse_version_with_quarter_format():
@@ -170,9 +173,7 @@ def test_get_build_version_version_exists_today(monkeypatch):
 
     mock_handler = mock.Mock()
     mock_handler.read_version.return_value = "2023-10-11-1"
-    monkeypatch.setattr(
-        "src.bumpcalver.utils.get_version_handler", lambda ft: mock_handler
-    )
+    monkeypatch.setattr("src.bumpcalver.utils.get_version_handler", lambda ft: mock_handler)
 
     file_config = {
         "path": "dummy_path",
@@ -193,9 +194,7 @@ def test_get_build_version_multidot_date_increments(monkeypatch):
 
     mock_handler = mock.Mock()
     mock_handler.read_version.return_value = "26.3.7.1"
-    monkeypatch.setattr(
-        "src.bumpcalver.utils.get_version_handler", lambda ft: mock_handler
-    )
+    monkeypatch.setattr("src.bumpcalver.utils.get_version_handler", lambda ft: mock_handler)
 
     file_config = {
         "path": "dummy_path",
@@ -215,9 +214,7 @@ def test_get_build_version_version_exists_not_today(monkeypatch):
 
     mock_handler = mock.Mock()
     mock_handler.read_version.return_value = "2023-10-10-5"
-    monkeypatch.setattr(
-        "src.bumpcalver.utils.get_version_handler", lambda ft: mock_handler
-    )
+    monkeypatch.setattr("src.bumpcalver.utils.get_version_handler", lambda ft: mock_handler)
 
     file_config = {
         "path": "dummy_path",
@@ -237,9 +234,7 @@ def test_get_build_version_version_not_found(monkeypatch, capsys):
 
     mock_handler = mock.Mock()
     mock_handler.read_version.return_value = None
-    monkeypatch.setattr(
-        "src.bumpcalver.utils.get_version_handler", lambda ft: mock_handler
-    )
+    monkeypatch.setattr("src.bumpcalver.utils.get_version_handler", lambda ft: mock_handler)
 
     file_config = {
         "path": "dummy_path",
@@ -265,9 +260,7 @@ def test_get_build_version_invalid_version_format(monkeypatch, capsys):
 
     mock_handler = mock.Mock()
     mock_handler.read_version.return_value = "v1.0.0"
-    monkeypatch.setattr(
-        "src.bumpcalver.utils.get_version_handler", lambda ft: mock_handler
-    )
+    monkeypatch.setattr("src.bumpcalver.utils.get_version_handler", lambda ft: mock_handler)
 
     file_config = {
         "path": "dummy_path",
@@ -279,7 +272,10 @@ def test_get_build_version_invalid_version_format(monkeypatch, capsys):
     assert result == "2023-10-11-1"
 
     captured = capsys.readouterr()
-    assert "File 'dummy_path': Version 'v1.0.0' does not match expected format. Expected format: '{current_date}-{build_count}' with date format: '%Y-%m-%d'." in captured.out
+    assert (
+        "File 'dummy_path': Version 'v1.0.0' does not match expected format. Expected format: '{current_date}-{build_count}' with date format: '%Y-%m-%d'."
+        in captured.out
+    )
 
 
 def test_get_build_version_exception_during_read(monkeypatch, capsys):
@@ -290,9 +286,7 @@ def test_get_build_version_exception_during_read(monkeypatch, capsys):
 
     mock_handler = mock.Mock()
     mock_handler.read_version.side_effect = Exception("Read error")
-    monkeypatch.setattr(
-        "src.bumpcalver.utils.get_version_handler", lambda ft: mock_handler
-    )
+    monkeypatch.setattr("src.bumpcalver.utils.get_version_handler", lambda ft: mock_handler)
 
     file_config = {
         "path": "dummy_path",
@@ -304,7 +298,10 @@ def test_get_build_version_exception_during_read(monkeypatch, capsys):
     assert result == "2023-10-11-1"
 
     captured = capsys.readouterr()
-    assert "File 'dummy_path': Error reading version - Read error. Starting new versioning with format 'YYYY-MM-DD-XXX'." in captured.out
+    assert (
+        "File 'dummy_path': Error reading version - Read error. Starting new versioning with format 'YYYY-MM-DD-XXX'."
+        in captured.out
+    )
 
 
 def test_get_build_version_with_directive(monkeypatch):
@@ -315,9 +312,7 @@ def test_get_build_version_with_directive(monkeypatch):
 
     mock_handler = mock.Mock()
     mock_handler.read_version.return_value = "2023-10-11-1"
-    monkeypatch.setattr(
-        "src.bumpcalver.utils.get_version_handler", lambda ft: mock_handler
-    )
+    monkeypatch.setattr("src.bumpcalver.utils.get_version_handler", lambda ft: mock_handler)
 
     file_config = {
         "path": "dummy_path",
@@ -329,9 +324,7 @@ def test_get_build_version_with_directive(monkeypatch):
     result = get_build_version(file_config, version_format, "UTC", "%Y-%m-%d")
     assert result == "2023-10-11-2"
 
-    mock_handler.read_version.assert_called_with(
-        "dummy_path", "VERSION", directive="ARG"
-    )
+    mock_handler.read_version.assert_called_with("dummy_path", "VERSION", directive="ARG")
 
 
 def test_get_build_version_with_pattern(monkeypatch):
@@ -350,9 +343,7 @@ def test_get_build_version_with_pattern(monkeypatch):
 
     mock_handler = mock.Mock()
     mock_handler.read_version.return_value = "2023-10-11-1"
-    monkeypatch.setattr(
-        "src.bumpcalver.utils.get_version_handler", lambda ft: mock_handler
-    )
+    monkeypatch.setattr("src.bumpcalver.utils.get_version_handler", lambda ft: mock_handler)
 
     file_config = {
         "path": "version.rb",
@@ -398,26 +389,34 @@ def test_get_build_version_regex_handler_end_to_end_increments_same_day(tmp_path
 # _clean_version_suffixes — PEP 440 attached pre-release forms
 # ---------------------------------------------------------------------------
 
+
 def test_clean_version_suffixes_dot_beta():
     assert _clean_version_suffixes("26.05.24.1.beta") == "26.05.24.1"
+
 
 def test_clean_version_suffixes_dot_rc1():
     assert _clean_version_suffixes("26.05.24.1.rc1") == "26.05.24.1"
 
+
 def test_clean_version_suffixes_pep440_b1():
     assert _clean_version_suffixes("26.05.24.1b1") == "26.05.24.1"
+
 
 def test_clean_version_suffixes_pep440_a1():
     assert _clean_version_suffixes("26.05.24.1a1") == "26.05.24.1"
 
+
 def test_clean_version_suffixes_pep440_rc2():
     assert _clean_version_suffixes("26.05.24.1rc2") == "26.05.24.1"
+
 
 def test_clean_version_suffixes_no_suffix_unchanged():
     assert _clean_version_suffixes("26.05.24.1") == "26.05.24.1"
 
+
 def test_clean_version_suffixes_quarter_unchanged():
     assert _clean_version_suffixes("26.Q4.1") == "26.Q4.1"
+
 
 def test_clean_version_suffixes_hybrid_b1():
     assert _clean_version_suffixes("1.0-20260524.1b1") == "1.0-20260524.1"
@@ -427,33 +426,41 @@ def test_clean_version_suffixes_hybrid_b1():
 # apply_prerelease_suffix
 # ---------------------------------------------------------------------------
 
+
 def test_apply_prerelease_suffix_literal_dot_beta():
     result = apply_prerelease_suffix("26.05.24.1", ".beta")
     assert result == "26.05.24.1.beta"
+
 
 def test_apply_prerelease_suffix_literal_dot_rc():
     result = apply_prerelease_suffix("26.05.24.1", ".rc")
     assert result == "26.05.24.1.rc"
 
+
 def test_apply_prerelease_suffix_count_first_run():
     result = apply_prerelease_suffix("26.05.24.1", "b{beta_count}")
     assert result == "26.05.24.1b1"
+
 
 def test_apply_prerelease_suffix_count_increments_when_base_matches():
     result = apply_prerelease_suffix("26.05.24.1", "b{beta_count}", "26.05.24.1b1")
     assert result == "26.05.24.1b2"
 
+
 def test_apply_prerelease_suffix_count_resets_on_new_base():
     result = apply_prerelease_suffix("26.05.24.2", "b{beta_count}", "26.05.24.1b3")
     assert result == "26.05.24.2b1"
+
 
 def test_apply_prerelease_suffix_count_empty_current():
     result = apply_prerelease_suffix("26.05.24.1", "b{beta_count}", "")
     assert result == "26.05.24.1b1"
 
+
 def test_apply_prerelease_suffix_rc_count():
     result = apply_prerelease_suffix("26.05.24.1", "rc{rc_count}", "26.05.24.1rc1")
     assert result == "26.05.24.1rc2"
+
 
 def test_apply_prerelease_suffix_dot_prefix_with_count():
     result = apply_prerelease_suffix("26.05.24.1", ".b{beta_count}", "26.05.24.1.b2")

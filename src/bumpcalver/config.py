@@ -83,16 +83,12 @@ def load_config(config_path: Optional[str] = None) -> Dict[str, Any]:
                 original_path = file_config["path"]
                 file_type = file_config.get("file_type", "")
                 file_config["path"] = parse_dot_path(original_path, file_type)
-                print(
-                    f"Original path: {original_path} -> Converted path: {file_config['path']}"
-                )
+                print(f"Original path: {original_path} -> Converted path: {file_config['path']}")
 
         except toml.TomlDecodeError as e:
             print(f"Error decoding {config_file}: {e}", file=sys.stderr)
         except Exception as e:
-            print(
-                f"Error loading configuration from {config_file}: {e}", file=sys.stderr
-            )
+            print(f"Error loading configuration from {config_file}: {e}", file=sys.stderr)
     else:
         print(
             "No configuration file found. Please create either pyproject.toml or bumpcalver.toml.",

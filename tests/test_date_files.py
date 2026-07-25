@@ -1,22 +1,24 @@
 from datetime import datetime
 from unittest import mock
 
-from src.bumpcalver.utils import get_build_version, get_current_datetime_version
 from src.bumpcalver.handlers import update_version_in_files
-from tests.test_utils_isolated import isolated_test_environment, create_test_file
+from src.bumpcalver.utils import get_build_version, get_current_datetime_version
+
+from tests.test_utils_isolated import create_test_file, isolated_test_environment
 
 # List of date formats to test
 date_formats = [
     "%Y.%m.%d",  # Full year, month, and day
     "%y.%m.%d",  # Year without century, month, and day
-    "%y.Q%q",    # Year and quarter
-    "%y.%m",     # Year and month
-    "%y.%j",     # Year and day of the year
+    "%y.Q%q",  # Year and quarter
+    "%y.%m",  # Year and month
+    "%y.%j",  # Year and day of the year
     "%Y.%m.%d",  # Year without century, month, and day
-    "%Y.Q%q",    # Year and quarter
-    "%Y.%m",     # Year and month
-    "%Y.%j",     # Year and day of the year
+    "%Y.Q%q",  # Year and quarter
+    "%Y.%m",  # Year and month
+    "%Y.%j",  # Year and day of the year
 ]
+
 
 def test_all_date_formats_written_to_files():
     # Use isolated test environment instead of real files
@@ -26,7 +28,7 @@ def test_all_date_formats_written_to_files():
             temp_file_path = create_test_file(
                 temp_dir,
                 f"version_{date_format.replace('%', '').replace('.', '_').replace('Q', 'Q').replace('q', 'q')}.txt",
-                "__version__ = '0.0.0'\n"
+                "__version__ = '0.0.0'\n",
             )
 
             # Mock configuration
@@ -47,7 +49,7 @@ def test_all_date_formats_written_to_files():
 
             # Mock the current date
             mock_date = datetime(2024, 12, 7)
-            with mock.patch('src.bumpcalver.utils.datetime') as mock_datetime:
+            with mock.patch("src.bumpcalver.utils.datetime") as mock_datetime:
                 mock_datetime.now.return_value = mock_date
                 mock_datetime.side_effect = lambda *args, **kw: datetime(*args, **kw)
 
@@ -57,7 +59,7 @@ def test_all_date_formats_written_to_files():
                     mock_config["file_configs"][0],
                     mock_config["version_format"],
                     mock_config["timezone"],
-                    mock_config["date_format"]
+                    mock_config["date_format"],
                 )
 
                 # Update the version in the file (in isolated environment)

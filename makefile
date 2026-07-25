@@ -47,8 +47,8 @@ MAKEFLAGS += --warn-undefined-variables
 # =============================================================================
 # Phony Targets
 # =============================================================================
-.PHONY: help all autoflake black build bump check-deps clean cleanup create-docs create-docs-dev \
-        create-docs-local delete-version dev-setup format install isort list-docs \
+.PHONY: help all build bump check-deps clean cleanup create-docs create-docs-dev \
+        create-docs-local delete-version dev-setup format install list-docs \
         migrate-legacy-docs mypy pre-commit quick-test rebase reinstall ruff serve-docs \
         set-default-version sync-docs-branch test test-coverage tests validate
 
@@ -92,45 +92,29 @@ bump: ## Bump calver version
 	@printf "\033[0;32m✅ Version bumped successfully!\033[0m\n"
 
 ##@ Code Formatting and Linting
-autoflake: ## Remove unused imports and unused variables from Python code
-	@printf "\033[1;33m🧹 Removing unused imports and variables...\033[0m\n"
-	autoflake --in-place --remove-all-unused-imports --ignore-init-module-imports --remove-unused-variables -r $(SERVICE_PATH)
-	autoflake --in-place --remove-all-unused-imports --ignore-init-module-imports --remove-unused-variables -r $(TESTS_PATH)
-	autoflake --in-place --remove-all-unused-imports --ignore-init-module-imports --remove-unused-variables -r $(EXAMPLE_PATH)
-	@printf "\033[0;32m✅ Autoflake completed!\033[0m\n"
-
-black: ## Reformat Python code to follow the Black code style
-	@printf "\033[1;33m🖤 Formatting code with Black...\033[0m\n"
-	black $(SERVICE_PATH) $(TESTS_PATH) $(EXAMPLE_PATH)
-	@printf "\033[0;32m✅ Black formatting completed!\033[0m\n"
-
+# Ruff is the single tool for linting, import sorting, unused-import/variable
+# removal, and formatting (its `format` subcommand is a Black-compatible
+# formatter) — see IMPROVEMENTS.md §2.9 for why the isort/black/autoflake/
+# flake8/autopep8 targets that used to live here were retired in favor of it.
 cleanup: format ## Run all code formatting tools (alias for format)
 	@printf "\033[0;32m✅ Code cleanup completed!\033[0m\n"
 
-format: isort ruff autoflake black ## Run all code formatting tools in the correct order
-	@printf "\033[0;32m✅ All formatting tools completed!\033[0m\n"
-
-isort: ## Sort imports in Python code
-	@printf "\033[1;33m📚 Sorting imports with isort...\033[0m\n"
-	isort $(SERVICE_PATH) $(TESTS_PATH) $(EXAMPLE_PATH)
-	@printf "\033[0;32m✅ Import sorting completed!\033[0m\n"
+format: ## Fix lint issues (incl. import sorting) and reformat code with Ruff
+	@printf "\033[1;33m🦀 Fixing and formatting with Ruff...\033[0m\n"
+	ruff check --fix --exit-non-zero-on-fix --show-fixes $(SERVICE_PATH) $(TESTS_PATH) $(EXAMPLE_PATH) || true
+	ruff format $(SERVICE_PATH) $(TESTS_PATH) $(EXAMPLE_PATH)
+	@printf "\033[0;32m✅ Formatting completed!\033[0m\n"
 
 mypy: ## Type-check src/bumpcalver with mypy
 	@printf "\033[1;33m🔎 Type-checking with mypy...\033[0m\n"
 	mypy
 	@printf "\033[0;32m✅ Type checking completed!\033[0m\n"
 
-ruff: ## Format Python code with Ruff
-	@printf "\033[1;33m🦀 Linting and fixing with Ruff...\033[0m\n"
-	ruff check --fix --exit-non-zero-on-fix --show-fixes $(SERVICE_PATH) || true
-	ruff check --fix --exit-non-zero-on-fix --show-fixes $(TESTS_PATH) || true
-	ruff check --fix --exit-non-zero-on-fix --show-fixes $(EXAMPLE_PATH) || true
-	@printf "\033[0;32m✅ Ruff linting completed!\033[0m\n"
+ruff: format ## Alias for format (kept for muscle memory / older docs)
 
-validate: ## Validate code without making changes
+validate: ## Validate code style and types without making changes
 	@printf "\033[1;33m🔍 Validating code style...\033[0m\n"
-	black --check $(SERVICE_PATH) $(TESTS_PATH) $(EXAMPLE_PATH)
-	isort --check-only $(SERVICE_PATH) $(TESTS_PATH) $(EXAMPLE_PATH)
+	ruff format --check $(SERVICE_PATH) $(TESTS_PATH) $(EXAMPLE_PATH)
 	ruff check $(SERVICE_PATH) $(TESTS_PATH) $(EXAMPLE_PATH)
 	mypy
 	@printf "\033[0;32m✅ Code validation passed!\033[0m\n"
@@ -241,9 +225,3 @@ test-coverage: ## Run tests and generate coverage report
 	@printf "\033[0;32m✅ Coverage report generated in htmlcov/\033[0m\n"
 
 tests: test ## Alias for test target
-
-# =============================================================================
-# Commented Out Targets (for reference)
-# =============================================================================
-# flake8: ## Run flake8 to check Python code for PEP8 compliance
-# 	flake8 --tee . > htmlcov/_flake8Report.txt

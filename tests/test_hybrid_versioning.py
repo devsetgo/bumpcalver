@@ -5,7 +5,6 @@ import tempfile
 from unittest import mock
 
 from click.testing import CliRunner
-
 from src.bumpcalver.cli import main
 from src.bumpcalver.utils import (
     _date_format_to_regex,
@@ -16,10 +15,10 @@ from src.bumpcalver.utils import (
     update_semantic_in_config,
 )
 
-
 # ---------------------------------------------------------------------------
 # _is_hybrid_format
 # ---------------------------------------------------------------------------
+
 
 class TestIsHybridFormat:
     def test_major_placeholder(self):
@@ -47,6 +46,7 @@ class TestIsHybridFormat:
 # ---------------------------------------------------------------------------
 # _date_format_to_regex
 # ---------------------------------------------------------------------------
+
 
 class TestDateFormatToRegex:
     def test_yyyymmdd_compact(self):
@@ -77,6 +77,7 @@ class TestDateFormatToRegex:
 # ---------------------------------------------------------------------------
 # _parse_hybrid_version — success cases
 # ---------------------------------------------------------------------------
+
 
 class TestParseHybridVersionSuccess:
     def test_major_minor_yyyymmdd_dot_count(self):
@@ -148,6 +149,7 @@ class TestParseHybridVersionSuccess:
 # _parse_hybrid_version — build_count-less formats
 # ---------------------------------------------------------------------------
 
+
 class TestParseHybridVersionNoBuildCount:
     def test_no_build_count_placeholder_defaults_count_to_zero(self):
         # Regression test for the except (IndexError, ValueError): count = 0
@@ -167,6 +169,7 @@ class TestParseHybridVersionNoBuildCount:
 # ---------------------------------------------------------------------------
 # _parse_hybrid_version — failure cases
 # ---------------------------------------------------------------------------
+
 
 class TestParseHybridVersionFailure:
     def test_wrong_separator_returns_none(self):
@@ -208,6 +211,7 @@ class TestParseHybridVersionFailure:
 # separator (real bug found while writing hypothesis property tests for this
 # module: see IMPROVEMENTS.md Testing §4.5)
 # ---------------------------------------------------------------------------
+
 
 class TestParseVersionNonHybridNonDotSeparator:
     def test_dash_separated_build_count_with_dot_date_format_round_trips(self):
@@ -255,6 +259,7 @@ class TestParseVersionNonHybridNonDotSeparator:
 # parse_version routing
 # ---------------------------------------------------------------------------
 
+
 class TestParseVersionRouting:
     def test_hybrid_format_routed_correctly(self):
         result = parse_version(
@@ -289,6 +294,7 @@ class TestParseVersionRouting:
 # get_build_version with hybrid format
 # ---------------------------------------------------------------------------
 
+
 class TestGetBuildVersionHybrid:
     def test_same_day_increments(self, tmp_path):
         toml_file = tmp_path / "pyproject.toml"
@@ -297,10 +303,17 @@ class TestGetBuildVersionHybrid:
         date_format = "%Y%m%d"
         file_config = {"path": str(toml_file), "file_type": "toml", "variable": "project.version"}
 
-        with mock.patch("src.bumpcalver.utils.get_current_datetime_version", return_value="20260518"):
+        with mock.patch(
+            "src.bumpcalver.utils.get_current_datetime_version", return_value="20260518"
+        ):
             result = get_build_version(
-                file_config, version_format, "UTC", date_format,
-                major=1, minor=0, patch=0,
+                file_config,
+                version_format,
+                "UTC",
+                date_format,
+                major=1,
+                minor=0,
+                patch=0,
             )
 
         assert result == "1.0-20260518.4"
@@ -312,10 +325,17 @@ class TestGetBuildVersionHybrid:
         date_format = "%Y%m%d"
         file_config = {"path": str(toml_file), "file_type": "toml", "variable": "project.version"}
 
-        with mock.patch("src.bumpcalver.utils.get_current_datetime_version", return_value="20260518"):
+        with mock.patch(
+            "src.bumpcalver.utils.get_current_datetime_version", return_value="20260518"
+        ):
             result = get_build_version(
-                file_config, version_format, "UTC", date_format,
-                major=1, minor=0, patch=0,
+                file_config,
+                version_format,
+                "UTC",
+                date_format,
+                major=1,
+                minor=0,
+                patch=0,
             )
 
         assert result == "1.0-20260518.1"
@@ -327,10 +347,17 @@ class TestGetBuildVersionHybrid:
         date_format = "%Y%m%d"
         file_config = {"path": str(toml_file), "file_type": "toml", "variable": "project.version"}
 
-        with mock.patch("src.bumpcalver.utils.get_current_datetime_version", return_value="20260518"):
+        with mock.patch(
+            "src.bumpcalver.utils.get_current_datetime_version", return_value="20260518"
+        ):
             result = get_build_version(
-                file_config, version_format, "UTC", date_format,
-                major=2, minor=3, patch=4,
+                file_config,
+                version_format,
+                "UTC",
+                date_format,
+                major=2,
+                minor=3,
+                patch=4,
             )
 
         assert result.startswith("2.3.4-")
@@ -342,10 +369,17 @@ class TestGetBuildVersionHybrid:
         date_format = "%Y%m%d"
         file_config = {"path": str(toml_file), "file_type": "toml", "variable": "project.version"}
 
-        with mock.patch("src.bumpcalver.utils.get_current_datetime_version", return_value="20260518"):
+        with mock.patch(
+            "src.bumpcalver.utils.get_current_datetime_version", return_value="20260518"
+        ):
             result = get_build_version(
-                file_config, version_format, "UTC", date_format,
-                major=1, minor=0, patch=0,
+                file_config,
+                version_format,
+                "UTC",
+                date_format,
+                major=1,
+                minor=0,
+                patch=0,
             )
 
         assert result == "1.0-20260518.1"
@@ -355,9 +389,11 @@ class TestGetBuildVersionHybrid:
 # load_config with major/minor/patch
 # ---------------------------------------------------------------------------
 
+
 class TestLoadConfigSemanticKeys:
     def test_reads_major_minor_patch_from_config(self):
         from src.bumpcalver.config import load_config
+
         toml_content = """
 [tool.bumpcalver]
 major = 2
@@ -382,6 +418,7 @@ date_format = "%Y%m%d"
 
     def test_defaults_to_zero_when_absent(self):
         from src.bumpcalver.config import load_config
+
         toml_content = """
 [tool.bumpcalver]
 version_format = "{current_date}.{build_count:03}"
@@ -405,6 +442,7 @@ date_format = "%Y%m%d"
 # ---------------------------------------------------------------------------
 # update_semantic_in_config
 # ---------------------------------------------------------------------------
+
 
 class TestUpdateSemanticInConfig:
     def test_updates_major_in_pyproject_toml(self):
@@ -443,7 +481,7 @@ class TestUpdateSemanticInConfig:
                 os.chdir(original_dir)
 
     def test_returns_false_when_key_not_found(self):
-        content = "[tool.bumpcalver]\nversion_format = \"{current_date}\"\n"
+        content = '[tool.bumpcalver]\nversion_format = "{current_date}"\n'
         with tempfile.TemporaryDirectory() as tmpdir:
             config_path = os.path.join(tmpdir, "pyproject.toml")
             with open(config_path, "w") as f:
@@ -488,13 +526,16 @@ class TestUpdateSemanticInConfig:
 # CLI --bump-major / --bump-minor / --bump-patch
 # ---------------------------------------------------------------------------
 
+
 class TestCliBumpFlags:
     def _base_config(self, major=1, minor=0, patch=0):
         return {
             "version_format": "{major}.{minor}-{current_date}.{build_count}",
             "date_format": "%Y%m%d",
             "timezone": "UTC",
-            "file_configs": [{"path": "/fake/file.toml", "file_type": "toml", "variable": "project.version"}],
+            "file_configs": [
+                {"path": "/fake/file.toml", "file_type": "toml", "variable": "project.version"}
+            ],
             "git_tag": False,
             "auto_commit": False,
             "major": major,
@@ -504,14 +545,21 @@ class TestCliBumpFlags:
 
     def test_bump_major_resets_minor_and_patch(self):
         runner = CliRunner()
-        with mock.patch("src.bumpcalver.cli.load_config", return_value=self._base_config(major=1, minor=2, patch=3)), \
-             mock.patch("src.bumpcalver.cli.update_semantic_in_config") as mock_update, \
-             mock.patch("src.bumpcalver.cli.get_build_version", return_value="2.0-20260518.1"), \
-             mock.patch("src.bumpcalver.cli.update_version_in_files", return_value=["/fake/file.toml"]), \
-             mock.patch("src.bumpcalver.cli.get_version_handler"), \
-             mock.patch("src.bumpcalver.cli.BackupManager"), \
-             mock.patch("src.bumpcalver.cli.backup_files_before_update", return_value=({}, None)), \
-             mock.patch("src.bumpcalver.cli.generate_operation_id", return_value="test-op-id"):
+        with (
+            mock.patch(
+                "src.bumpcalver.cli.load_config",
+                return_value=self._base_config(major=1, minor=2, patch=3),
+            ),
+            mock.patch("src.bumpcalver.cli.update_semantic_in_config") as mock_update,
+            mock.patch("src.bumpcalver.cli.get_build_version", return_value="2.0-20260518.1"),
+            mock.patch(
+                "src.bumpcalver.cli.update_version_in_files", return_value=["/fake/file.toml"]
+            ),
+            mock.patch("src.bumpcalver.cli.get_version_handler"),
+            mock.patch("src.bumpcalver.cli.BackupManager"),
+            mock.patch("src.bumpcalver.cli.backup_files_before_update", return_value=({}, None)),
+            mock.patch("src.bumpcalver.cli.generate_operation_id", return_value="test-op-id"),
+        ):
             result = runner.invoke(main, ["--build", "--bump", "major"])
             assert result.exit_code == 0
             calls = {call[0] for call in mock_update.call_args_list}
@@ -521,14 +569,21 @@ class TestCliBumpFlags:
 
     def test_bump_minor_resets_patch(self):
         runner = CliRunner()
-        with mock.patch("src.bumpcalver.cli.load_config", return_value=self._base_config(major=1, minor=0, patch=5)), \
-             mock.patch("src.bumpcalver.cli.update_semantic_in_config") as mock_update, \
-             mock.patch("src.bumpcalver.cli.get_build_version", return_value="1.1-20260518.1"), \
-             mock.patch("src.bumpcalver.cli.update_version_in_files", return_value=["/fake/file.toml"]), \
-             mock.patch("src.bumpcalver.cli.get_version_handler"), \
-             mock.patch("src.bumpcalver.cli.BackupManager"), \
-             mock.patch("src.bumpcalver.cli.backup_files_before_update", return_value=({}, None)), \
-             mock.patch("src.bumpcalver.cli.generate_operation_id", return_value="test-op-id"):
+        with (
+            mock.patch(
+                "src.bumpcalver.cli.load_config",
+                return_value=self._base_config(major=1, minor=0, patch=5),
+            ),
+            mock.patch("src.bumpcalver.cli.update_semantic_in_config") as mock_update,
+            mock.patch("src.bumpcalver.cli.get_build_version", return_value="1.1-20260518.1"),
+            mock.patch(
+                "src.bumpcalver.cli.update_version_in_files", return_value=["/fake/file.toml"]
+            ),
+            mock.patch("src.bumpcalver.cli.get_version_handler"),
+            mock.patch("src.bumpcalver.cli.BackupManager"),
+            mock.patch("src.bumpcalver.cli.backup_files_before_update", return_value=({}, None)),
+            mock.patch("src.bumpcalver.cli.generate_operation_id", return_value="test-op-id"),
+        ):
             result = runner.invoke(main, ["--build", "--bump", "minor"])
             assert result.exit_code == 0
             calls = {call[0] for call in mock_update.call_args_list}
@@ -537,14 +592,21 @@ class TestCliBumpFlags:
 
     def test_bump_patch(self):
         runner = CliRunner()
-        with mock.patch("src.bumpcalver.cli.load_config", return_value=self._base_config(major=1, minor=0, patch=2)), \
-             mock.patch("src.bumpcalver.cli.update_semantic_in_config") as mock_update, \
-             mock.patch("src.bumpcalver.cli.get_build_version", return_value="1.0-20260518.1"), \
-             mock.patch("src.bumpcalver.cli.update_version_in_files", return_value=["/fake/file.toml"]), \
-             mock.patch("src.bumpcalver.cli.get_version_handler"), \
-             mock.patch("src.bumpcalver.cli.BackupManager"), \
-             mock.patch("src.bumpcalver.cli.backup_files_before_update", return_value=({}, None)), \
-             mock.patch("src.bumpcalver.cli.generate_operation_id", return_value="test-op-id"):
+        with (
+            mock.patch(
+                "src.bumpcalver.cli.load_config",
+                return_value=self._base_config(major=1, minor=0, patch=2),
+            ),
+            mock.patch("src.bumpcalver.cli.update_semantic_in_config") as mock_update,
+            mock.patch("src.bumpcalver.cli.get_build_version", return_value="1.0-20260518.1"),
+            mock.patch(
+                "src.bumpcalver.cli.update_version_in_files", return_value=["/fake/file.toml"]
+            ),
+            mock.patch("src.bumpcalver.cli.get_version_handler"),
+            mock.patch("src.bumpcalver.cli.BackupManager"),
+            mock.patch("src.bumpcalver.cli.backup_files_before_update", return_value=({}, None)),
+            mock.patch("src.bumpcalver.cli.generate_operation_id", return_value="test-op-id"),
+        ):
             result = runner.invoke(main, ["--build", "--bump", "patch"])
             assert result.exit_code == 0
             calls = {call[0] for call in mock_update.call_args_list}
@@ -564,6 +626,7 @@ class TestCliBumpFlags:
 # ---------------------------------------------------------------------------
 # Regression: existing CalVer formats still work
 # ---------------------------------------------------------------------------
+
 
 class TestRegressionPureCalVer:
     def test_parse_version_yy_mm_dd_build(self):

@@ -5,15 +5,15 @@ This module contains tests for the new undo-related CLI options.
 """
 
 from unittest import mock
-from click.testing import CliRunner
 
+from click.testing import CliRunner
 from src.bumpcalver.cli import main
 
 
 class TestCliUndo:
     """Test cases for CLI undo functionality."""
 
-    @mock.patch('src.bumpcalver.cli.list_undo_history')
+    @mock.patch("src.bumpcalver.cli.list_undo_history")
     def test_list_history_option(self, mock_list_history):
         """Test the --list-history CLI option."""
         runner = CliRunner()
@@ -22,7 +22,7 @@ class TestCliUndo:
         assert result.exit_code == 0
         mock_list_history.assert_called_once()
 
-    @mock.patch('src.bumpcalver.cli.undo_last_operation')
+    @mock.patch("src.bumpcalver.cli.undo_last_operation")
     def test_undo_option_success(self, mock_undo_last):
         """Test successful --undo CLI option."""
         mock_undo_last.return_value = True
@@ -33,7 +33,7 @@ class TestCliUndo:
         assert result.exit_code == 0
         mock_undo_last.assert_called_once()
 
-    @mock.patch('src.bumpcalver.cli.undo_last_operation')
+    @mock.patch("src.bumpcalver.cli.undo_last_operation")
     def test_undo_option_failure(self, mock_undo_last):
         """Test failed --undo CLI option."""
         mock_undo_last.return_value = False
@@ -44,7 +44,7 @@ class TestCliUndo:
         assert result.exit_code == 1
         mock_undo_last.assert_called_once()
 
-    @mock.patch('src.bumpcalver.cli.undo_operation_by_id')
+    @mock.patch("src.bumpcalver.cli.undo_operation_by_id")
     def test_undo_id_option_success(self, mock_undo_by_id):
         """Test successful --undo-id CLI option."""
         mock_undo_by_id.return_value = True
@@ -55,7 +55,7 @@ class TestCliUndo:
         assert result.exit_code == 0
         mock_undo_by_id.assert_called_once_with("test_operation_123")
 
-    @mock.patch('src.bumpcalver.cli.undo_operation_by_id')
+    @mock.patch("src.bumpcalver.cli.undo_operation_by_id")
     def test_undo_id_option_failure(self, mock_undo_by_id):
         """Test failed --undo-id CLI option."""
         mock_undo_by_id.return_value = False
@@ -92,7 +92,7 @@ class TestCliUndo:
         # so --list-history would execute and return before --undo is processed
         runner = CliRunner()
 
-        with mock.patch('src.bumpcalver.cli.list_undo_history') as mock_list:
+        with mock.patch("src.bumpcalver.cli.list_undo_history") as mock_list:
             result = runner.invoke(main, ["--list-history", "--undo"])
             assert result.exit_code == 0
             mock_list.assert_called_once()
@@ -101,18 +101,18 @@ class TestCliUndo:
 class TestUndoIntegration:
     """Integration tests for undo functionality."""
 
-    @mock.patch('src.bumpcalver.cli.BackupManager')
-    @mock.patch('src.bumpcalver.cli.backup_files_before_update')
-    @mock.patch('src.bumpcalver.cli.load_config')
-    @mock.patch('src.bumpcalver.cli.update_version_in_files')
-    @mock.patch('src.bumpcalver.cli.get_current_datetime_version')
+    @mock.patch("src.bumpcalver.cli.BackupManager")
+    @mock.patch("src.bumpcalver.cli.backup_files_before_update")
+    @mock.patch("src.bumpcalver.cli.load_config")
+    @mock.patch("src.bumpcalver.cli.update_version_in_files")
+    @mock.patch("src.bumpcalver.cli.get_current_datetime_version")
     def test_version_bump_creates_backup_and_history(
         self,
         mock_get_version,
         mock_update_files,
         mock_load_config,
         mock_backup_files,
-        mock_backup_manager_class
+        mock_backup_manager_class,
     ):
         """Test that version bump operations create backups and history."""
         # Setup mocks
@@ -147,12 +147,12 @@ class TestUndoIntegration:
         assert call_args[1]["files_updated"] == ["test.py"]
         assert call_args[1]["backups"] == {"test.py": "backup.py"}
 
-    @mock.patch('subprocess.run')
-    @mock.patch('src.bumpcalver.cli.BackupManager')
-    @mock.patch('src.bumpcalver.cli.backup_files_before_update')
-    @mock.patch('src.bumpcalver.cli.load_config')
-    @mock.patch('src.bumpcalver.cli.update_version_in_files')
-    @mock.patch('src.bumpcalver.cli.get_current_datetime_version')
+    @mock.patch("subprocess.run")
+    @mock.patch("src.bumpcalver.cli.BackupManager")
+    @mock.patch("src.bumpcalver.cli.backup_files_before_update")
+    @mock.patch("src.bumpcalver.cli.load_config")
+    @mock.patch("src.bumpcalver.cli.update_version_in_files")
+    @mock.patch("src.bumpcalver.cli.get_current_datetime_version")
     def test_version_bump_with_git_creates_complete_history(
         self,
         mock_get_version,
@@ -160,7 +160,7 @@ class TestUndoIntegration:
         mock_load_config,
         mock_backup_files,
         mock_backup_manager_class,
-        mock_subprocess_run
+        mock_subprocess_run,
     ):
         """Test that version bump with git operations creates complete history."""
         # Setup mocks

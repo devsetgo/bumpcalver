@@ -159,7 +159,7 @@ def undo_git_operations(operation: Dict[str, Any]) -> bool:
             ["git", "rev-parse", "--is-inside-work-tree"],
             check=True,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            stderr=subprocess.PIPE,
         )
     except subprocess.CalledProcessError:
         print("Not in a git repository, skipping git undo operations")
@@ -170,11 +170,7 @@ def undo_git_operations(operation: Dict[str, Any]) -> bool:
         tag_name = operation["git_tag_name"]
         try:
             # Check if tag exists
-            result = subprocess.run(
-                ["git", "tag", "-l", tag_name],
-                capture_output=True,
-                text=True
-            )
+            result = subprocess.run(["git", "tag", "-l", tag_name], capture_output=True, text=True)
 
             if tag_name in result.stdout.splitlines():
                 subprocess.run(["git", "tag", "-d", tag_name], check=True)
@@ -192,10 +188,7 @@ def undo_git_operations(operation: Dict[str, Any]) -> bool:
         try:
             # Get current HEAD commit
             current_head = subprocess.run(
-                ["git", "rev-parse", "HEAD"],
-                capture_output=True,
-                text=True,
-                check=True
+                ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True
             ).stdout.strip()
 
             # Only reset if the current HEAD is the commit we made
@@ -203,10 +196,12 @@ def undo_git_operations(operation: Dict[str, Any]) -> bool:
                 subprocess.run(["git", "reset", "--soft", "HEAD~1"], check=True)
                 print(f"Reset git commit: {commit_hash[:8]}")
             else:
-                print(f"Current HEAD ({current_head[:8]}) is not the expected commit ({commit_hash[:8]})")
+                print(
+                    f"Current HEAD ({current_head[:8]}) is not the expected commit ({commit_hash[:8]})"
+                )
                 print("Skipping commit reset for safety")
 
-        except subprocess.CalledProcessError as e: # no pragma: no cover
+        except subprocess.CalledProcessError as e:  # no pragma: no cover
             print(f"Failed to reset git commit {commit_hash}: {e}")
             success = False
 

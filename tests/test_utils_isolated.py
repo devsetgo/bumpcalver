@@ -6,8 +6,8 @@ that can be used to test file update functionality without affecting real projec
 """
 
 import os
-import tempfile
 import shutil
+import tempfile
 from contextlib import contextmanager
 
 
@@ -46,7 +46,7 @@ def create_test_file(directory: str, filename: str, content: str) -> str:
     file_path = os.path.join(directory, filename)
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
-    with open(file_path, 'w', encoding='utf-8') as f:
+    with open(file_path, "w", encoding="utf-8") as f:
         f.write(content)
 
     return file_path
@@ -81,7 +81,7 @@ def verify_python_version(file_path: str, expected_version: str) -> bool:
     if not os.path.exists(file_path):
         return False
 
-    with open(file_path, 'r', encoding='utf-8') as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         content = f.read()
 
     return f'__version__ = "{expected_version}"' in content

@@ -19,7 +19,6 @@ from src.bumpcalver.cli import (
     _read_current_version,
 )
 
-
 # --- _read_current_version -------------------------------------------------
 
 
@@ -52,9 +51,7 @@ def test_read_current_version_passes_directive():
         result = _read_current_version(file_config)
 
     assert result == "1.0.0"
-    mock_handler.read_version.assert_called_once_with(
-        "dockerfile", "VERSION", directive="ARG"
-    )
+    mock_handler.read_version.assert_called_once_with("dockerfile", "VERSION", directive="ARG")
 
 
 def test_read_current_version_passes_pattern():
@@ -78,9 +75,7 @@ def test_read_current_version_passes_pattern():
 
 def test_read_current_version_unsupported_file_type_returns_none():
     file_config = {"path": "x", "file_type": "nonexistent", "variable": "v"}
-    with mock.patch(
-        "src.bumpcalver.cli.get_version_handler", side_effect=ValueError("nope")
-    ):
+    with mock.patch("src.bumpcalver.cli.get_version_handler", side_effect=ValueError("nope")):
         assert _read_current_version(file_config) is None
 
 
@@ -243,12 +238,7 @@ def test_all_files_already_updated_true_when_every_file_matches():
 def test_all_files_already_updated_false_on_any_mismatch():
     file_configs = [{"path": "a"}, {"path": "b"}]
     versions = {"a": "1.0", "b": "0.9"}
-    assert (
-        _all_files_already_updated(
-            file_configs, "1.0", lambda fc: versions[fc["path"]]
-        )
-        is False
-    )
+    assert _all_files_already_updated(file_configs, "1.0", lambda fc: versions[fc["path"]]) is False
 
 
 def test_all_files_already_updated_false_when_read_fails():
@@ -276,9 +266,10 @@ def test_create_git_tag_and_commit_tag_only():
 
 
 def test_create_git_tag_and_commit_with_auto_commit_reads_hash():
-    with mock.patch("src.bumpcalver.cli.create_git_tag") as mock_create_tag, mock.patch(
-        "src.bumpcalver.cli.subprocess.run"
-    ) as mock_run:
+    with (
+        mock.patch("src.bumpcalver.cli.create_git_tag") as mock_create_tag,
+        mock.patch("src.bumpcalver.cli.subprocess.run") as mock_run,
+    ):
         mock_run.return_value = mock.Mock(stdout="abc123\n")
         result = _create_git_tag_and_commit("1.0", ["a.py"], git_tag=True, auto_commit=True)
 
