@@ -35,7 +35,7 @@ Example:
 import os
 import subprocess
 import sys
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import click
 
@@ -59,6 +59,129 @@ def _read_current_version(file_config: Dict[str, Any]) -> Optional[str]:
         return handler.read_version(file_config["path"], variable)
     except Exception:
         return None
+
+
+def _apply_semantic_bump(
+    bump: Optional[str], major: int, minor: int, patch: int
+) -> Tuple[int, int, int]:
+    """Increment the requested semver component and persist it to the config file.
+
+    A major bump resets minor/patch to 0; a minor bump resets patch to 0; a
+    patch bump only increments patch. Returns the resulting (major, minor, patch).
+    """
+    if bump == "major":
+        major += 1
+        minor = 0
+        patch = 0
+        update_semantic_in_config("major", major)
+        update_semantic_in_config("minor", minor)
+        update_semantic_in_config("patch", patch)
+    elif bump == "minor":
+        minor += 1
+        patch = 0
+        update_semantic_in_config("minor", minor)
+        update_semantic_in_config("patch", patch)
+    elif bump == "patch":
+        patch += 1
+        update_semantic_in_config("patch", patch)
+    return major, minor, patch
+
+
+def _compute_new_version(
+    *,
+    build: bool,
+    beta: bool,
+    rc: bool,
+    release: bool,
+    custom: Optional[str],
+    file_configs: List[Dict[str, Any]],
+    version_format: str,
+    timezone: str,
+    date_format: str,
+    config: Dict[str, Any],
+    config_major: int,
+    config_minor: int,
+    config_patch: int,
+    cached_version: Callable[[Dict[str, Any]], Optional[str]],
+) -> str:
+    """Compute this invocation's new version string.
+
+    Starts from the build-count or plain date/time version, then applies at
+    most one of --beta/--rc/--release/--custom. cached_version is used to look
+    up the first configured file's current raw version, which pre-release
+    suffixing needs to detect and increment an existing suffix count.
+    """
+    if build:
+        print("Build option is set. Calling get_build_version.")
+        init_file_config: Dict[str, Any] = file_configs[0]
+        new_version: str = get_build_version(
+            init_file_config, version_format, timezone, date_format,
+            major=config_major, minor=config_minor, patch=config_patch,
+        )
+    else:
+        print("Build option is not set. Calling get_current_datetime_version.")
+        new_version = get_current_datetime_version(timezone, date_format)
+
+    if beta or rc or release:
+        current_raw_version = cached_version(file_configs[0]) or ""
+
+    if beta:
+        new_version = apply_prerelease_suffix(new_version, config.get("beta_format", ".beta"), current_raw_version)
+    elif rc:
+        new_version = apply_prerelease_suffix(new_version, config.get("rc_format", ".rc"), current_raw_version)
+    elif release:
+        new_version = apply_prerelease_suffix(new_version, config.get("release_format", ".release"), current_raw_version)
+    elif custom:
+        new_version += f".{custom}"
+
+    return new_version
+
+
+def _all_files_already_updated(
+    file_configs: List[Dict[str, Any]],
+    new_version: str,
+    cached_version: Callable[[Dict[str, Any]], Optional[str]],
+) -> bool:
+    """True if every configured file already contains new_version (i.e. this bump is a no-op)."""
+    for file_config in file_configs:
+        if cached_version(file_config) != new_version:
+            return False
+    return True
+
+
+def _create_git_tag_and_commit(
+    new_version: str, files_updated: List[str], git_tag: bool, auto_commit: bool
+) -> Tuple[Optional[str], Optional[str]]:
+    """Create a git tag (and, if requested, a commit) for the new version.
+
+    Returns (git_commit_hash, git_tag_name); both are None if git_tag is False
+    or the underlying git command(s) failed (git operations are best-effort and
+    never fail the overall version bump).
+    """
+    if not git_tag:
+        return None, None
+
+    git_commit_hash = None
+    git_tag_name = None
+    try:
+        if auto_commit:
+            # create_git_tag() creates the commit itself, so the hash can only
+            # be read back afterward.
+            create_git_tag(new_version, files_updated, auto_commit)
+            git_commit_hash = subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                capture_output=True,
+                text=True,
+                check=True
+            ).stdout.strip()
+        else:
+            create_git_tag(new_version, files_updated, auto_commit)
+
+        git_tag_name = new_version
+    except subprocess.CalledProcessError:
+        pass
+
+    return git_commit_hash, git_tag_name
 
 
 @click.command()
@@ -148,21 +271,9 @@ def main(
     config_minor: int = config.get("minor", 0)
     config_patch: int = config.get("patch", 0)
 
-    if bump == "major":
-        config_major += 1
-        config_minor = 0
-        config_patch = 0
-        update_semantic_in_config("major", config_major)
-        update_semantic_in_config("minor", config_minor)
-        update_semantic_in_config("patch", config_patch)
-    elif bump == "minor":
-        config_minor += 1
-        config_patch = 0
-        update_semantic_in_config("minor", config_minor)
-        update_semantic_in_config("patch", config_patch)
-    elif bump == "patch":
-        config_patch += 1
-        update_semantic_in_config("patch", config_patch)
+    config_major, config_minor, config_patch = _apply_semantic_bump(
+        bump, config_major, config_minor, config_patch
+    )
 
     if not file_configs:  # pragma: no cover
         print("No files specified in the configuration.")
@@ -192,39 +303,26 @@ def main(
         return _version_cache[key]
 
     try:
-        if build:
-            print("Build option is set. Calling get_build_version.")
-            init_file_config: Dict[str, Any] = file_configs[0]
-            new_version: str = get_build_version(
-                init_file_config, version_format, timezone, date_format,
-                major=config_major, minor=config_minor, patch=config_patch,
-            )
-        else:
-            print("Build option is not set. Calling get_current_datetime_version.")
-            new_version = get_current_datetime_version(timezone, date_format)
-
-        if beta or rc or release:
-            current_raw_version = _cached_current_version(file_configs[0]) or ""
-
-        if beta:
-            new_version = apply_prerelease_suffix(new_version, config.get("beta_format", ".beta"), current_raw_version)
-        elif rc:
-            new_version = apply_prerelease_suffix(new_version, config.get("rc_format", ".rc"), current_raw_version)
-        elif release:
-            new_version = apply_prerelease_suffix(new_version, config.get("release_format", ".release"), current_raw_version)
-        elif custom:
-            new_version += f".{custom}"
+        new_version = _compute_new_version(
+            build=build,
+            beta=beta,
+            rc=rc,
+            release=release,
+            custom=custom,
+            file_configs=file_configs,
+            version_format=version_format,
+            timezone=timezone,
+            date_format=date_format,
+            config=config,
+            config_major=config_major,
+            config_minor=config_minor,
+            config_patch=config_patch,
+            cached_version=_cached_current_version,
+        )
 
         # No-op guard: if all configured files already contain the computed version,
         # do not create backups, write undo history, or attempt git operations.
-        all_files_already_updated = True
-        for file_config in file_configs:
-            current_version = _cached_current_version(file_config)
-            if current_version != new_version:
-                all_files_already_updated = False
-                break
-
-        if all_files_already_updated:
+        if _all_files_already_updated(file_configs, new_version, _cached_current_version):
             print(f"Version already set to {new_version}; no files to update.")
             return
 
@@ -251,29 +349,9 @@ def main(
             return
 
         # Handle git operations and capture information for undo
-        git_commit_hash = None
-        git_tag_name = None
-
-        if git_tag:
-            # Get current commit hash before creating tag
-            try:
-                if auto_commit:
-                    # The create_git_tag function will create a commit, so we need to get the hash afterwards
-                    create_git_tag(new_version, files_updated, auto_commit)
-                    git_commit_hash = subprocess.run(
-                        ["git", "rev-parse", "HEAD"],
-                        capture_output=True,
-                        text=True,
-                        check=True
-                    ).stdout.strip()
-                else:
-                    create_git_tag(new_version, files_updated, auto_commit)
-
-                git_tag_name = new_version
-
-            except subprocess.CalledProcessError:
-                # Git operations failed, but don't fail the whole operation
-                pass
+        git_commit_hash, git_tag_name = _create_git_tag_and_commit(
+            new_version, files_updated, git_tag, auto_commit
+        )
 
         # Store operation history for undo functionality
         backup_manager.store_operation_history(

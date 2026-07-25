@@ -37,108 +37,94 @@ The codebase is in good shape overall — the gaps below are refinements, not fi
 
 3. **Deferred — Full-file rewrites for structured formats.** `TomlVersionHandler.update_version`
    ([handlers.py:371-418](src/bumpcalver/handlers.py#L371-L418)) and
-   `YamlVersionHandler.update_version` ([handlers.py:463-500](src/bumpcalver/handlers.py#L463-L500))
-   parse the entire file into memory and re-serialize it from scratch to change a single
-   scalar. For small config files this is irrelevant, but it's also the root cause of the
-   correctness issues in §2 below (comment loss, key reordering) — switching to a
-   surgical/regex-based update (like `PythonVersionHandler` already does) or a
-   format-preserving library would fix both the performance profile and the data-loss risk
-   in one change. **Intentionally not done in this pass** — it's really the same fix as
-   Refactoring §2.1/§2.2 (needs `sort_keys=False` and a new `tomlkit` dependency), so it's
-   tracked there instead of here to avoid doing it twice.
+   `YamlVersionHandler.update_version` parse the entire file into memory and re-serialize it
+   from scratch to change a single scalar. **Correctness half done (2026-07-25):** the
+   data-loss risk this caused (comment loss, key reordering) is fixed via Refactoring
+   §2.1/§2.2 (`sort_keys=False`, migration to `tomlkit`). The underlying performance profile
+   is unchanged, though — both handlers still parse and re-serialize the *whole* file rather
+   than doing a surgical edit like `PythonVersionHandler` does. As originally noted, this
+   remains low-impact for the small config files this tool typically targets, so it's not
+   worth the added complexity of a surgical TOML/YAML editor unless real-world file sizes
+   turn out to make it matter.
 
 ---
 
 ## 2. Refactoring Opportunities
 
-1. **`YamlVersionHandler.update_version` silently reorders every key alphabetically.**
-   `yaml.safe_dump(data, f)` at [handlers.py:495](src/bumpcalver/handlers.py#L495) defaults
-   to `sort_keys=True`. I verified this directly:
+1. ✅ **DONE (2026-07-25) — `YamlVersionHandler.update_version` silently reordered every
+   key alphabetically.** `yaml.safe_dump(data, f)` defaulted to `sort_keys=True`. Fixed by
+   passing `sort_keys=False` at
+   [handlers.py:524-525](src/bumpcalver/handlers.py#L524-L525). Regression test
+   `test_yaml_handler_update_version_preserves_key_order` in `tests/test_handlers.py` uses a
+   real file (no mocking of `yaml.safe_dump`) with intentionally unsorted top-level and
+   nested keys and asserts the original order survives — I confirmed this test fails against
+   the old default (reproduced the exact alphabetized output first, then applied the fix).
 
-   ```python
-   >>> yaml.safe_dump({'z_key': 1, 'a_key': 2, 'configuration': {'name': 'app'}})
-   a_key: 2
-   configuration:
-     name: app
-   z_key: 1
-   ```
+2. ✅ **DONE (2026-07-25) — `TomlVersionHandler.update_version` stripped all comments on
+   write.** Migrated the handler from the plain `toml` package to `tomlkit` (style-preserving)
+   — see [handlers.py:359-449](src/bumpcalver/handlers.py#L359-L449). `tomlkit` is now an
+   explicit runtime dependency (`pyproject.toml`, `requirements.txt`); it was previously only
+   present as a transitive dependency of `pylint`, so this would have broken on a real
+   `pip install` of just the library. `config.py` still uses the plain `toml` package
+   deliberately — it's read-only there (parsing `pyproject.toml`/`bumpcalver.toml` at
+   startup), so it has no comment-loss risk and didn't need migrating. Regression test
+   `test_toml_handler_update_version_preserves_comments` round-trips a real commented TOML
+   file; I additionally smoke-tested against a real copy of this repo's own 175-line
+   `pyproject.toml` and confirmed only the `version = "..."` line changed in the diff.
 
-   Any YAML file bumped by BumpCalver gets its top-level and nested keys resorted
-   alphabetically, destroying the author's intended ordering/grouping. Fix: pass
-   `sort_keys=False`. This is a correctness bug hiding inside what looks like a
-   refactor-only concern, and it's currently untested (no test asserts key order is
-   preserved — see Testing §4 below).
+3. ✅ **DONE (2026-07-25) — `XmlVersionHandler.update_version` dropped the XML declaration
+   and comments.** Fixed at [handlers.py:664-680](src/bumpcalver/handlers.py#L664-L680): parses
+   with `ET.XMLParser(target=ET.TreeBuilder(insert_comments=True))` and writes with
+   `xml_declaration=True, encoding="UTF-8"`. This preserves the `<?xml ?>` declaration and
+   comments nested *inside* the root element, but — verified empirically, and documented
+   honestly in the class docstring rather than overclaiming — comments in the XML *prolog*
+   (before the root element's opening tag) are still dropped; that's a structural
+   `ElementTree` limitation (the tree model starts at the root element) that would need `lxml`
+   to fully close. Regression test `test_xml_handler_update_version_preserves_declaration_and_comments`
+   round-trips a real file with both a declaration and a nested comment.
 
-2. **`TomlVersionHandler.update_version` strips all comments on write.** The `toml` package
-   has no comment/formatting model, so `toml.load` → mutate → `toml.dump` silently drops
-   every comment in the file. Verified:
+4. ✅ **DONE (2026-07-25) — `main()` in `cli.py` was a single ~215-line function.** Extracted
+   four standalone, independently-testable helpers:
+   `_apply_semantic_bump`, `_compute_new_version`, `_all_files_already_updated`, and
+   `_create_git_tag_and_commit` ([cli.py:64-184](src/bumpcalver/cli.py#L64-L184)), alongside
+   the `_read_current_version` helper from the earlier performance pass. `main()` itself is
+   now ~90 lines of orchestration. All 27 existing `CliRunner`-based integration tests in
+   `tests/test_cli.py` pass unmodified — the extracted helpers reference the same
+   module-level imported names `main()` always used, so the existing
+   `mock.patch('src.bumpcalver.cli.X')`-style patches keep working. Added
+   `tests/test_cli_helpers.py` (19 new tests) exercising each extracted piece directly,
+   which is the whole point of the refactor: e.g. `_all_files_already_updated` and
+   `_create_git_tag_and_commit`'s git-failure-is-swallowed behavior can now be tested without
+   spinning up the full CLI.
 
-   ```python
-   >>> toml.dumps(toml.loads('# top comment\n[tool.x]\nversion = "1.0"  # inline\n'))
-   [tool.x]
-   version = "1.0"
-   ```
+5. ✅ **DONE (2026-07-25) — Duplicated key=value parsing across handlers.** Added
+   `_read_key_value_file(file_path, variable, strip_quotes=False)` to the `VersionHandler`
+   base class ([handlers.py:245-271](src/bumpcalver/handlers.py#L245-L271)), mirroring the
+   existing shared write-side helper. `PropertiesVersionHandler.read_version` and
+   `EnvVersionHandler.read_version` now both delegate to it (the `.env` variant passes
+   `strip_quotes=True`). Covered by the existing Properties/Env test suite, which already
+   exercised both the found/not-found and quote-stripping paths — handlers.py stayed at 100%
+   coverage through this change.
 
-   Since this tool's primary target is `pyproject.toml` — a file that commonly carries
-   comments — every bump against a commented `pyproject.toml` is destructive. Migrating to
-   `tomlkit` (style-preserving, drop-in-ish replacement for the parts of the `toml` API used
-   here) would fix this without changing the handler's public behavior.
+6. ✅ **DONE (2026-07-25) — `import configparser` repeated inside two methods.** Moved to a
+   single module-level import in `handlers.py` ([handlers.py:9](src/bumpcalver/handlers.py#L9)).
 
-3. **`XmlVersionHandler.update_version` drops the XML declaration and comments.**
-   `tree.write(file_path)` at [handlers.py:640](src/bumpcalver/handlers.py#L640) doesn't
-   pass `xml_declaration=True`, and `ElementTree.parse` doesn't preserve `<!-- comments -->`
-   by default. Verified with a round-trip: a file with `<?xml version="1.0" encoding="UTF-8"?>`
-   and a comment loses both after a single `update_version` call. Fix: parse with
-   `ET.XMLParser(target=ET.TreeBuilder(insert_comments=True))` (Python 3.8+) and write with
-   `tree.write(file_path, xml_declaration=True, encoding="UTF-8")`, or move to `lxml` if
-   broader XML fidelity is needed.
+7. ✅ **DONE (2026-07-25) — `MakefileVersionHandler.read_version` opened the file without an
+   explicit encoding.** Added `encoding="utf-8"` at
+   [handlers.py:774](src/bumpcalver/handlers.py#L774). New regression test
+   `test_makefile_handler_read_version_uses_explicit_utf8_encoding` asserts the `open()` call
+   arguments directly (rather than just reading ASCII content back correctly, which would
+   have passed even without the fix on this sandbox's own utf-8-default platform).
 
-4. **`main()` in `cli.py` is a single ~215-line function** doing argument validation, config
-   loading, semantic-version bumping, date/build versioning, pre-release suffixing, the
-   no-op guard, backup creation, file updates, and git tagging/undo-history storage all in
-   one place ([cli.py:79-295](src/bumpcalver/cli.py#L79-L295)). It's well covered by tests,
-   but its size makes it hard to unit-test sub-behaviors in isolation (everything is
-   exercised only through the full CLI). Extracting helpers such as
-   `_read_current_version(file_config)`, `_compute_new_version(...)`, and
-   `_all_files_already_updated(file_configs, new_version)` would let those pieces be tested
-   directly and would remove the duplicated read-version logic between
-   [cli.py:182-191](src/bumpcalver/cli.py#L182-L191) and
-   [cli.py:211-218](src/bumpcalver/cli.py#L211-L218).
+8. ✅ **DONE (2026-07-25) — `config.py` re-declared the same type annotation in both branches
+   of an if/else.** Consolidated to a single annotation at
+   [config.py:43](src/bumpcalver/config.py#L43).
 
-5. **Duplicated key=value parsing across handlers.** `PropertiesVersionHandler.read_version`
-   ([handlers.py:826-847](src/bumpcalver/handlers.py#L826-L847)) and
-   `EnvVersionHandler.read_version` ([handlers.py:867-890](src/bumpcalver/handlers.py#L867-L890))
-   are near-identical (iterate lines, skip comments/blank lines, split on first `=`); only
-   the `.env` variant additionally strips quotes. The base class already factors out the
-   *write* side of this (`_update_key_value_file`,
-   [handlers.py:221-242](src/bumpcalver/handlers.py#L221-L242)) — the same treatment could be
-   applied to the read side.
-
-6. **`import configparser` is repeated inside two methods** of `SetupCfgVersionHandler`
-   ([handlers.py:922](src/bumpcalver/handlers.py#L922) and
-   [handlers.py:997](src/bumpcalver/handlers.py#L997)) instead of once at module scope like
-   every other stdlib import in the file.
-
-7. **`MakefileVersionHandler.read_version` opens the file without an explicit encoding**
-   ([handlers.py:774](src/bumpcalver/handlers.py#L774)): `open(file_path, "r")` instead of
-   `open(file_path, "r", encoding="utf-8")`, which every other handler uses. On Windows
-   (which is in the CI test matrix — `.github/workflows/testing.yml`) this defaults to the
-   system locale encoding rather than UTF-8, so a Makefile with non-ASCII content could parse
-   differently on Windows vs. Linux/macOS runners.
-
-8. **`config.py` re-declares the same type annotation in both branches of an if/else**
-   ([config.py:44](src/bumpcalver/config.py#L44) and
-   [config.py:48](src/bumpcalver/config.py#L48)): `bumpcalver_config: Dict[str, Any] = ...`
-   appears twice for the same variable. Harmless, but a lint/mypy run would flag the
-   redundant annotation; only the first needs the type hint.
-
-9. **Tooling overlap:** `ruff` is configured with a fairly complete lint ruleset but
-   `select = ["I"]` (import sorting) is explicitly ignored in
-   [pyproject.toml:148](pyproject.toml#L148) even though a separate `isort` config and
-   `scripts/isort_run.sh` exist to do the same job, and `scripts/flake8.sh` /
-   `scripts/autoflake.sh` duplicate checks `ruff` already covers. Consolidating onto `ruff`
-   alone (enabling its `I` rules, dropping the standalone isort/flake8/autoflake scripts)
-   would reduce the number of tools contributors need to install and keep in sync.
+9. **Not done — tooling overlap** (`ruff`'s `I` rule vs. standalone `isort`/`flake8`/`autoflake`
+   scripts). Deliberately deferred: this is a dev-tooling/CI consolidation rather than library
+   code, touches multiple scripts and `.pre-commit-config.yaml`, and is more of a project
+   convention decision than a correctness fix — worth doing as its own separate, deliberate
+   change rather than folding into this pass.
 
 ---
 
@@ -202,12 +188,14 @@ The codebase is in good shape overall — the gaps below are refinements, not fi
 Coverage is already excellent (99% line coverage, 302 passing tests), so these are
 targeted gaps rather than a broad call for "more tests."
 
-1. **No regression test for YAML key ordering or TOML/XML comment preservation** — which is
-   exactly how the bugs in Refactoring §2.1–2.3 went unnoticed. Adding a test that round-trips
-   a YAML file with intentionally unsorted keys (asserting order is preserved after
-   `update_version`), a commented `.toml` file (asserting the comment survives), and an XML
-   file with a declaration/comment (asserting both survive) would both catch today's bugs and
-   prevent regressions once fixed.
+1. ✅ **DONE (2026-07-25) — No regression test for YAML key ordering or TOML/XML comment
+   preservation.** Added alongside the fixes in Refactoring §2.1–2.3:
+   `test_yaml_handler_update_version_preserves_key_order`,
+   `test_toml_handler_update_version_preserves_comments`, and
+   `test_xml_handler_update_version_preserves_declaration_and_comments` in
+   `tests/test_handlers.py`, all using real temporary files (no mocking of the underlying
+   `yaml`/`tomlkit`/`ElementTree` calls) so they actually exercise the real formatting/library
+   behavior instead of assuming it away.
 
 2. **The last few uncovered lines are exactly the exception-handling paths most worth
    testing directly:**
@@ -425,14 +413,14 @@ today only because the regex happens to match, not because it's real, supported 
 handling (see Capability Expansion §5.1 above). The instructions must say this explicitly so
 an AI assistant doesn't recommend the coincidence as an intentional pattern.
 
-**Known-limitations disclosure** (playbook §10.8, "don't overclaim"): until Refactoring
-§2.1–2.3 above are fixed, the instructions must explicitly warn that running `bumpcalver`
-against a YAML file reorders all of its keys alphabetically, and against a commented TOML or
-XML file strips the comments (and, for XML, the `<?xml ?>` declaration). An AI assistant
-recommending `bumpcalver` for those files needs to be able to pass that risk on to the
-developer rather than silently omitting it. Once those bugs are fixed, this caveat should be
-removed from the instructions in the same change — a direct instance of playbook lesson
-§10.7 ("update instructions alongside API changes").
+**Known-limitations disclosure** (playbook §10.8, "don't overclaim"): Refactoring §2.1–2.3
+above are now fixed (2026-07-25) — YAML key ordering, TOML comments, and the XML declaration
+all survive an `update_version` call — so the instructions no longer need to warn about those
+as blanket risks. One narrower, permanent caveat remains and should still be disclosed: XML
+comments that appear in the *prolog* (before the root element's opening tag) are still
+dropped, since that's a structural `ElementTree` limitation rather than a bug (see the
+`XmlVersionHandler` class docstring). This is exactly playbook lesson §10.7 in action — the
+instructions must be kept in sync with the code as it evolves, not written once and forgotten.
 
 ### 6.7 Tests
 
@@ -475,12 +463,13 @@ reasonable to treat it as its own follow-up unit of work rather than interleavin
 
 If tackling incrementally, the highest-leverage fixes are:
 
-1. Fix YAML key-reordering and TOML/XML comment/declaration loss (§2.1–2.3) — these are
-   silent data-loss bugs, not just style issues.
-2. Add the regression tests that would have caught them (§4.1).
+1. ✅ Fix YAML key-reordering and TOML/XML comment/declaration loss (§2.1–2.3) — these were
+   silent data-loss bugs, not just style issues. **Done 2026-07-25.**
+2. ✅ Add the regression tests that would have caught them (§4.1). **Done 2026-07-25.**
 3. Regenerate/fix `docs/modules.md` (§3.1) — it currently misrepresents the public API,
-   including omitting the undo and hybrid-versioning features entirely.
-4. Add `mypy` to CI (§4.3) and fix the Makefile encoding gap (§2.7) — cheap, durable
-   correctness nets.
+   including omitting the undo and hybrid-versioning features entirely. **Still open.**
+4. Add `mypy` to CI (§4.3) — still open. Fix the Makefile encoding gap (§2.7) — **done
+   2026-07-25**, alongside the rest of the Refactoring Opportunities pass (§2.1–2.8; §2.9
+   tooling-consolidation intentionally deferred, see its entry above).
 5. Everything else (dry-run, plugin handlers, generic text handler) is additive and can be
    prioritized against actual user requests.

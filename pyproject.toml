@@ -10,7 +10,7 @@ description = "A CLI tool for calendar-based version bumping"
 keywords = [ "python", "library", "calendar versioning", "calver", "versioning", "cli",]
 readme = "README.md"
 classifiers = [ "License :: OSI Approved :: MIT License", "Programming Language :: Python", "Programming Language :: Python :: 3", "Programming Language :: Python :: 3.9", "Programming Language :: Python :: 3.10", "Programming Language :: Python :: 3.11", "Programming Language :: Python :: 3.12", "Programming Language :: Python :: 3.13", "Operating System :: POSIX :: Linux", "Operating System :: POSIX", "Operating System :: MacOS :: MacOS X", "Operating System :: Microsoft :: Windows",]
-dependencies = [ "click>=8.0", "toml>=0.10.2", "PyYaml>=6.0.2",]
+dependencies = [ "click>=8.0", "toml>=0.10.2", "tomlkit>=0.12.0", "PyYaml>=6.0.2",]
 [[project.authors]]
 name = "Mike Ryan"
 email = "mikeryan56@gmail.com"

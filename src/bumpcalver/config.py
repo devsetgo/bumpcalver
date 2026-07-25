@@ -40,12 +40,11 @@ def load_config() -> Dict[str, Any]:
             with open(config_file, "r", encoding="utf-8") as f:
                 loaded_config: Dict[str, Any] = toml.load(f)
 
+            bumpcalver_config: Dict[str, Any]
             if config_file == "pyproject.toml":
-                bumpcalver_config: Dict[str, Any] = loaded_config.get("tool", {}).get(
-                    "bumpcalver", {}
-                )
+                bumpcalver_config = loaded_config.get("tool", {}).get("bumpcalver", {})
             else:
-                bumpcalver_config: Dict[str, Any] = loaded_config
+                bumpcalver_config = loaded_config
 
             config["version_format"] = bumpcalver_config.get(
                 "version_format", "{current_date}-{build_count:03}"

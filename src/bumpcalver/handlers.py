@@ -6,13 +6,14 @@ Makefile, Properties, .env, and setup.cfg files. Use `get_version_handler(file_t
 to obtain the right handler, or `update_version_in_files` for batch updates.
 """
 
+import configparser
 import json
 import re
 import xml.etree.ElementTree as ET
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
-import toml
+import tomlkit
 import yaml
 
 
@@ -241,6 +242,35 @@ class VersionHandler(ABC):
             print(f"Error updating {file_path}: {e}")
             return False
 
+    def _read_key_value_file(
+        self, file_path: str, variable: str, strip_quotes: bool = False
+    ) -> Optional[str]:
+        """Shared read logic for key=value line-based files (Properties, .env).
+
+        Args:
+            file_path (str): Path to the file to read.
+            variable (str): The key whose value should be returned.
+            strip_quotes (bool): Strip surrounding single/double quotes from the
+                value, as .env files conventionally allow (e.g. VERSION="1.0").
+
+        Returns:
+            Optional[str]: The value if the key is found, otherwise None.
+        """
+        try:
+            with open(file_path, "r", encoding="utf-8") as file:
+                for line in file:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        key, value = line.split("=", 1)
+                        if key.strip() == variable:
+                            value = value.strip()
+                            if strip_quotes:
+                                value = value.strip("\"'")
+                            return value
+        except Exception as e:
+            print(f"Error reading {file_path}: {e}")
+        return None
+
     def _handle_read_operation(self, file_path: str, operation_func) -> Optional[str]:
         """Handle read operations with standardized error handling."""
         try:
@@ -330,7 +360,11 @@ class TomlVersionHandler(VersionHandler):
     """Handler for reading and updating version strings in TOML files.
 
     This class provides methods to read and update version strings in TOML files.
-    It uses the `toml` library to parse and modify the version string.
+    It uses `tomlkit` (rather than the plain `toml` package) so that comments and
+    formatting elsewhere in the file survive an update — `toml.load`/`toml.dump`
+    round-trip through a plain dict and silently drop every comment, which matters
+    since this handler's primary target is `pyproject.toml`, a file that commonly
+    carries them.
 
     Methods:
         read_version: Reads the version string from the specified TOML file.
@@ -356,7 +390,7 @@ class TomlVersionHandler(VersionHandler):
         """
         def read_operation():
             with open(file_path, "r", encoding="utf-8") as file:
-                toml_content = toml.load(file)
+                toml_content = tomlkit.load(file)
             keys = variable.split(".")
             temp = toml_content
             for key in keys:
@@ -364,7 +398,7 @@ class TomlVersionHandler(VersionHandler):
                 if temp is None:
                     self._log_variable_not_found(variable, file_path)
                     return None
-            return temp
+            return str(temp)
 
         return self._handle_read_operation(file_path, read_operation)
 
@@ -393,7 +427,7 @@ class TomlVersionHandler(VersionHandler):
 
         try:
             with open(file_path, "r", encoding="utf-8") as file:
-                toml_content = toml.load(file)
+                toml_content = tomlkit.load(file)
 
             keys = variable.split(".")
             temp = toml_content
@@ -403,13 +437,16 @@ class TomlVersionHandler(VersionHandler):
                 temp = temp[key]
             last_key = keys[-1]
             if last_key in temp:
+                # Assigning into an existing key (rather than replacing the
+                # table) is what makes tomlkit preserve that key's inline
+                # comment/formatting instead of rewriting the whole line.
                 temp[last_key] = new_version
             else:
                 print(f"Variable '{variable}' not found in {file_path}")
                 return False
 
             with open(file_path, "w", encoding="utf-8") as file:
-                toml.dump(toml_content, file)
+                tomlkit.dump(toml_content, file)
 
             print(f"Updated {file_path}")
             return True
@@ -492,7 +529,9 @@ class YamlVersionHandler(VersionHandler):
                 temp = temp.setdefault(key, {}) # no pragma: no cover
             temp[keys[-1]] = new_version
             with open(file_path, "w", encoding="utf-8") as f:
-                yaml.safe_dump(data, f)
+                # sort_keys=False: yaml.safe_dump defaults to alphabetizing every
+                # key, which would silently reorder the whole file on every bump.
+                yaml.safe_dump(data, f, sort_keys=False)
             print(f"Updated {file_path}")
             return True
         except Exception as e:
@@ -576,6 +615,13 @@ class XmlVersionHandler(VersionHandler):
     This class provides methods to read and update version strings in XML files.
     It uses the `xml.etree.ElementTree` library to parse and modify the version string.
 
+    `update_version` preserves the `<?xml ?>` declaration and any comments nested
+    *inside* the root element. Comments that appear in the prolog (before the root
+    element's opening tag) are not preserved — that's an `ElementTree` limitation
+    ( `Element`/`TreeBuilder` model the tree from the root element down, so anything
+    outside it is dropped on write regardless of parser options); switching to `lxml`
+    would be required for full prolog fidelity.
+
     Methods:
         read_version: Reads the version string from the specified XML file.
         update_version: Updates the version string in the specified XML file.
@@ -632,12 +678,17 @@ class XmlVersionHandler(VersionHandler):
         new_version = self._format_version_with_standard(new_version, **kwargs)
 
         try:
-            tree = ET.parse(file_path)
+            # insert_comments=True keeps comments nested inside the root element
+            # in the parsed tree (see class docstring for what this does and
+            # doesn't cover); xml_declaration=True on write restores the
+            # <?xml ?> prolog, which ET.write() otherwise drops by default.
+            parser = ET.XMLParser(target=ET.TreeBuilder(insert_comments=True))
+            tree = ET.parse(file_path, parser=parser)
             root = tree.getroot()
             element = root.find(variable)
             if element is not None:
                 element.text = new_version
-                tree.write(file_path)
+                tree.write(file_path, xml_declaration=True, encoding="UTF-8")
                 print(f"Updated {file_path}")
                 return True
             print(f"Variable '{variable}' not found in {file_path}")
@@ -771,7 +822,7 @@ class MakefileVersionHandler(VersionHandler):
             Exception: If there is an error reading the file.
         """
         def read_operation():
-            with open(file_path, "r") as file:
+            with open(file_path, "r", encoding="utf-8") as file:
                 for line in file:
                     if line.startswith(variable):
                         return line.split("=")[1].strip()
@@ -834,17 +885,7 @@ class PropertiesVersionHandler(VersionHandler):
         Returns:
             Optional[str]: The version string if found, otherwise None.
         """
-        try:
-            with open(file_path, "r", encoding="utf-8") as file:
-                for line in file:
-                    line = line.strip()
-                    if line and not line.startswith("#") and "=" in line:
-                        key, value = line.split("=", 1)
-                        if key.strip() == variable:
-                            return value.strip()
-        except Exception as e:
-            print(f"Error reading {file_path}: {e}")
-        return None
+        return self._read_key_value_file(file_path, variable)
 
     def update_version(
         self, file_path: str, variable: str, new_version: str, **kwargs
@@ -875,19 +916,7 @@ class EnvVersionHandler(VersionHandler):
         Returns:
             Optional[str]: The version string if found, otherwise None.
         """
-        try:
-            with open(file_path, "r", encoding="utf-8") as file:
-                for line in file:
-                    line = line.strip()
-                    if line and not line.startswith("#") and "=" in line:
-                        key, value = line.split("=", 1)
-                        if key.strip() == variable:
-                            # Remove quotes if present
-                            value = value.strip().strip("\"'")
-                            return value
-        except Exception as e:
-            print(f"Error reading {file_path}: {e}")
-        return None
+        return self._read_key_value_file(file_path, variable, strip_quotes=True)
 
     def update_version(
         self, file_path: str, variable: str, new_version: str, **kwargs
@@ -919,7 +948,6 @@ class SetupCfgVersionHandler(VersionHandler):
             Optional[str]: The version string if found, otherwise None.
         """
         try:
-            import configparser
             config = configparser.ConfigParser()
             config.read(file_path)
 
@@ -994,7 +1022,6 @@ class SetupCfgVersionHandler(VersionHandler):
         new_version = self._format_version_with_standard(new_version, **kwargs)
 
         try:
-            import configparser
             config = configparser.ConfigParser()
             config.read(file_path)
 
