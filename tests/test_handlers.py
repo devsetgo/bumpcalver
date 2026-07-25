@@ -1,17 +1,19 @@
 # tests/test_handlers.py
 import json
 import xml.etree.ElementTree as ET
+from typing import Any, Optional
 from unittest import mock
 
 import pytest
 import tomlkit
-import yaml
+from ruamel.yaml import YAMLError
 from src.bumpcalver.handlers import (
     DockerfileVersionHandler,
     JsonVersionHandler,
     MakefileVersionHandler,
     PythonVersionHandler,
     TomlVersionHandler,
+    VersionHandler,
     XmlVersionHandler,
     YamlVersionHandler,
     PropertiesVersionHandler,
@@ -117,43 +119,42 @@ version = "2023-10-10"
 
 
 def test_yaml_handler_read_version(monkeypatch):
+    from src.bumpcalver import handlers
+
     handler = YamlVersionHandler()
-    yaml_content = """
-version: "2023-10-10"
-"""
-    mock_open = mock.mock_open(read_data=yaml_content)
+    mock_open = mock.mock_open(read_data='version: "2023-10-10"\n')
     monkeypatch.setattr("builtins.open", mock_open)
-    monkeypatch.setattr(yaml, "safe_load", lambda f: {"version": "2023-10-10"})
+    monkeypatch.setattr(handlers._yaml, "load", lambda f: {"version": "2023-10-10"})
 
     version = handler.read_version("config.yaml", "version")
     assert version == "2023-10-10"
 
 
 def test_yaml_handler_update_version(monkeypatch):
+    from src.bumpcalver import handlers
+
     handler = YamlVersionHandler()
-    yaml_content = """
-version: "2023-10-10"
-"""
-    mock_open = mock.mock_open(read_data=yaml_content)
+    mock_open = mock.mock_open(read_data='version: "2023-10-10"\n')
     monkeypatch.setattr("builtins.open", mock_open)
     yaml_data = {"version": "2023-10-10"}
-    monkeypatch.setattr(yaml, "safe_load", lambda f: yaml_data)
+    monkeypatch.setattr(handlers._yaml, "load", lambda f: yaml_data)
     dump_mock = mock.Mock()
-    monkeypatch.setattr(yaml, "safe_dump", dump_mock)
+    monkeypatch.setattr(handlers._yaml, "dump", dump_mock)
 
     result = handler.update_version("config.yaml", "version", "2023-10-11")
     assert result is True
 
     expected_data = {"version": "2023-10-11"}
-    dump_mock.assert_called_once_with(expected_data, mock.ANY, sort_keys=False)
+    dump_mock.assert_called_once_with(expected_data, mock.ANY)
 
 
 def test_yaml_handler_update_version_preserves_key_order(tmp_path):
-    # Regression test for the real bug: yaml.safe_dump defaults to
+    # Regression test for the real bug: yaml.safe_dump (the plain PyYAML
+    # package this handler used before migrating to ruamel.yaml) defaults to
     # sort_keys=True, which would alphabetize every top-level and nested key
     # on every bump, silently destroying the author's intended file layout.
-    # Uses a real file (no mocking of yaml.safe_dump) so it actually exercises
-    # PyYAML's default behavior rather than assuming it away.
+    # Uses a real file (no mocking of ruamel.yaml) so it actually exercises
+    # real round-trip behavior rather than assuming it away.
     handler = YamlVersionHandler()
     yaml_file = tmp_path / "config.yaml"
     yaml_file.write_text(
@@ -178,6 +179,35 @@ def test_yaml_handler_update_version_preserves_key_order(tmp_path):
     assert "version: '2.0'" in written
 
 
+def test_yaml_handler_update_version_preserves_comments(tmp_path):
+    # Regression test for a real bug that predated the ruamel.yaml migration:
+    # yaml.safe_load()/yaml.safe_dump() round-trip through a plain dict, which
+    # has no comment model, so every comment in the file was silently dropped
+    # on write — sort_keys=False (the earlier fix) only ever addressed key
+    # ordering, not this. Uses a real file (no mocking of ruamel.yaml) so it
+    # actually exercises real round-trip behavior rather than assuming it away.
+    handler = YamlVersionHandler()
+    yaml_file = tmp_path / "config.yaml"
+    yaml_file.write_text(
+        "# top-level comment\n"
+        "zebra: first  # inline comment\n"
+        "configuration:\n"
+        "  # nested comment\n"
+        "  name: app\n"
+        "  version: '1.0'\n",
+        encoding="utf-8",
+    )
+
+    result = handler.update_version(str(yaml_file), "configuration.version", "2.0")
+    assert result is True
+
+    written = yaml_file.read_text(encoding="utf-8")
+    assert "# top-level comment" in written
+    assert "# inline comment" in written
+    assert "# nested comment" in written
+    assert "version: '2.0'" in written
+
+
 def test_yaml_handler_read_version_exception(monkeypatch, capsys):
     handler = YamlVersionHandler()
 
@@ -195,13 +225,15 @@ def test_yaml_handler_read_version_exception(monkeypatch, capsys):
 
 
 def test_yaml_handler_update_version_exception(monkeypatch, capsys):
+    from src.bumpcalver import handlers
+
     handler = YamlVersionHandler()
 
-    # Simulate an exception during yaml.safe_load
+    # Simulate an exception during _yaml.load
     def mock_yaml_load(f):
-        raise yaml.YAMLError("Malformed YAML")
+        raise YAMLError("Malformed YAML")
 
-    monkeypatch.setattr("yaml.safe_load", mock_yaml_load)
+    monkeypatch.setattr(handlers._yaml, "load", mock_yaml_load)
     mock_open = mock.mock_open()
     monkeypatch.setattr("builtins.open", mock_open)
 
@@ -734,13 +766,12 @@ name = "example"
 
 
 def test_yaml_handler_read_version_variable_not_found(monkeypatch, capsys):
+    from src.bumpcalver import handlers
+
     handler = YamlVersionHandler()
-    yaml_content = """
-version: "2023-10-10"
-"""
-    mock_open = mock.mock_open(read_data=yaml_content)
+    mock_open = mock.mock_open(read_data='version: "2023-10-10"\n')
     monkeypatch.setattr("builtins.open", mock_open)
-    monkeypatch.setattr(yaml, "safe_load", lambda f: {"version": "2023-10-10"})
+    monkeypatch.setattr(handlers._yaml, "load", lambda f: {"version": "2023-10-10"})
 
     version = handler.read_version("config.yaml", "nonexistent_variable")
     assert version is None
@@ -1977,3 +2008,213 @@ def test_update_version_in_files_passes_pattern_to_regex_handler(tmp_path):
     updated = update_version_in_files("2.0.0", file_configs)
     assert updated == [str(version_file)]
     assert 'VERSION = "2.0.0"' in version_file.read_text(encoding="utf-8")
+
+
+# ---------------------------------------------------------------------------
+# Plugin handlers via the "bumpcalver.handlers" entry-point group
+# (Capability Expansion §5.2)
+# ---------------------------------------------------------------------------
+
+@pytest.fixture(autouse=True)
+def _clear_plugin_handler_cache():
+    """Ensure _discover_plugin_handlers()'s cache never leaks between tests.
+
+    Only this test class's tests actually patch _iter_plugin_entry_points, but
+    clearing unconditionally before *and* after every test in this module is
+    cheap and removes any risk of test order affecting results.
+    """
+    from src.bumpcalver.handlers import _discover_plugin_handlers
+
+    _discover_plugin_handlers.cache_clear()
+    yield
+    _discover_plugin_handlers.cache_clear()
+
+
+class _FakePluginHandler(VersionHandler):
+    """A minimal concrete VersionHandler used as a stand-in plugin in tests."""
+
+    def read_version(self, file_path: str, variable: str, **kwargs: Any) -> Optional[str]:
+        return "plugin-1.0"
+
+    def update_version(
+        self, file_path: str, variable: str, new_version: str, **kwargs: Any
+    ) -> bool:
+        return True
+
+
+def _make_fake_entry_point(name: str, value: str, load_result):
+    """Build a mock.Mock that behaves like importlib.metadata.EntryPoint."""
+    ep = mock.Mock()
+    ep.name = name
+    ep.value = value
+    if isinstance(load_result, Exception):
+        ep.load.side_effect = load_result
+    else:
+        ep.load.return_value = load_result
+    return ep
+
+
+def test_get_version_handler_discovers_plugin(monkeypatch):
+    ep = _make_fake_entry_point("myformat", "my_pkg.handlers:MyFormatHandler", _FakePluginHandler)
+    monkeypatch.setattr(
+        "src.bumpcalver.handlers._iter_plugin_entry_points", lambda: [ep]
+    )
+
+    handler = get_version_handler("myformat")
+    assert isinstance(handler, _FakePluginHandler)
+    assert handler.read_version("x", "y") == "plugin-1.0"
+
+
+def test_available_file_types_includes_builtins_and_plugins(monkeypatch):
+    ep = _make_fake_entry_point("myformat", "my_pkg.handlers:MyFormatHandler", _FakePluginHandler)
+    monkeypatch.setattr(
+        "src.bumpcalver.handlers._iter_plugin_entry_points", lambda: [ep]
+    )
+
+    from src.bumpcalver.handlers import available_file_types
+
+    types = available_file_types()
+    assert "myformat" in types
+    assert "toml" in types
+    assert "python" in types
+    assert types == sorted(types)
+
+
+def test_available_file_types_with_no_plugins_installed(monkeypatch):
+    monkeypatch.setattr("src.bumpcalver.handlers._iter_plugin_entry_points", lambda: [])
+
+    from src.bumpcalver.handlers import available_file_types
+
+    types = available_file_types()
+    assert "myformat" not in types
+    assert "toml" in types
+
+
+def test_plugin_cannot_override_a_builtin_file_type(monkeypatch, capsys):
+    # A plugin claiming "toml" must never shadow the real TomlVersionHandler —
+    # this is the core trust/safety property of the whole mechanism: installing
+    # some unrelated package can't silently change how your existing files
+    # are handled.
+    ep = _make_fake_entry_point("toml", "evil_pkg:EvilHandler", _FakePluginHandler)
+    monkeypatch.setattr(
+        "src.bumpcalver.handlers._iter_plugin_entry_points", lambda: [ep]
+    )
+
+    # get_version_handler() short-circuits on a match in the built-in registry
+    # without ever consulting plugins, so trigger discovery explicitly via
+    # available_file_types() to exercise (and see the warning from) the
+    # collision-detection path itself.
+    from src.bumpcalver.handlers import available_file_types
+
+    types = available_file_types()
+    assert "toml" in types
+
+    captured = capsys.readouterr()
+    assert "same name as a built-in file_type" in captured.err
+
+    handler = get_version_handler("toml")
+    assert isinstance(handler, TomlVersionHandler)
+
+
+def test_plugin_that_fails_to_load_is_skipped_not_fatal(monkeypatch, capsys):
+    ep = _make_fake_entry_point(
+        "broken", "nope.module:Nope", ImportError("No module named 'nope'")
+    )
+    monkeypatch.setattr(
+        "src.bumpcalver.handlers._iter_plugin_entry_points", lambda: [ep]
+    )
+
+    with pytest.raises(ValueError, match="Unsupported file type: broken"):
+        get_version_handler("broken")
+
+    captured = capsys.readouterr()
+    assert "could not load plugin handler 'broken'" in captured.err
+    assert "No module named 'nope'" in captured.err
+
+
+def test_plugin_entry_point_not_a_version_handler_subclass_is_skipped(monkeypatch, capsys):
+    ep = _make_fake_entry_point("notahandler", "some_pkg:NotAHandler", str)
+    monkeypatch.setattr(
+        "src.bumpcalver.handlers._iter_plugin_entry_points", lambda: [ep]
+    )
+
+    with pytest.raises(ValueError, match="Unsupported file type: notahandler"):
+        get_version_handler("notahandler")
+
+    captured = capsys.readouterr()
+    assert "is not a VersionHandler subclass" in captured.err
+
+
+def test_two_plugins_registering_same_name_first_one_wins(monkeypatch, capsys):
+    class _OtherFakeHandler(VersionHandler):
+        def read_version(self, file_path: str, variable: str, **kwargs: Any) -> Optional[str]:
+            return "other"
+
+        def update_version(
+            self, file_path: str, variable: str, new_version: str, **kwargs: Any
+        ) -> bool:
+            return True
+
+    ep1 = _make_fake_entry_point("dup", "pkg_one:HandlerOne", _FakePluginHandler)
+    ep2 = _make_fake_entry_point("dup", "pkg_two:HandlerTwo", _OtherFakeHandler)
+    monkeypatch.setattr(
+        "src.bumpcalver.handlers._iter_plugin_entry_points", lambda: [ep1, ep2]
+    )
+
+    handler = get_version_handler("dup")
+    assert isinstance(handler, _FakePluginHandler)
+
+    captured = capsys.readouterr()
+    assert "multiple plugins registered for file_type 'dup'" in captured.err
+
+
+def test_unknown_file_type_with_no_plugins_still_raises(monkeypatch):
+    monkeypatch.setattr("src.bumpcalver.handlers._iter_plugin_entry_points", lambda: [])
+
+    with pytest.raises(ValueError, match="Unsupported file type: nope"):
+        get_version_handler("nope")
+
+
+def test_discover_plugin_handlers_is_cached(monkeypatch):
+    from src.bumpcalver.handlers import _discover_plugin_handlers
+
+    call_count = {"n": 0}
+
+    def counting_entry_points():
+        call_count["n"] += 1
+        return []
+
+    monkeypatch.setattr(
+        "src.bumpcalver.handlers._iter_plugin_entry_points", counting_entry_points
+    )
+
+    _discover_plugin_handlers()
+    _discover_plugin_handlers()
+    _discover_plugin_handlers()
+
+    assert call_count["n"] == 1
+
+
+def test_iter_plugin_entry_points_python310_plus_select_api():
+    from src.bumpcalver.handlers import _iter_plugin_entry_points, PLUGIN_ENTRY_POINT_GROUP
+
+    fake_eps = mock.Mock()
+    fake_eps.select.return_value = ["sentinel"]
+
+    with mock.patch("src.bumpcalver.handlers.entry_points", return_value=fake_eps):
+        result = _iter_plugin_entry_points()
+
+    assert result == ["sentinel"]
+    fake_eps.select.assert_called_once_with(group=PLUGIN_ENTRY_POINT_GROUP)
+
+
+def test_iter_plugin_entry_points_python39_dict_api():
+    from src.bumpcalver.handlers import _iter_plugin_entry_points, PLUGIN_ENTRY_POINT_GROUP
+
+    # Python 3.9's entry_points() returns a plain dict with no .select().
+    fake_eps = {PLUGIN_ENTRY_POINT_GROUP: ["sentinel"]}
+
+    with mock.patch("src.bumpcalver.handlers.entry_points", return_value=fake_eps):
+        result = _iter_plugin_entry_points()
+
+    assert result == ["sentinel"]

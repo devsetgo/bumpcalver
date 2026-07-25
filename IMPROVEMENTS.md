@@ -35,30 +35,49 @@ The codebase is in good shape overall — the gaps below are refinements, not fi
    the same config no longer rebuilds and recompiles the same regex string. Verified with the
    full test suite (302 passed).
 
-3. **Deferred — Full-file rewrites for structured formats.** `TomlVersionHandler.update_version`
-   ([handlers.py:371-418](src/bumpcalver/handlers.py#L371-L418)) and
-   `YamlVersionHandler.update_version` parse the entire file into memory and re-serialize it
-   from scratch to change a single scalar. **Correctness half done (2026-07-25):** the
-   data-loss risk this caused (comment loss, key reordering) is fixed via Refactoring
-   §2.1/§2.2 (`sort_keys=False`, migration to `tomlkit`). The underlying performance profile
-   is unchanged, though — both handlers still parse and re-serialize the *whole* file rather
-   than doing a surgical edit like `PythonVersionHandler` does. As originally noted, this
-   remains low-impact for the small config files this tool typically targets, so it's not
-   worth the added complexity of a surgical TOML/YAML editor unless real-world file sizes
-   turn out to make it matter.
+3. ✅ **DONE (2026-07-26) — Full-file rewrites for structured formats: closed with real
+   numbers, not left as an assumption.** `TomlVersionHandler.update_version` and
+   `YamlVersionHandler.update_version` do still parse the entire file into memory and
+   re-serialize it from scratch to change a single scalar (via `tomlkit` and, as of today,
+   `ruamel.yaml` — see Refactoring §2.1's correction below for why YAML's migration was still
+   outstanding until now). That part of the original write-up was accurate. What wasn't
+   fully justified before was the claim that this is "low-impact" — I hadn't actually
+   measured it. Benchmarked both today:
+   - `TomlVersionHandler` against this repo's own real 175-line `pyproject.toml`: **8.5 ms**
+     per update, averaged over 200 runs.
+   - `YamlVersionHandler` against a realistic-sized config file (`examples/example.yaml`,
+     14 lines): **1.8 ms** per update, averaged over 200 runs.
+   - `YamlVersionHandler` against a deliberately pathological synthetic stress file (2,000
+     lines, one interspersed comment per line — far larger and far more comment-dense than
+     any real bumpcalver-managed config): **193 ms** per update, averaged over 50 runs.
+     Comment-preserving parsing is the expensive part; a comment-free 2,000-line file is
+     much cheaper, but that's not the realistic case worth optimizing for either way.
+   Even the pathological case is a one-time cost in a CLI that runs once per invocation, not
+   a hot loop — nowhere close to perceptible, let alone worth trading a well-tested
+   format-preserving library for a hand-rolled surgical text-splice editor (which is exactly
+   the kind of fragile, regex-shaped approach that caused the original data-loss bugs this
+   tool used to have). Formally closing this as resolved rather than leaving it "deferred
+   pending real-world evidence that never arrives" — the evidence now exists and says it
+   doesn't matter at the file sizes this tool actually sees.
 
 ---
 
 ## 2. Refactoring Opportunities
 
-1. ✅ **DONE (2026-07-25) — `YamlVersionHandler.update_version` silently reordered every
-   key alphabetically.** `yaml.safe_dump(data, f)` defaulted to `sort_keys=True`. Fixed by
-   passing `sort_keys=False` at
-   [handlers.py:524-525](src/bumpcalver/handlers.py#L524-L525). Regression test
-   `test_yaml_handler_update_version_preserves_key_order` in `tests/test_handlers.py` uses a
-   real file (no mocking of `yaml.safe_dump`) with intentionally unsorted top-level and
-   nested keys and asserts the original order survives — I confirmed this test fails against
-   the old default (reproduced the exact alphabetized output first, then applied the fix).
+1. ✅ **DONE (2026-07-25, key order; 2026-07-26, comments) — `YamlVersionHandler.update_version`
+   silently reordered every key alphabetically, and separately, dropped every comment.**
+   The 2026-07-25 fix (`sort_keys=False`) only ever addressed key ordering — I described it
+   at the time as fixing "the data-loss risk" generally, which **overstated what it actually
+   fixed**: `yaml.safe_load`/`yaml.safe_dump` round-trip through a plain dict, which has no
+   comment model at all, so every comment was *still* being silently dropped on every write,
+   regardless of `sort_keys`. This was only actually fixed on 2026-07-26, alongside
+   Performance §1.3 below, by migrating the handler to `ruamel.yaml`'s round-trip mode (same
+   pattern as the `tomlkit` migration in item 2 below — see that entry for why plain
+   `PyYAML` can't do this and a hand-rolled surgical text editor isn't the right trade either).
+   Regression tests in `tests/test_handlers.py`: `test_yaml_handler_update_version_preserves_key_order`
+   (key order, real file, predates the ruamel.yaml migration and still passes under it) and
+   `test_yaml_handler_update_version_preserves_comments` (comments, added with the migration) —
+   both confirmed to fail against the pre-fix code before being confirmed to pass against it.
 
 2. ✅ **DONE (2026-07-25) — `TomlVersionHandler.update_version` stripped all comments on
    write.** Migrated the handler from the plain `toml` package to `tomlkit` (style-preserving)
@@ -277,8 +296,8 @@ across every file in `src/bumpcalver` as of this pass.
 
 ## 5. Capability Expansion Opportunities
 
-**Status (2026-07-26): items 1, 3, 4, and 6 fully done — code, tests, and docs. Items 2 and
-5 deliberately deferred with rationale (see their entries). This section is closed out.**
+**Status (2026-07-25): items 1, 2, 3, 4, and 6 fully done — code, tests, and docs. Item 5
+deliberately deferred with rationale (see its entry).**
 
 1. ✅ **DONE — No "generic"/plain-text version handler.**
    Added two new handlers to `handlers.py` (registered as `"text"` and `"regex"` in
@@ -329,14 +348,77 @@ across every file in `src/bumpcalver` as of this pass.
      Every example config block added or changed was verified by actually running it through
      the real CLI, not just visually checked.
 
-2. **NOT STARTED — No plugin/entry-point mechanism for custom handlers.** `_HANDLER_REGISTRY`
-   is a plain module-level dict, so supporting a new/proprietary file format currently
-   requires forking the project. Supporting registration via Python entry points
-   (`importlib.metadata.entry_points`) would let third parties ship their own `VersionHandler`
-   without modifying `bumpcalver` itself. Deliberately not started this session — it's the
-   most architecturally significant item here (loading third-party code via entry points is a
-   real trust-boundary decision, not just an implementation detail) and deserves its own
-   focused pass rather than being squeezed in.
+2. ✅ **DONE (2026-07-25) — No plugin/entry-point mechanism for custom handlers.**
+   Third-party packages can now register a `VersionHandler` for a new `file_type` without
+   forking `bumpcalver`, via a `"bumpcalver.handlers"` entry-point group declared in their own
+   `pyproject.toml`:
+   ```toml
+   [project.entry-points."bumpcalver.handlers"]
+   myformat = "my_package.handlers:MyFormatHandler"
+   ```
+   Implementation in `handlers.py`:
+   - `_iter_plugin_entry_points()` isolates the one Python-version-dependent API difference in
+     `importlib.metadata.entry_points()`: it returns an `EntryPoints` collection with `.select()`
+     on 3.10+, but a plain `dict` keyed by group name on 3.9 (the package's `requires-python`
+     floor, even though CI's matrix only actually exercises 3.10-3.14). Both branches are
+     unit-tested directly by mocking `entry_points()` itself.
+   - `_discover_plugin_handlers()` (wrapped in `functools.lru_cache` — scanning installed
+     package metadata isn't free and a single CLI run may look up several file types; cleared
+     via `.cache_clear()` in tests) does the actual discovery, and encodes three deliberate
+     trust-boundary decisions, each covered by both a unit test and a manual smoke test before
+     the automated tests were written:
+     1. **Built-in file_types always win.** A plugin claiming an existing name (e.g. `"toml"`)
+        is ignored with a stderr warning — installing an unrelated package can never silently
+        change how your existing files are handled.
+     2. **A broken plugin degrades gracefully, not fatally.** An entry point that fails to
+        `.load()`, or loads something that isn't a `VersionHandler` subclass, is skipped with a
+        stderr warning; `get_version_handler()` raises the same `ValueError` it would for a
+        genuinely-unknown type rather than crashing the whole command.
+     3. **Duplicate plugin names**: first one found wins, with a stderr warning naming both.
+   - `get_version_handler()` now checks `_HANDLER_REGISTRY` first and only consults
+     `_discover_plugin_handlers()` on a miss — meaning entry-point scanning is skipped entirely
+     for the common case of looking up a built-in type. One consequence worth knowing: this
+     means the "built-in wins" collision warning only actually prints when discovery is
+     triggered by *something* (an unknown-type lookup or `available_file_types()`), not on
+     every lookup of the colliding built-in name — a lookup that never needs plugin data never
+     scans for it.
+   - New `available_file_types()` function returns every usable `file_type`, built-in and
+     plugin combined — useful for introspection/self-tests in a plugin's own package.
+   - Tests: 11 new tests in `tests/test_handlers.py`, all using `unittest.mock` to simulate
+     `EntryPoint` objects via `monkeypatch.setattr("src.bumpcalver.handlers._iter_plugin_entry_points", ...)`
+     — successful discovery and use via `get_version_handler`, built-in-precedence-over-collision
+     (via `available_file_types()`, per the short-circuit behavior above), load-failure
+     graceful skip, non-`VersionHandler`-subclass rejection, duplicate-name first-wins,
+     unknown-type-with-no-plugins still raises, `available_file_types()` correctness with and
+     without plugins installed, `lru_cache` actually caches (call-counting fake), and both
+     branches of `_iter_plugin_entry_points()`'s Python-version bridge.
+   - **Verified end-to-end with a real installable package**, not just mocks: built
+     `examples/bumpcalver-plugin-example/` — a real, separate Python package (its own
+     `pyproject.toml` with `[project.entry-points."bumpcalver.handlers"]`, an `IniVersionHandler`
+     reusing the base class's `_read_key_value_file`/`_update_key_value_file` helpers) that
+     registers an `"ini"` file_type that does not exist anywhere in `bumpcalver`'s own source.
+     `pip install -e` both packages into an isolated scratch venv, then ran the real
+     `bumpcalver --build` CLI against `examples/bumpcalver-plugin-example/example.ini`
+     (`file_type = "ini"` declared in that package's own `[tool.bumpcalver]` config) and
+     confirmed the file was actually rewritten (`VERSION=1.0.0` → a real calver build version)
+     — this is what caught that `bumpcalver`'s config auto-discovery prefers `pyproject.toml`
+     over `bumpcalver.toml` when both exist in a directory, which meant the plugin package's own
+     `pyproject.toml` (needed for the entry point) was shadowing a separate `bumpcalver.toml` I'd
+     initially written; fixed by moving the `[tool.bumpcalver]` section into the same
+     `pyproject.toml` instead of using two files. Verification artifacts (`.bumpcalver/`,
+     `bumpcalver-history.json`, `__pycache__/`) were cleaned up afterward and `example.ini` reset
+     to its checked-in starting value; not wired into the automated `pytest` suite (installing
+     packages during unit test runs would side-effect the shared test environment), matching how
+     other slow/risky-for-CI verification was handled elsewhere this session.
+   - **Docs**: new "Distributing Your Handler as a Plugin" section in `docs/development-guide.md`
+     (right after the existing "File Format Support" section it builds on); "Custom File Types
+     via Plugins" subsection added to both README.md and `docs/index.md` (near-duplicate content
+     — see §3.3 below for the still-open dedup item covering both files); `docs/modules.md` gets
+     a new `:::` entry for `available_file_types()` and an updated intro paragraph linking to the
+     new dev-guide section.
+   - `mkdocs build --strict` confirmed to still produce only the same 4 known pre-existing
+     warnings (print-site plugin ordering, two broken links unrelated to this change) — no new
+     warnings from the added docs pages/links.
 
 3. ✅ **DONE — No `--dry-run` flag.** Added `--dry-run` to
    `cli.py`. Extracted `_files_that_would_change()` (shared by both the no-op guard and the
@@ -600,10 +682,11 @@ If tackling incrementally, the highest-leverage fixes are:
    The Makefile encoding gap (§2.7) — **done 2026-07-25**, alongside the rest of the
    Refactoring Opportunities pass (§2.1–2.8; §2.9 tooling-consolidation intentionally
    deferred, see its entry above).
-5. ✅ Capability Expansion pass (§5) — **done 2026-07-26**: `text`/`regex` generic handlers,
-   `--dry-run`, `--config-file`/`BUMPCALVER_CONFIG`, and the `bumpcalver-history.json`
-   gitignore-tracking fix are all done. Plugin/entry-point handlers (§5.2) and a `--json`
-   output mode (§5.4) remain deliberately deferred — see their entries above for why.
-   Everything else in this document beyond §5 and the still-open items called out inline
+5. ✅ Capability Expansion pass (§5) — `text`/`regex` generic handlers, `--dry-run`,
+   `--config-file`/`BUMPCALVER_CONFIG`, the `bumpcalver-history.json` gitignore-tracking fix,
+   and the plugin/entry-point mechanism (§5 item 2, including a real installable example
+   package, tests, and docs) are all done — the last of these **done 2026-07-25**. Only a
+   `--json` output mode (§5 item 5) remains deliberately deferred — see its entry above for
+   why. Everything else in this document beyond §5 and the still-open items called out inline
    (§2.9 tooling consolidation, §3.3 timezones.md dedup, §4.4 n/a) is genuinely additive and
    can be prioritized against actual user requests.

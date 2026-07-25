@@ -219,6 +219,15 @@ For formats without a dedicated handler above:
   - Example: `pattern = 'VERSION = "(.+?)"'` matches Ruby's
     `VERSION = "2025.02.02"` and replaces only the quoted text.
 
+### Custom File Types via Plugins
+
+If none of the above fit and `text`/`regex` aren't enough, third-party
+packages can register their own `file_type` handlers without forking
+`bumpcalver`, via a `bumpcalver.handlers` entry point. See the "Distributing
+Your Handler as a Plugin" section of the [development guide](development-guide.md)
+and the runnable example at
+[`examples/bumpcalver-plugin-example/`](https://github.com/devsetgo/bumpcalver/tree/main/examples/bumpcalver-plugin-example).
+
 ---
 
 ## Command-Line Usage

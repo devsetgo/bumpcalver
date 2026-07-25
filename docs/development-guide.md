@@ -380,6 +380,49 @@ def test_your_format_handler_round_trip(tmp_path):
      `_HANDLER_REGISTRY` entry) will show up automatically next time the docs
      are built.
 
+### Distributing Your Handler as a Plugin
+
+Steps 1-2 above (writing the `VersionHandler` subclass) are identical whether
+you're contributing it back to `bumpcalver` or shipping it in your own
+package. If it's proprietary, niche, or you'd just rather not wait on a PR,
+skip step 3 (editing `_HANDLER_REGISTRY`) — register it via the
+`bumpcalver.handlers` entry-point group instead, from your own package's
+`pyproject.toml`:
+
+```toml
+[project.entry-points."bumpcalver.handlers"]
+myformat = "my_package.handlers:MyFormatHandler"
+```
+
+Once your package is installed in the same environment as `bumpcalver`
+(`pip install your-package`), `file_type = "myformat"` becomes usable in
+`[[tool.bumpcalver.file]]` entries — no fork, no PR, no changes to
+`bumpcalver` itself. `bumpcalver` discovers it via
+[`importlib.metadata.entry_points()`](https://docs.python.org/3/library/importlib.metadata.html#entry-points)
+the first time a `file_type` lookup misses the built-in registry, and caches
+the result for the rest of the process.
+
+A complete, installable example lives in
+[`examples/bumpcalver-plugin-example/`](https://github.com/devsetgo/bumpcalver/tree/main/examples/bumpcalver-plugin-example) —
+it registers an `ini` file_type that doesn't exist anywhere in `bumpcalver`'s
+own source, and its README walks through installing it and running
+`bumpcalver --build` against it.
+
+A few things worth knowing about how discovery behaves:
+
+- **Built-in file_types always win.** If your plugin registers a name that
+  collides with a built-in (`"toml"`, `"json"`, etc.), `bumpcalver` uses the
+  built-in and prints a warning to stderr — a plugin can add new file types,
+  not silently override existing ones. Two plugins registering the *same*
+  new name is resolved the same way: first one found wins, with a warning.
+- **A broken plugin doesn't break your build.** If your entry point fails to
+  import, or doesn't point at a `VersionHandler` subclass, `bumpcalver`
+  prints a warning and skips it — commands that don't touch your file_type
+  still work.
+- **`available_file_types()`** (in `bumpcalver.handlers`) returns every
+  usable `file_type`, built-in and plugin alike — useful if you want to
+  assert your plugin registered correctly, e.g. in your own package's tests.
+
 ### Date Format Support
 
 To add new date format patterns:

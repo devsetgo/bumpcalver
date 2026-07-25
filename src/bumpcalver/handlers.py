@@ -9,12 +9,22 @@ to obtain the right handler, or `update_version_in_files` for batch updates.
 import configparser
 import json
 import re
+import sys
 import xml.etree.ElementTree as ET
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, List, Optional, Type
+from functools import lru_cache
+from importlib.metadata import entry_points
+from typing import Any, Callable, Dict, Iterable, List, Optional, Type
 
 import tomlkit
-import yaml
+from ruamel.yaml import YAML
+
+# Shared, reusable round-trip YAML instance (the ruamel.yaml-recommended
+# pattern — cheap to reuse, no per-call setup cost). Round-trip ("rt") is the
+# default `typ`; preserve_quotes keeps the source's choice of quoted vs.
+# unquoted scalars intact too.
+_yaml = YAML()
+_yaml.preserve_quotes = True
 
 
 # Abstract base class for version handlers
@@ -375,13 +385,21 @@ class TomlVersionHandler(VersionHandler):
 
 
 class YamlVersionHandler(VersionHandler):
-    """Handler for YAML files. Preserves key order on write (`sort_keys=False`)."""
+    """Handler for YAML files, using `ruamel.yaml`'s round-trip mode.
+
+    Uses `ruamel.yaml` rather than the plain `PyYAML` package so comments,
+    key order, and quote style elsewhere in the file survive an update —
+    `yaml.safe_load`/`yaml.safe_dump` round-trip through plain dicts and
+    silently drop every comment (and, unless `sort_keys=False` is passed,
+    alphabetize every key too). Mirrors why `TomlVersionHandler` uses
+    `tomlkit` instead of the plain `toml` package.
+    """
 
     def read_version(self, file_path: str, variable: str, **kwargs: Any) -> Optional[str]:
         """Reads the value at `variable`, a dot-separated key path (e.g. `"configuration.version"`)."""
         def read_operation():
             with open(file_path, "r", encoding="utf-8") as f:
-                data = yaml.safe_load(f)
+                data = _yaml.load(f)
             keys = variable.split(".")
             temp = data
             for key in keys:
@@ -389,7 +407,7 @@ class YamlVersionHandler(VersionHandler):
                 if temp is None:
                     self._log_variable_not_found(variable, file_path)
                     return None
-            return temp
+            return str(temp)
 
         return self._handle_read_operation(file_path, read_operation)
 
@@ -401,16 +419,14 @@ class YamlVersionHandler(VersionHandler):
 
         try:
             with open(file_path, "r", encoding="utf-8") as f:
-                data = yaml.safe_load(f)
+                data = _yaml.load(f)
             keys = variable.split(".")
             temp = data
             for key in keys[:-1]:
                 temp = temp.setdefault(key, {}) # no pragma: no cover
             temp[keys[-1]] = new_version
             with open(file_path, "w", encoding="utf-8") as f:
-                # sort_keys=False: yaml.safe_dump defaults to alphabetizing every
-                # key, which would silently reorder the whole file on every bump.
-                yaml.safe_dump(data, f, sort_keys=False)
+                _yaml.dump(data, f)
             print(f"Updated {file_path}")
             return True
         except Exception as e:
@@ -806,12 +822,118 @@ _HANDLER_REGISTRY: Dict[str, Type[VersionHandler]] = {
 }
 
 
+# Third-party packages can register additional file_type handlers without
+# forking bumpcalver by declaring an entry point in this group, e.g. in their
+# own pyproject.toml:
+#
+#   [project.entry-points."bumpcalver.handlers"]
+#   myformat = "my_package.handlers:MyFormatHandler"
+#
+# See the plugin guide in docs/development-guide.md for the full walkthrough
+# and examples/bumpcalver-plugin-example/ for a real, installable example.
+PLUGIN_ENTRY_POINT_GROUP = "bumpcalver.handlers"
+
+
+def _iter_plugin_entry_points() -> Iterable[Any]:
+    """Yield entry points registered under PLUGIN_ENTRY_POINT_GROUP.
+
+    Isolated into its own function so the Python 3.9/3.10+ API difference
+    (`importlib.metadata.entry_points()`'s return type changed — see
+    https://docs.python.org/3/library/importlib.metadata.html#entry-points)
+    is handled in exactly one place.
+    """
+    eps = entry_points()
+    select = getattr(eps, "select", None)
+    if select is not None:
+        # Python 3.10+: entry_points() returns an EntryPoints collection.
+        # select()'s return type is only known at runtime here (fetched via
+        # getattr to bridge two Python-version-dependent APIs in one place),
+        # not something mypy can verify statically either way.
+        return select(group=PLUGIN_ENTRY_POINT_GROUP)  # type: ignore[no-any-return]
+    # Python 3.9: entry_points() returns a plain dict keyed by group name.
+    return eps.get(PLUGIN_ENTRY_POINT_GROUP, [])  # pragma: no cover
+
+
+@lru_cache(maxsize=1)
+def _discover_plugin_handlers() -> Dict[str, Type[VersionHandler]]:
+    """Discover third-party handlers registered via the plugin entry-point group.
+
+    Cached after the first call (cleared with `_discover_plugin_handlers.cache_clear()`,
+    mainly useful for tests) since scanning installed package metadata is not
+    free and a single CLI invocation may look up several file types.
+
+    Resilient by design: a plugin that fails to import, isn't actually a
+    `VersionHandler` subclass, or collides with another registered name is
+    skipped with a warning on stderr rather than crashing the whole command —
+    a broken or malicious-looking plugin for one file type shouldn't block a
+    version bump for files that don't use it. Built-in file types always take
+    precedence and can never be overridden by a plugin.
+    """
+    discovered: Dict[str, Type[VersionHandler]] = {}
+    for ep in _iter_plugin_entry_points():
+        try:
+            handler_class = ep.load()
+        except Exception as e:
+            print(
+                f"Warning: could not load plugin handler '{ep.name}' ({ep.value}): {e}",
+                file=sys.stderr,
+            )
+            continue
+
+        if not (isinstance(handler_class, type) and issubclass(handler_class, VersionHandler)):
+            print(
+                f"Warning: plugin handler '{ep.name}' ({ep.value}) is not a "
+                "VersionHandler subclass; skipping.",
+                file=sys.stderr,
+            )
+            continue
+
+        if ep.name in _HANDLER_REGISTRY:
+            print(
+                f"Warning: plugin handler '{ep.name}' ({ep.value}) uses the same "
+                f"name as a built-in file_type; the built-in handler takes "
+                "precedence and this plugin will be ignored.",
+                file=sys.stderr,
+            )
+            continue
+
+        if ep.name in discovered:
+            existing = discovered[ep.name]
+            print(
+                f"Warning: multiple plugins registered for file_type '{ep.name}'; "
+                f"keeping {existing.__module__}.{existing.__qualname__} "
+                f"and ignoring {ep.value}.",
+                file=sys.stderr,
+            )
+            continue
+
+        discovered[ep.name] = handler_class
+
+    return discovered
+
+
+def available_file_types() -> List[str]:
+    """Return every `file_type` usable with `get_version_handler()`.
+
+    Includes both built-in handlers and any discovered via the
+    `bumpcalver.handlers` plugin entry-point group.
+    """
+    return sorted({*_HANDLER_REGISTRY.keys(), *_discover_plugin_handlers().keys()})
+
+
 def get_version_handler(file_type: str) -> VersionHandler:
     """Return a handler instance for the given file type.
+
+    Checks built-in handlers first, then third-party plugins registered via
+    the `bumpcalver.handlers` entry-point group (see
+    docs/development-guide.md) — a plugin can never override a built-in
+    file_type.
 
     Raises ValueError for unsupported types.
     """
     handler_class = _HANDLER_REGISTRY.get(file_type)
+    if handler_class is None:
+        handler_class = _discover_plugin_handlers().get(file_type)
     if handler_class is None:
         raise ValueError(f"Unsupported file type: {file_type}")
     return handler_class()
