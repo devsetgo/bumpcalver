@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling>=1.16.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "bumpcalver-plugin-example"
+version = "0.1.0"
+description = "Example third-party bumpcalver plugin: adds an 'ini' file_type handler"
+requires-python = ">=3.9"
+dependencies = ["bumpcalver"]
+
+# This is the entire plugin mechanism: declare an entry point in the
+# "bumpcalver.handlers" group, pointing at a VersionHandler subclass. Once
+# this package is installed in the same environment as bumpcalver, running
+# `bumpcalver` picks up the "ini" file_type automatically — no changes to
+# bumpcalver itself are needed. See docs/development-guide.md's "Distributing
+# Your Handler as a Plugin" section for the full walkthrough.
+[project.entry-points."bumpcalver.handlers"]
+ini = "bumpcalver_plugin_example.handler:IniVersionHandler"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/bumpcalver_plugin_example"]
+
+# bumpcalver's own config auto-discovery prefers pyproject.toml over
+# bumpcalver.toml when both exist, so this section (rather than a separate
+# bumpcalver.toml) is what `bumpcalver --build` picks up when run from this
+# directory. It exercises the "ini" file_type that only exists because this
+# package is installed.
+[tool.bumpcalver]
+version_format = "{current_date}.{build_count:03}"
+date_format = "%Y.%m.%d"
+git_tag = false
+auto_commit = false
+
+[[tool.bumpcalver.file]]
+path = "example.ini"
+file_type = "ini"
+variable = "VERSION"

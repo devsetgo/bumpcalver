@@ -62,11 +62,18 @@ Every supported `file_type` (see [Configuration](index.md#configuration-options)
 is backed by a `VersionHandler` subclass. All of them share the same
 `read_version`/`update_version` contract defined on the abstract base class —
 see the [handler extension guide](development-guide.md#file-format-support)
-if you're adding support for a new file format.
+if you're adding support for a new file format, or
+[distributing your handler as a plugin](development-guide.md#distributing-your-handler-as-a-plugin)
+if you'd rather ship it as a separate installable package via the
+`bumpcalver.handlers` entry-point group.
 
 ::: bumpcalver.handlers.VersionHandler
 
 ::: bumpcalver.handlers.get_version_handler
+    options:
+      show_source: false
+
+::: bumpcalver.handlers.available_file_types
     options:
       show_source: false
 

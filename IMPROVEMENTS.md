@@ -296,8 +296,8 @@ across every file in `src/bumpcalver` as of this pass.
 
 ## 5. Capability Expansion Opportunities
 
-**Status (2026-07-26): items 1, 3, 4, and 6 fully done — code, tests, and docs. Items 2 and
-5 deliberately deferred with rationale (see their entries). This section is closed out.**
+**Status (2026-07-25): items 1, 2, 3, 4, and 6 fully done — code, tests, and docs. Item 5
+deliberately deferred with rationale (see its entry).**
 
 1. ✅ **DONE — No "generic"/plain-text version handler.**
    Added two new handlers to `handlers.py` (registered as `"text"` and `"regex"` in
@@ -348,14 +348,77 @@ across every file in `src/bumpcalver` as of this pass.
      Every example config block added or changed was verified by actually running it through
      the real CLI, not just visually checked.
 
-2. **NOT STARTED — No plugin/entry-point mechanism for custom handlers.** `_HANDLER_REGISTRY`
-   is a plain module-level dict, so supporting a new/proprietary file format currently
-   requires forking the project. Supporting registration via Python entry points
-   (`importlib.metadata.entry_points`) would let third parties ship their own `VersionHandler`
-   without modifying `bumpcalver` itself. Deliberately not started this session — it's the
-   most architecturally significant item here (loading third-party code via entry points is a
-   real trust-boundary decision, not just an implementation detail) and deserves its own
-   focused pass rather than being squeezed in.
+2. ✅ **DONE (2026-07-25) — No plugin/entry-point mechanism for custom handlers.**
+   Third-party packages can now register a `VersionHandler` for a new `file_type` without
+   forking `bumpcalver`, via a `"bumpcalver.handlers"` entry-point group declared in their own
+   `pyproject.toml`:
+   ```toml
+   [project.entry-points."bumpcalver.handlers"]
+   myformat = "my_package.handlers:MyFormatHandler"
+   ```
+   Implementation in `handlers.py`:
+   - `_iter_plugin_entry_points()` isolates the one Python-version-dependent API difference in
+     `importlib.metadata.entry_points()`: it returns an `EntryPoints` collection with `.select()`
+     on 3.10+, but a plain `dict` keyed by group name on 3.9 (the package's `requires-python`
+     floor, even though CI's matrix only actually exercises 3.10-3.14). Both branches are
+     unit-tested directly by mocking `entry_points()` itself.
+   - `_discover_plugin_handlers()` (wrapped in `functools.lru_cache` — scanning installed
+     package metadata isn't free and a single CLI run may look up several file types; cleared
+     via `.cache_clear()` in tests) does the actual discovery, and encodes three deliberate
+     trust-boundary decisions, each covered by both a unit test and a manual smoke test before
+     the automated tests were written:
+     1. **Built-in file_types always win.** A plugin claiming an existing name (e.g. `"toml"`)
+        is ignored with a stderr warning — installing an unrelated package can never silently
+        change how your existing files are handled.
+     2. **A broken plugin degrades gracefully, not fatally.** An entry point that fails to
+        `.load()`, or loads something that isn't a `VersionHandler` subclass, is skipped with a
+        stderr warning; `get_version_handler()` raises the same `ValueError` it would for a
+        genuinely-unknown type rather than crashing the whole command.
+     3. **Duplicate plugin names**: first one found wins, with a stderr warning naming both.
+   - `get_version_handler()` now checks `_HANDLER_REGISTRY` first and only consults
+     `_discover_plugin_handlers()` on a miss — meaning entry-point scanning is skipped entirely
+     for the common case of looking up a built-in type. One consequence worth knowing: this
+     means the "built-in wins" collision warning only actually prints when discovery is
+     triggered by *something* (an unknown-type lookup or `available_file_types()`), not on
+     every lookup of the colliding built-in name — a lookup that never needs plugin data never
+     scans for it.
+   - New `available_file_types()` function returns every usable `file_type`, built-in and
+     plugin combined — useful for introspection/self-tests in a plugin's own package.
+   - Tests: 11 new tests in `tests/test_handlers.py`, all using `unittest.mock` to simulate
+     `EntryPoint` objects via `monkeypatch.setattr("src.bumpcalver.handlers._iter_plugin_entry_points", ...)`
+     — successful discovery and use via `get_version_handler`, built-in-precedence-over-collision
+     (via `available_file_types()`, per the short-circuit behavior above), load-failure
+     graceful skip, non-`VersionHandler`-subclass rejection, duplicate-name first-wins,
+     unknown-type-with-no-plugins still raises, `available_file_types()` correctness with and
+     without plugins installed, `lru_cache` actually caches (call-counting fake), and both
+     branches of `_iter_plugin_entry_points()`'s Python-version bridge.
+   - **Verified end-to-end with a real installable package**, not just mocks: built
+     `examples/bumpcalver-plugin-example/` — a real, separate Python package (its own
+     `pyproject.toml` with `[project.entry-points."bumpcalver.handlers"]`, an `IniVersionHandler`
+     reusing the base class's `_read_key_value_file`/`_update_key_value_file` helpers) that
+     registers an `"ini"` file_type that does not exist anywhere in `bumpcalver`'s own source.
+     `pip install -e` both packages into an isolated scratch venv, then ran the real
+     `bumpcalver --build` CLI against `examples/bumpcalver-plugin-example/example.ini`
+     (`file_type = "ini"` declared in that package's own `[tool.bumpcalver]` config) and
+     confirmed the file was actually rewritten (`VERSION=1.0.0` → a real calver build version)
+     — this is what caught that `bumpcalver`'s config auto-discovery prefers `pyproject.toml`
+     over `bumpcalver.toml` when both exist in a directory, which meant the plugin package's own
+     `pyproject.toml` (needed for the entry point) was shadowing a separate `bumpcalver.toml` I'd
+     initially written; fixed by moving the `[tool.bumpcalver]` section into the same
+     `pyproject.toml` instead of using two files. Verification artifacts (`.bumpcalver/`,
+     `bumpcalver-history.json`, `__pycache__/`) were cleaned up afterward and `example.ini` reset
+     to its checked-in starting value; not wired into the automated `pytest` suite (installing
+     packages during unit test runs would side-effect the shared test environment), matching how
+     other slow/risky-for-CI verification was handled elsewhere this session.
+   - **Docs**: new "Distributing Your Handler as a Plugin" section in `docs/development-guide.md`
+     (right after the existing "File Format Support" section it builds on); "Custom File Types
+     via Plugins" subsection added to both README.md and `docs/index.md` (near-duplicate content
+     — see §3.3 below for the still-open dedup item covering both files); `docs/modules.md` gets
+     a new `:::` entry for `available_file_types()` and an updated intro paragraph linking to the
+     new dev-guide section.
+   - `mkdocs build --strict` confirmed to still produce only the same 4 known pre-existing
+     warnings (print-site plugin ordering, two broken links unrelated to this change) — no new
+     warnings from the added docs pages/links.
 
 3. ✅ **DONE — No `--dry-run` flag.** Added `--dry-run` to
    `cli.py`. Extracted `_files_that_would_change()` (shared by both the no-op guard and the
@@ -619,10 +682,11 @@ If tackling incrementally, the highest-leverage fixes are:
    The Makefile encoding gap (§2.7) — **done 2026-07-25**, alongside the rest of the
    Refactoring Opportunities pass (§2.1–2.8; §2.9 tooling-consolidation intentionally
    deferred, see its entry above).
-5. ✅ Capability Expansion pass (§5) — **done 2026-07-26**: `text`/`regex` generic handlers,
-   `--dry-run`, `--config-file`/`BUMPCALVER_CONFIG`, and the `bumpcalver-history.json`
-   gitignore-tracking fix are all done. Plugin/entry-point handlers (§5.2) and a `--json`
-   output mode (§5.4) remain deliberately deferred — see their entries above for why.
-   Everything else in this document beyond §5 and the still-open items called out inline
+5. ✅ Capability Expansion pass (§5) — `text`/`regex` generic handlers, `--dry-run`,
+   `--config-file`/`BUMPCALVER_CONFIG`, the `bumpcalver-history.json` gitignore-tracking fix,
+   and the plugin/entry-point mechanism (§5 item 2, including a real installable example
+   package, tests, and docs) are all done — the last of these **done 2026-07-25**. Only a
+   `--json` output mode (§5 item 5) remains deliberately deferred — see its entry above for
+   why. Everything else in this document beyond §5 and the still-open items called out inline
    (§2.9 tooling consolidation, §3.3 timezones.md dedup, §4.4 n/a) is genuinely additive and
    can be prioritized against actual user requests.
