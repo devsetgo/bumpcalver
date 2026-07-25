@@ -19,29 +19,47 @@ Example:
 
 import os
 import sys
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import toml
 
 from .utils import default_timezone, parse_dot_path
 
 
-def load_config() -> Dict[str, Any]:
+def load_config(config_path: Optional[str] = None) -> Dict[str, Any]:
+    """Load BumpCalver's configuration.
+
+    Args:
+        config_path: Explicit path to a config file (from `--config-file` /
+            `BUMPCALVER_CONFIG`). If given, it's used as-is instead of the
+            usual `pyproject.toml`/`bumpcalver.toml` auto-discovery in the
+            current directory — useful for monorepo tooling or wrapper
+            scripts invoking bumpcalver from a different directory than the
+            target project root.
+    """
     config: Dict[str, Any] = {}
 
-    config_file = None
-    if os.path.exists("pyproject.toml"):
-        config_file = "pyproject.toml"
-    elif os.path.exists("bumpcalver.toml"):
-        config_file = "bumpcalver.toml"
+    if config_path:
+        if not os.path.exists(config_path):
+            print(f"Config file not found: {config_path}", file=sys.stderr)
+            return config
+        config_file: Optional[str] = config_path
+    else:
+        config_file = None
+        if os.path.exists("pyproject.toml"):
+            config_file = "pyproject.toml"
+        elif os.path.exists("bumpcalver.toml"):
+            config_file = "bumpcalver.toml"
 
     if config_file:
         try:
             with open(config_file, "r", encoding="utf-8") as f:
                 loaded_config: Dict[str, Any] = toml.load(f)
 
+            # basename (not full path) so an explicit --config-file pointing
+            # at a pyproject.toml elsewhere is still recognized as nested.
             bumpcalver_config: Dict[str, Any]
-            if config_file == "pyproject.toml":
+            if os.path.basename(config_file) == "pyproject.toml":
                 bumpcalver_config = loaded_config.get("tool", {}).get("bumpcalver", {})
             else:
                 bumpcalver_config = loaded_config

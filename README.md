@@ -86,7 +86,7 @@ As an alternative, you can use configuration file named `bumpcalver.toml`. The C
 - `release_format` (string, optional): Suffix appended when `--release` is used. Defaults to `.release`.
 - `file` (list of tables): Specifies which files to update and how to find the version string.
   - `path` (string): Path to the file to be updated.
-  - `file_type` (string): Type of the file (e.g., `python`, `toml`, `yaml`, `json`, `xml`, `dockerfile`, `makefile`, `properties`, `env`, `setup.cfg`).
+  - `file_type` (string): Type of the file (e.g., `python`, `toml`, `yaml`, `json`, `xml`, `dockerfile`, `makefile`, `properties`, `env`, `setup.cfg`, `text`, `regex`).
   - `variable` (string, optional): The variable name that holds the version string in the file.
   - `pattern` (string, optional): A regex pattern to find the version string.
   - `version_standard` (string, optional): The versioning standard to follow (e.g., `python` for PEP 440).
@@ -150,6 +150,16 @@ path = "setup.cfg"
 file_type = "setup.cfg"
 variable = "metadata.version"
 version_standard = "python"
+
+[[tool.bumpcalver.file]]
+path = "VERSION"
+file_type = "text"
+
+[[tool.bumpcalver.file]]
+path = "lib/version.rb"
+file_type = "regex"
+variable = "VERSION"
+pattern = 'VERSION = "(.+?)"'
 ```
 
 ### Date Format Examples
@@ -195,34 +205,30 @@ BumpCalver supports version management for the following file types:
   - Supports both dot notation (`metadata.version`) and simple keys (`version`)
   - Example: `version = 2025.02.02` in `[metadata]` section
 
+### Generic File Types
+
+For formats without a dedicated handler above:
+
+- **`text`** - A bare version file whose entire content *is* the version, with no
+  key at all (e.g. a `VERSION` file used by shell-based release pipelines).
+  `variable` is not used.
+  - Example file content: `2025.02.02`
+- **`regex`** - Any other `KEY = value`-style language (Ruby, Rust, Go, Java, etc.)
+  via a user-supplied `pattern`: a regex with exactly one capture group around
+  the version. Everything else on the matched line is left untouched.
+  - Example: `pattern = 'VERSION = "(.+?)"'` matches Ruby's
+    `VERSION = "2025.02.02"` and replaces only the quoted text.
+
 ---
 
 ## Command-Line Usage
 
-The CLI provides several options to customize the version bumping process.
-
-```bash
-Usage: bumpcalver [OPTIONS]
-
-Options:
-  --beta                      Use beta versioning.
-  --rc                        Use rc versioning.
-  --release                   Use release versioning.
-  --custom TEXT               Add custom suffix to version.
-  --build                     Use build count versioning.
-  --bump [major|minor|patch]  Increment the specified semantic version
-                              component in config (for hybrid versioning).
-  --timezone TEXT             Timezone for date calculations (default: value
-                              from config or America/New_York).
-  --git-tag / --no-git-tag    Create a Git tag with the new version.
-  --auto-commit / --no-auto-commit
-                              Automatically commit changes when creating a Git
-                              tag.
-  --undo                      Undo the last version bump operation.
-  --undo-id TEXT              Undo a specific operation by ID.
-  --list-history              List recent operations that can be undone.
-  --help                      Show this message and exit.
-```
+The CLI provides several options to customize the version bumping process. Run
+`bumpcalver --help` for the exact, current list — the same output is also
+published at
+[CLI Reference](https://devsetgo.github.io/bumpcalver/latest/cli-reference.md),
+kept byte-for-byte in sync with the code by a test (`tests/test_docs.py`)
+rather than hand-copied here.
 
 ### Version Bump Options
 
@@ -235,6 +241,8 @@ Options:
 - `--timezone`: Overrides the timezone specified in the configuration.
 - `--git-tag` / `--no-git-tag`: Forces Git tagging on or off, overriding the configuration.
 - `--auto-commit` / `--no-auto-commit`: Forces auto-commit on or off, overriding the configuration.
+- `--dry-run`: Prints the version that would be set and which files would change, without writing anything or creating a git tag/commit.
+- `--config-file PATH`: Use a specific `pyproject.toml`/`bumpcalver.toml` instead of auto-discovering one in the current directory (also settable via the `BUMPCALVER_CONFIG` environment variable). File paths inside that config resolve relative to the config file's own directory — handy for monorepo tooling or wrapper scripts invoking `bumpcalver` from elsewhere. Cannot be combined with the undo options below.
 
 ### Undo Options
 
@@ -244,7 +252,7 @@ BumpCalver includes powerful undo functionality to revert version changes:
 - `--undo-id TEXT`: Undo a specific operation by its unique ID.
 - `--list-history`: Show recent version bump operations that can be undone.
 
-**Note**: Undo options cannot be combined with version bump options.
+**Note**: Undo options cannot be combined with version bump options (including `--dry-run` and `--config-file`).
 
 ---
 

@@ -53,10 +53,12 @@ def _read_current_version(file_config: Dict[str, Any]) -> Optional[str]:
     try:
         handler = get_version_handler(file_config.get("file_type", ""))
         variable = file_config.get("variable", "")
-        directive = file_config.get("directive", "")
-        if directive:
-            return handler.read_version(file_config["path"], variable, directive=directive)
-        return handler.read_version(file_config["path"], variable)
+        extra_kwargs: Dict[str, Any] = {}
+        if file_config.get("directive"):
+            extra_kwargs["directive"] = file_config["directive"]
+        if file_config.get("pattern"):
+            extra_kwargs["pattern"] = file_config["pattern"]
+        return handler.read_version(file_config["path"], variable, **extra_kwargs)
     except Exception:
         return None
 
@@ -137,16 +139,30 @@ def _compute_new_version(
     return new_version
 
 
+def _files_that_would_change(
+    file_configs: List[Dict[str, Any]],
+    new_version: str,
+    cached_version: Callable[[Dict[str, Any]], Optional[str]],
+) -> List[str]:
+    """Return the paths of files whose current version differs from new_version.
+
+    Shared by the no-op guard (empty list => nothing to do) and --dry-run
+    (prints this list instead of writing anything).
+    """
+    return [
+        file_config["path"]
+        for file_config in file_configs
+        if cached_version(file_config) != new_version
+    ]
+
+
 def _all_files_already_updated(
     file_configs: List[Dict[str, Any]],
     new_version: str,
     cached_version: Callable[[Dict[str, Any]], Optional[str]],
 ) -> bool:
     """True if every configured file already contains new_version (i.e. this bump is a no-op)."""
-    for file_config in file_configs:
-        if cached_version(file_config) != new_version:
-            return False
-    return True
+    return not _files_that_would_change(file_configs, new_version, cached_version)
 
 
 def _create_git_tag_and_commit(
@@ -212,6 +228,19 @@ def _create_git_tag_and_commit(
     default=None,
     help="Increment the specified semantic version component in config",
 )
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    help="Show what would change without writing any files or creating a git tag/commit",
+)
+@click.option(
+    "--config-file",
+    type=click.Path(exists=True, dir_okay=False),
+    envvar="BUMPCALVER_CONFIG",
+    help="Path to a pyproject.toml/bumpcalver.toml to use instead of auto-discovery "
+    "in the current directory (env var: BUMPCALVER_CONFIG). File paths inside it are "
+    "resolved relative to the config file's own directory, not the current directory.",
+)
 def main(
     beta: bool,
     rc: bool,
@@ -225,15 +254,18 @@ def main(
     undo_id: Optional[str],
     list_history: bool,
     bump: Optional[str],
+    dry_run: bool,
+    config_file: Optional[str],
 ) -> None:
     """Bump this project's version and write it to every configured file.
 
     Reads `[tool.bumpcalver]` from `pyproject.toml` (or `bumpcalver.toml`) for
     the file list and defaults; CLI flags override config values where both
     exist. At most one of `--beta`/`--rc`/`--release`/`--custom` may be set.
-    Optionally creates a git tag and/or commit. Undo a previous run with
-    `--undo`, `--undo-id`, or `--list-history` (mutually exclusive with every
-    version-bump option).
+    Optionally creates a git tag and/or commit — or preview with `--dry-run`
+    instead of writing anything. Undo a previous run with `--undo`,
+    `--undo-id`, or `--list-history` (mutually exclusive with every
+    version-bump option, including `--dry-run`).
     """
     # Check for conflicting undo options with version bump options FIRST
     version_bump_options = [beta, rc, release, build, bool(custom), bool(bump)]
@@ -242,6 +274,20 @@ def main(
     if any(version_bump_options) and any(undo_options):
         raise click.UsageError(
             "Undo options (--undo, --undo-id, --list-history) cannot be used with version bump options."
+        )
+
+    if dry_run and any(undo_options):
+        raise click.UsageError(
+            "--dry-run cannot be used with --undo, --undo-id, or --list-history."
+        )
+
+    if config_file and any(undo_options):
+        # Undo operations locate their history purely via os.getcwd() (see
+        # undo_utils.py) and don't accept a project root override, so
+        # --config-file would be silently ignored here rather than doing
+        # what its name implies — reject explicitly instead of guessing.
+        raise click.UsageError(
+            "--config-file cannot be used with --undo, --undo-id, or --list-history."
         )
 
     # Handle undo and history commands
@@ -267,7 +313,7 @@ def main(
             "Only one of --beta, --rc, --release, or --custom can be set at a time."
         )
 
-    config: Dict[str, Any] = load_config()
+    config: Dict[str, Any] = load_config(config_file)
     version_format: str = config.get(
         "version_format", "{current_date}-{build_count:03}"
     )
@@ -294,7 +340,13 @@ def main(
     if auto_commit is None:
         auto_commit = config_auto_commit
 
-    project_root: str = os.getcwd()
+    # File paths in the config are relative to wherever the config file
+    # lives, not necessarily the CLI's cwd — that's the whole point of
+    # --config-file letting you invoke bumpcalver from a different directory.
+    if config_file:
+        project_root: str = os.path.dirname(os.path.abspath(config_file))
+    else:
+        project_root = os.getcwd()
     for file_config in file_configs:
         file_config["path"] = os.path.join(project_root, file_config["path"])
 
@@ -329,14 +381,38 @@ def main(
             cached_version=_cached_current_version,
         )
 
+        files_that_would_change = _files_that_would_change(
+            file_configs, new_version, _cached_current_version
+        )
+
+        if dry_run:
+            if not files_that_would_change:
+                print(f"[dry-run] Version already set to {new_version}; no files would be updated.")
+            else:
+                print(f"[dry-run] Would bump version to {new_version} in:")
+                for path in files_that_would_change:
+                    print(f"[dry-run]   {path}")
+                if git_tag:
+                    action = "commit and create" if auto_commit else "create"
+                    print(f"[dry-run] Would {action} git tag '{new_version}'")
+            return
+
         # No-op guard: if all configured files already contain the computed version,
         # do not create backups, write undo history, or attempt git operations.
-        if _all_files_already_updated(file_configs, new_version, _cached_current_version):
+        if not files_that_would_change:
             print(f"Version already set to {new_version}; no files to update.")
             return
 
-        # Create backup manager and backup files before making changes
-        backup_manager = BackupManager()
+        # Create backup manager and backup files before making changes. Rooted
+        # at project_root (not necessarily os.getcwd()) so that with
+        # --config-file, undo history/backups stay colocated with the actual
+        # project being versioned rather than wherever the CLI was invoked
+        # from — otherwise `--undo` run later from the project's own
+        # directory would never find them.
+        backup_manager = BackupManager(
+            backup_dir=os.path.join(project_root, ".bumpcalver", "backups"),
+            history_file=os.path.join(project_root, "bumpcalver-history.json"),
+        )
         operation_id = generate_operation_id()
         backups, _ = backup_files_before_update(file_configs, backup_manager)
 

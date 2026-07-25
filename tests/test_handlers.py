@@ -17,6 +17,8 @@ from src.bumpcalver.handlers import (
     PropertiesVersionHandler,
     EnvVersionHandler,
     SetupCfgVersionHandler,
+    TextVersionHandler,
+    RegexVersionHandler,
     get_version_handler,
     update_version_in_files,
 )
@@ -1385,6 +1387,18 @@ def test_get_version_handler_makefile():
     assert isinstance(handler, MakefileVersionHandler)
 
 
+def test_get_version_handler_text():
+    """Test getting text version handler."""
+    handler = get_version_handler("text")
+    assert isinstance(handler, TextVersionHandler)
+
+
+def test_get_version_handler_regex():
+    """Test getting regex version handler."""
+    handler = get_version_handler("regex")
+    assert isinstance(handler, RegexVersionHandler)
+
+
 # Tests for VersionHandler helper methods
 def test_version_handler_read_file_safe_success(monkeypatch):
     """Test _read_file_safe method with successful file read."""
@@ -1759,3 +1773,207 @@ def test_version_handler_handle_regex_update_read_exception(monkeypatch, capsys)
 
     captured = capsys.readouterr()
     assert "Error updating test_file.txt: Unable to read file" in captured.out
+
+
+# ---------------------------------------------------------------------------
+# TextVersionHandler — bare, whole-file version content (Capability
+# Expansion §5.1: e.g. a plain `VERSION` file used by shell release scripts)
+# ---------------------------------------------------------------------------
+
+def test_text_handler_read_version(tmp_path):
+    version_file = tmp_path / "VERSION"
+    version_file.write_text("1.2.3\n", encoding="utf-8")
+
+    handler = TextVersionHandler()
+    assert handler.read_version(str(version_file), "") == "1.2.3"
+
+
+def test_text_handler_read_version_strips_surrounding_whitespace(tmp_path):
+    version_file = tmp_path / "VERSION"
+    version_file.write_text("  1.2.3  \n\n", encoding="utf-8")
+
+    handler = TextVersionHandler()
+    assert handler.read_version(str(version_file), "") == "1.2.3"
+
+
+def test_text_handler_read_version_missing_file_returns_none(tmp_path, capsys):
+    handler = TextVersionHandler()
+    missing = tmp_path / "does_not_exist"
+
+    assert handler.read_version(str(missing), "") is None
+    captured = capsys.readouterr()
+    assert "Error reading version from" in captured.out
+
+
+def test_text_handler_update_version_overwrites_whole_file(tmp_path):
+    version_file = tmp_path / "VERSION"
+    version_file.write_text("1.2.3\n", encoding="utf-8")
+
+    handler = TextVersionHandler()
+    assert handler.update_version(str(version_file), "", "2.0.0") is True
+    assert version_file.read_text(encoding="utf-8") == "2.0.0\n"
+
+
+def test_text_handler_update_version_applies_pep440_standard(tmp_path):
+    version_file = tmp_path / "VERSION"
+    version_file.write_text("1.2.3\n", encoding="utf-8")
+
+    handler = TextVersionHandler()
+    assert handler.update_version(
+        str(version_file), "", "2026-01-01", version_standard="python"
+    ) is True
+    assert version_file.read_text(encoding="utf-8") == "2026.1.1\n"
+
+
+def test_text_handler_update_version_write_failure(monkeypatch, capsys):
+    handler = TextVersionHandler()
+
+    def mock_open(*args, **kwargs):
+        raise IOError("disk full")
+
+    monkeypatch.setattr("builtins.open", mock_open)
+    result = handler.update_version("VERSION", "", "2.0.0")
+    assert result is False
+    captured = capsys.readouterr()
+    assert "Error updating VERSION: disk full" in captured.out
+
+
+# ---------------------------------------------------------------------------
+# RegexVersionHandler — generic user-supplied-pattern handler (Capability
+# Expansion §5.1: Ruby/Rust/Go/etc. with no dedicated handler)
+# ---------------------------------------------------------------------------
+
+def test_regex_handler_read_version_ruby_style(tmp_path):
+    # Real-world shape: examples/version.rb in this repo.
+    version_file = tmp_path / "version.rb"
+    version_file.write_text(
+        'module MyGem\n  VERSION = "2026.03.08.001"\nend\n', encoding="utf-8"
+    )
+
+    handler = RegexVersionHandler()
+    result = handler.read_version(
+        str(version_file), "VERSION", pattern=r'VERSION = "(.+?)"'
+    )
+    assert result == "2026.03.08.001"
+
+
+def test_regex_handler_update_version_ruby_style_preserves_surrounding_code(tmp_path):
+    version_file = tmp_path / "version.rb"
+    version_file.write_text(
+        'module MyGem\n  VERSION = "2026.03.08.001"\nend\n', encoding="utf-8"
+    )
+
+    handler = RegexVersionHandler()
+    assert handler.update_version(
+        str(version_file), "VERSION", "2026.99.99.001", pattern=r'VERSION = "(.+?)"'
+    ) is True
+    assert version_file.read_text(encoding="utf-8") == (
+        'module MyGem\n  VERSION = "2026.99.99.001"\nend\n'
+    )
+
+
+def test_regex_handler_read_update_rust_const_style(tmp_path):
+    # A second real-world shape, distinct enough from the key=value handlers
+    # to prove the pattern isn't accidentally piggybacking on one of them.
+    version_file = tmp_path / "version.rs"
+    version_file.write_text('pub const VERSION: &str = "1.0.0";\n', encoding="utf-8")
+
+    handler = RegexVersionHandler()
+    pattern = r'VERSION: &str = "(.+?)"'
+    assert handler.read_version(str(version_file), "VERSION", pattern=pattern) == "1.0.0"
+    assert handler.update_version(str(version_file), "VERSION", "2.0.0", pattern=pattern) is True
+    assert version_file.read_text(encoding="utf-8") == 'pub const VERSION: &str = "2.0.0";\n'
+
+
+def test_regex_handler_read_version_missing_pattern(tmp_path, capsys):
+    version_file = tmp_path / "version.rb"
+    version_file.write_text('VERSION = "1.0.0"\n', encoding="utf-8")
+
+    handler = RegexVersionHandler()
+    assert handler.read_version(str(version_file), "VERSION") is None
+    captured = capsys.readouterr()
+    assert "No 'pattern' provided" in captured.out
+
+
+def test_regex_handler_update_version_missing_pattern(tmp_path, capsys):
+    version_file = tmp_path / "version.rb"
+    version_file.write_text('VERSION = "1.0.0"\n', encoding="utf-8")
+
+    handler = RegexVersionHandler()
+    assert handler.update_version(str(version_file), "VERSION", "2.0.0") is False
+    captured = capsys.readouterr()
+    assert "No 'pattern' provided" in captured.out
+
+
+def test_regex_handler_read_version_invalid_regex(tmp_path, capsys):
+    version_file = tmp_path / "version.rb"
+    version_file.write_text('VERSION = "1.0.0"\n', encoding="utf-8")
+
+    handler = RegexVersionHandler()
+    result = handler.read_version(str(version_file), "VERSION", pattern="[unclosed")
+    assert result is None
+    captured = capsys.readouterr()
+    assert "Invalid regex pattern" in captured.out
+
+
+def test_regex_handler_no_capture_group_rejected_for_read_and_update(tmp_path, capsys):
+    # Regression test: match.span(1) on a pattern with no capture group raises
+    # IndexError (not re.error) — this is caught upfront in _compile_pattern
+    # for both read_version and update_version, verified here for both paths.
+    version_file = tmp_path / "version.rb"
+    version_file.write_text('VERSION = "1.0.0"\n', encoding="utf-8")
+    handler = RegexVersionHandler()
+    no_group_pattern = r'VERSION = ".+?"'
+
+    assert handler.read_version(str(version_file), "VERSION", pattern=no_group_pattern) is None
+    assert handler.update_version(
+        str(version_file), "VERSION", "2.0.0", pattern=no_group_pattern
+    ) is False
+
+    captured = capsys.readouterr()
+    assert captured.out.count("must contain exactly one capture group") == 2
+
+
+def test_regex_handler_read_version_pattern_does_not_match(tmp_path, capsys):
+    version_file = tmp_path / "version.rb"
+    version_file.write_text('VERSION = "1.0.0"\n', encoding="utf-8")
+
+    handler = RegexVersionHandler()
+    result = handler.read_version(str(version_file), "VERSION", pattern=r'NOPE = "(.+?)"')
+    assert result is None
+    captured = capsys.readouterr()
+    assert "Variable 'VERSION' not found" in captured.out
+
+
+def test_regex_handler_update_version_applies_pep440_standard(tmp_path):
+    version_file = tmp_path / "version.rb"
+    version_file.write_text('VERSION = "1.0.0"\n', encoding="utf-8")
+
+    handler = RegexVersionHandler()
+    assert handler.update_version(
+        str(version_file),
+        "VERSION",
+        "2026-01-01",
+        pattern=r'VERSION = "(.+?)"',
+        version_standard="python",
+    ) is True
+    assert 'VERSION = "2026.1.1"' in version_file.read_text(encoding="utf-8")
+
+
+def test_update_version_in_files_passes_pattern_to_regex_handler(tmp_path):
+    # End-to-end: confirms update_version_in_files() threads the "pattern"
+    # config key through to the handler, not just direct handler calls.
+    version_file = tmp_path / "version.rb"
+    version_file.write_text('VERSION = "1.0.0"\n', encoding="utf-8")
+
+    file_configs = [
+        {
+            "path": str(version_file),
+            "file_type": "regex",
+            "variable": "VERSION",
+            "pattern": r'VERSION = "(.+?)"',
+        }
+    ]
+    updated = update_version_in_files("2.0.0", file_configs)
+    assert updated == [str(version_file)]
+    assert 'VERSION = "2.0.0"' in version_file.read_text(encoding="utf-8")

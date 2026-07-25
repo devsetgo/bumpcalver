@@ -253,7 +253,10 @@ var Version = strings.TrimPrefix(strings.TrimSpace(versionFile), "VERSION=")
 **Produces:** `2026.05.24.1`
 **Updates:** `lib/mygem/version.rb`
 
-The `python` file type matches any `VARIABLE = "value"` assignment at line start, which covers Ruby constants.
+There's no dedicated Ruby handler, so use the generic `regex` file type with a
+`pattern` — a regex with exactly one capture group around the version.
+Everything else on the matched line (the `VERSION = "..."` assignment, in
+this case) is left untouched.
 
 ```toml
 [tool.bumpcalver]
@@ -265,8 +268,9 @@ auto_commit = true
 
 [[tool.bumpcalver.file]]
 path = "lib/mygem/version.rb"
-file_type = "python"
+file_type = "regex"
 variable = "VERSION"
+pattern = 'VERSION = "(.+?)"'
 version_standard = "default"
 ```
 
@@ -279,6 +283,45 @@ end
 module MyGem
   VERSION = "2026.05.24.1"
 end
+```
+
+> Earlier versions of this recipe pointed the `python` handler at Ruby files,
+> since its `VARIABLE = "value"` regex happens to also match Ruby constants.
+> That's a coincidence of the two languages' assignment syntax looking
+> similar, not real Ruby support — use `regex` instead, which is explicit
+> about matching an arbitrary pattern rather than implying Python-specific
+> handling.
+
+---
+
+### Bare VERSION File (Shell Scripts / Generic Pipelines)
+
+**Produces:** `2026.05.24.1`
+**Updates:** `VERSION`
+
+Some release pipelines use a `VERSION` file whose *entire content* is the
+version string, with no key at all (e.g. `cat VERSION` in a shell script).
+Use `file_type = "text"` — `variable` isn't needed since there's no key to
+look up.
+
+```toml
+[tool.bumpcalver]
+version_format = "{current_date}.{build_count}"
+date_format = "%Y.%m.%d"
+timezone = "UTC"
+git_tag = true
+auto_commit = true
+
+[[tool.bumpcalver.file]]
+path = "VERSION"
+file_type = "text"
+version_standard = "default"
+```
+
+`VERSION` before → after:
+```
+1.0.0
+2026.05.24.1
 ```
 
 ---

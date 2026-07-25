@@ -444,6 +444,7 @@ def get_build_version(
     file_type = file_config.get("file_type", "")
     variable = file_config.get("variable", "")
     directive = file_config.get("directive", "")
+    pattern = file_config.get("pattern", "")
 
     # Get the current date in the specified timezone and format
     current_date = get_current_datetime_version(timezone, date_format)
@@ -452,12 +453,12 @@ def get_build_version(
     try:
         # Get the appropriate version handler for the file type
         handler = get_version_handler(file_type)
+        read_kwargs: Dict[str, Any] = {}
         if directive:
-            # Read the version using the directive if provided
-            version = handler.read_version(file_path, variable, directive=directive)
-        else:
-            # Read the version without the directive
-            version = handler.read_version(file_path, variable)
+            read_kwargs["directive"] = directive
+        if pattern:
+            read_kwargs["pattern"] = pattern
+        version = handler.read_version(file_path, variable, **read_kwargs)
 
         if version:
             # Parse the version string with the format information
