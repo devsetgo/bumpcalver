@@ -23,12 +23,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pages: write
-      id-token: write
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: Checkout repository
@@ -84,25 +78,3 @@ jobs:
             --push
 
           mike set-default stable --branch "$DOCS_BRANCH" --push
-
-      - name: Clean working tree before gh-pages checkout
-        run: |
-          git reset --hard
-          git clean -fd
-
-      - name: Checkout gh-pages branch
-        run: |
-          git fetch origin gh-pages
-          git checkout -B gh-pages origin/gh-pages
-
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v6
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v5
-        with:
-          path: .
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v5
