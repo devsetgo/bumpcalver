@@ -14,10 +14,17 @@ of sync:
   would actually produce, not a manually-copied snapshot of it.
 """
 
+import sys
 from datetime import datetime
+from pathlib import Path
 from zoneinfo import ZoneInfo, available_timezones
 
-from src.bumpcalver import available_instruction_profiles, get_app_instructions
+# Add src/ to the path so `bumpcalver` imports regardless of the caller's
+# working directory or how mkdocs was invoked (e.g. mike runs `mkdocs build`
+# in a subprocess that doesn't add the repo root to sys.path).
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
+from bumpcalver import available_instruction_profiles, get_app_instructions
 
 TIMEZONE_TABLE_PLACEHOLDER = "<!-- TIMEZONE_TABLE -->"
 
