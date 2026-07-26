@@ -2,7 +2,10 @@
   {
     "version": "2026.7.25.1",
     "title": "Release 2026.7.25.1",
-    "aliases": []
+    "aliases": [
+      "latest",
+      "stable"
+    ]
   },
   {
     "version": "2026.5.24.1",
