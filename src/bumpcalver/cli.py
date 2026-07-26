@@ -33,6 +33,10 @@ Example:
 
     To undo a specific operation:
         $ bumpcalver --undo-id <operation_id>
+
+AI assistants: run `python -m bumpcalver.ai_instructions <profile>`
+(claude/copilot/generic) for guidance on authoring a project's
+`[tool.bumpcalver]` config before hand-rolling one.
 """
 
 import contextlib

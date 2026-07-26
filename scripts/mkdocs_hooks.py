@@ -1,16 +1,23 @@
 """mkdocs build hooks, registered via mkdocs.yml's `hooks:` key.
 
-Single source of truth for the timezone reference table injected into
-docs/timezones.md at `mkdocs build` time. Previously this ~600-row table was
-hand-copied into both docs/timezones.md *and* a separate, unreferenced
-docs/timezones_table.html, with no mechanism keeping the two in sync (see
-IMPROVEMENTS.md §3.3). Generating it here means there is exactly one copy of
-this data, it is always current for whatever Python/tzdata built the docs,
-and nothing needs to be hand-regenerated when timezones change upstream.
+Two build-time content generators, both existing to avoid a hand-maintained
+copy of something that already lives elsewhere and would silently drift out
+of sync (see IMPROVEMENTS.md §3.3 and §6):
+
+- The timezone reference table injected into docs/timezones.md — previously
+  hand-copied into both docs/timezones.md *and* a separate, unreferenced
+  docs/timezones_table.html, with no mechanism keeping the two in sync.
+- The three packaged AI-assistant instruction profiles (generic/claude/
+  copilot), injected into docs/ai-instructions.md verbatim from the same
+  `get_app_instructions()` the packaged CLI/API serve — so the docs page
+  always shows exactly what `python -m bumpcalver.ai_instructions <profile>`
+  would actually produce, not a manually-copied snapshot of it.
 """
 
 from datetime import datetime
 from zoneinfo import ZoneInfo, available_timezones
+
+from src.bumpcalver import available_instruction_profiles, get_app_instructions
 
 TIMEZONE_TABLE_PLACEHOLDER = "<!-- TIMEZONE_TABLE -->"
 
@@ -88,8 +95,31 @@ function searchTable() {{
 """
 
 
+def ai_instructions_placeholder(profile: str) -> str:
+    """Placeholder marker for a given profile, used in docs/ai-instructions.md."""
+    return f"<!-- AI_INSTRUCTIONS:{profile} -->"
+
+
+def generate_ai_instructions_block(profile: str) -> str:
+    """Wrap a profile's packaged instructions in a fenced code block for docs display.
+
+    A 4-backtick outer fence (rather than the usual 3) so the 3-backtick TOML
+    fences already inside the profile's own "Setup" examples don't
+    prematurely close it — pymdownx.superfences (enabled in mkdocs.yml)
+    handles differing fence lengths nesting correctly.
+    """
+    return f"````markdown\n{get_app_instructions(profile)}\n````"
+
+
 def on_page_markdown(markdown, page, config, files):
-    """mkdocs event hook: substitute the placeholder in docs/timezones.md only."""
+    """mkdocs event hook: substitute placeholders on their one matching page each."""
     if page.file.src_uri == "timezones.md" and TIMEZONE_TABLE_PLACEHOLDER in markdown:
         return markdown.replace(TIMEZONE_TABLE_PLACEHOLDER, generate_timezone_table_html())
+
+    if page.file.src_uri == "ai-instructions.md":
+        for profile in available_instruction_profiles():
+            placeholder = ai_instructions_placeholder(profile)
+            if placeholder in markdown:
+                markdown = markdown.replace(placeholder, generate_ai_instructions_block(profile))
+
     return markdown

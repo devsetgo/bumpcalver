@@ -135,6 +135,23 @@ For formats with no dedicated handler above.
     options:
       show_source: false
 
+## AI Assistant Instructions
+
+See [AI Assistant Instructions](ai-instructions.md) for the full narrative
+guide (what's covered, what isn't, the security contract). API reference:
+
+::: bumpcalver.ai_instructions.get_app_instructions
+    options:
+      show_source: false
+
+::: bumpcalver.ai_instructions.available_instruction_profiles
+    options:
+      show_source: false
+
+::: bumpcalver.ai_instructions.suggested_instruction_filename
+    options:
+      show_source: false
+
 ## Undo / Backup
 
 ::: bumpcalver.backup_utils.BackupManager

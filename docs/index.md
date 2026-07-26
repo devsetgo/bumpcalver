@@ -67,6 +67,39 @@ bumpcalver --build --git-tag --auto-commit
 
 ---
 
+### AI Assistant Bootstrap (for app repositories)
+
+If you're using Claude, Copilot, or another AI assistant to set up bumpcalver
+in your project, pull packaged, always-current integration instructions
+directly from the installed library into your repo's own instruction
+file — one command, no manual copy-paste of the Configuration section below:
+
+```bash
+python -m bumpcalver.ai_instructions claude --write     # writes ./CLAUDE.md
+python -m bumpcalver.ai_instructions copilot --write    # writes ./.github/copilot-instructions.md
+python -m bumpcalver.ai_instructions generic > AI_INSTRUCTIONS.md
+```
+
+Or from Python:
+
+```python
+from bumpcalver import get_app_instructions, suggested_instruction_filename
+
+assistant = "copilot"  # or "claude" / "generic"
+print(f"Suggested destination: {suggested_instruction_filename(assistant)}")
+print(get_app_instructions(assistant))
+```
+
+This avoids an assistant reverse-engineering the `[tool.bumpcalver]` schema
+from scratch and keeps the guidance it produces aligned with the version of
+bumpcalver actually installed — including which `file_type` to pick for a
+given file, the three versioning modes, and which config keys have real
+(git tag/commit) side effects. See
+[AI Assistant Instructions](https://devsetgo.github.io/bumpcalver/latest/ai-instructions.md)
+for the full details, including what these instructions do not yet cover.
+
+---
+
 ## Configuration
 
 The BumpCalver CLI relies on a `pyproject.toml` configuration file located at the root of your project. This file specifies how versioning should be handled, which files to update, and other settings.
@@ -224,9 +257,10 @@ For formats without a dedicated handler above:
 If none of the above fit and `text`/`regex` aren't enough, third-party
 packages can register their own `file_type` handlers without forking
 `bumpcalver`, via a `bumpcalver.handlers` entry point. See the "Distributing
-Your Handler as a Plugin" section of the [development guide](development-guide.md)
+Your Handler as a Plugin" section of the
+[development guide](https://devsetgo.github.io/bumpcalver/latest/development-guide/)
 and the runnable example at
-[`examples/bumpcalver-plugin-example/`](https://github.com/devsetgo/bumpcalver/tree/main/examples/bumpcalver-plugin-example).
+[`examples/bumpcalver-plugin-example/`](examples/bumpcalver-plugin-example/).
 
 ---
 
@@ -267,7 +301,7 @@ bumpcalver --build --json 2>/dev/null
 Works the same way with `--dry-run` (`{"dry_run": true, ...}`), a no-op bump
 (`{"no_op": true, ...}`), or an error (`{"error": "..."}` with a non-zero exit
 code) — stdout is always exactly one JSON object, never a mix of log lines and
-data. See the [CLI Reference](cli-reference.md#machine-readable-output-json)
+data. See the [CLI Reference](https://devsetgo.github.io/bumpcalver/latest/cli-reference.md#machine-readable-output-json)
 for the full payload shape of each case.
 
 ### Undo Options
