@@ -117,7 +117,7 @@ file_type = "properties"
 variable = "sonar.projectVersion"
 
 [[tool.bumpcalver.file]]
-path = "examples/.env"
+path = "examples/.env-sample"
 file_type = "env"
 variable = "VERSION"
 

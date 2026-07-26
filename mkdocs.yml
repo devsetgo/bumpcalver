@@ -22,6 +22,7 @@ nav:
       - Filelayout: 'examples/filelayout.md'
     - Documentation:
       - Undo Functionality: 'undo.md'
+      - AI Assistant Instructions: 'ai-instructions.md'
       - Quick Reference: 'mike-quickref.md'
     - Development:
       - Contributing Guide: 'development-guide.md'

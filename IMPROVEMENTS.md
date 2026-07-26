@@ -592,6 +592,11 @@ closed out.**
 
 ## 6. Add Packaged AI-Assistant Integration Instructions (final improvement)
 
+**Status: ✅ DONE (2026-07-26).** See the "Implementation notes" at the end of this section
+(after §6.9) for what was actually built, including a couple of deviations from the plan
+below that only surfaced by actually running the built wheel — read that section before
+picking this back up for maintenance, not just the original plan.
+
 This is the last item in this document by request — it's a separate initiative from §1–5
 above rather than a fix to something broken. The goal is to port the pattern already shipped
 in `pydantic-schemaforms` and `devsetgo_lib` (see `ADD_AI_INSTRUCTIONS.md` at the repo root
@@ -766,6 +771,120 @@ changes). Given this is explicitly the last planned improvement for this pass, i
 reasonable to treat it as its own follow-up unit of work rather than interleaving it with
 §1–5.
 
+### Implementation notes (2026-07-26) — read before touching this feature again
+
+All 9 rollout steps done, plus two real bugs found by actually running the built artifact
+rather than trusting the copy-pasted playbook module — neither was anticipated by the plan
+above:
+
+1. **`resources.files("bumpcalver")` (the literal playbook string) doesn't resolve in this
+   repo's own dev/test environment**, because `bumpcalver` is never actually `pip install`ed
+   here — tests import via `src.bumpcalver.X`, not `bumpcalver.X` (this repo has no editable
+   install; confirmed with `pip show bumpcalver` → not found). Fixed by using
+   `resources.files(__package__)` instead of a hardcoded package-name literal —
+   `__package__` resolves correctly under *either* import path (`bumpcalver.ai_instructions`
+   for a real install, `src.bumpcalver.ai_instructions` here), which is also just more
+   correct in general (doesn't silently break if the package were ever renamed/vendored).
+   Verified both paths work: `from src.bumpcalver import get_app_instructions` in this repo,
+   and a real `python -m build` wheel installed into a clean venv with
+   `from bumpcalver import get_app_instructions`.
+2. **`python -m bumpcalver.ai_instructions <profile>` — the exact command these instructions
+   tell a developer to run — printed a `RuntimeWarning` on every invocation** once
+   `src/bumpcalver/__init__.py` re-exported the three functions with a top-level
+   `from .ai_instructions import (...)`. Root cause: that import pre-populates
+   `sys.modules["bumpcalver.ai_instructions"]` as a side effect of merely `import bumpcalver`;
+   `python -m bumpcalver.ai_instructions` then finds it already imported under a different
+   identity than the `__main__` copy `runpy` is about to execute, and CPython warns "this may
+   result in unpredictable behaviour." Harmless in this specific case (the module has no
+   mutable top-level state), but still a scary, user-visible warning on the officially
+   documented command — not acceptable to ship. Fixed with lazy (PEP 562) module `__getattr__`
+   in `__init__.py` instead of an eager top-level import: `import bumpcalver` alone no longer
+   touches `ai_instructions` at all, so there's nothing already in `sys.modules` for `-m` to
+   collide with. Verified by rebuilding the wheel and confirming the warning is gone, and that
+   `bumpcalver.get_app_instructions` still lazily resolves on first access.
+
+Neither of these would have been caught by reading the playbook or the code — only by
+actually running `python -m build`, installing the wheel into a clean venv, and running the
+documented commands against it, which is exactly the discipline playbook lesson §10.1
+("verify every claim by running it, not by reading the source") argues for.
+
+Other deviations from the plan worth knowing about:
+
+- **12 built-in `file_type`s exist, not 10** as §6.6's draft said — `text`/`regex` were added
+  by Capability Expansion §5.1 after this plan was originally drafted. The shipped
+  `assets/ai/*.md` files were written from the actual current `_HANDLER_REGISTRY`, not from
+  the plan's stale count; a regression test
+  (`test_get_app_instructions_documents_every_builtin_file_type`) asserts every registry key
+  is documented so this can't silently go stale again for *new* file types (it can't catch
+  stale prose about existing ones, though — see the standing-rule note in
+  `docs/development-guide.md`'s "Update Documentation" step).
+- **A dedicated docs page was added** (`docs/ai-instructions.md`, linked from
+  `mkdocs.yml`'s nav under "Documentation") beyond what §6.9's checklist called optional —
+  including an explicit "what these instructions do NOT yet cover" section (plugin mechanism
+  walkthrough, undo internals, broader CI recipes), per playbook lesson §10.8. API reference
+  entries (`:::` mkdocstrings directives) live in `docs/modules.md` alongside every other
+  module's, not duplicated onto the narrative page, matching this repo's existing
+  single-source-of-truth pattern for generated API docs.
+- **Verified with a real `mkdocs build --strict`**: same 4 pre-existing, unrelated warnings
+  as every other doc change this session — no regressions from the new page or its links.
+- Tests: `tests/test_ai_instructions.py` (14 tests) — all plumbing/alias/CLI tests from the
+  playbook, the security regression tests unweakened, plus the two bumpcalver-specific
+  content-regression tests described above. 100% coverage on `ai_instructions.py`
+  (`return 2` after `parser.error()` is marked `# pragma: no cover` — `parser.error()` always
+  exits the process at runtime, confirmed by the tests that catch `SystemExit`; mypy still
+  requires the statement for its flow analysis since `argparse`'s stubs don't type `error()`
+  as `NoReturn`). 411/411 tests pass project-wide, `ruff`/`mypy` clean.
+
+**Follow-up (same day) — the first draft was reference material, not a setup guide.** User
+feedback: the profiles needed to actually walk an assistant through configuring a *new*
+project from nothing, not just document the schema once it's already half-written. Added a
+"Setup" section (in each profile's native voice — numbered steps for generic/claude,
+checklist for copilot) covering, in order: install; deciding between `pyproject.toml` and a
+standalone `bumpcalver.toml`, including the flat-vs-nested key trap between them (`[[file]]`
+vs `[[tool.bumpcalver.file]]` — using the nested form in a standalone `bumpcalver.toml`
+doesn't error, it silently produces an empty file list); seeding an initial version string in
+every target file (bumpcalver replaces existing values, it does not create files or insert
+keys — a file missing the key just silently fails that one update, verified via
+`update_version_in_files`'s per-file try/except); enumerating target files; sane
+`version_format`/`date_format`/`timezone` defaults; `git_tag`/`auto_commit`; `.gitignore`; and
+verifying with `--dry-run` before a real run. Added two copy-paste-ready example configs
+(minimal single-file, and the common "typical Python package" case) to every profile.
+**Every claim in this section — the exact `--dry-run` output format, the "No files specified"
+message from the nesting trap, both example configs — was verified by actually running real
+configs against the real CLI** in a scratch directory, not written from memory of the earlier
+`--json`/config work. `docs/ai-instructions.md`'s "What these instructions cover" updated to
+match. 411/411 tests still pass (content changes only, no code touched).
+
+**Second follow-up (same day) — the docs site should show the actual instruction text, not
+just describe it.** User feedback: "copying the information directly from the library into
+the documentation" was wanted, not just a narrative page that talks *about* the profiles.
+Rather than hand-copying the three `.md` files into `docs/ai-instructions.md` (which would
+immediately recreate exactly the kind of drift-prone duplication §3.3 and the rest of this
+section exist to avoid), extended `scripts/mkdocs_hooks.py` — the same build-time-generation
+mechanism already used for `docs/timezones.md` — with a second placeholder-substitution
+handler: `docs/ai-instructions.md` now has three `<!-- AI_INSTRUCTIONS:<profile> -->`
+placeholders under a new "Full instructions by profile" section, each replaced at
+`mkdocs build` time with the literal output of `get_app_instructions(profile)` — the *same*
+function the CLI and Python API serve — wrapped in a fenced code block for verbatim display.
+
+One real formatting problem, found by inspecting the actual built HTML rather than trusting
+that "it built without errors" meant "it rendered correctly": each profile's own "Setup"
+section contains ```toml example blocks, so wrapping the whole profile in an ordinary
+3-backtick fence would have the first inner ```toml fence prematurely close the outer one.
+Fixed with a 4-backtick outer fence — `pymdownx.superfences` (already enabled in `mkdocs.yml`)
+resolves differing fence lengths as proper nesting. Verified by grepping the built
+`site/ai-instructions/index.html` for a clean `<div class="highlight">` block per profile
+with no leaked stray backticks or truncated content at the section boundaries, not just that
+`mkdocs build --strict` exited zero.
+
+Tests: 3 new tests in `tests/test_mkdocs_hooks.py` — the 4-backtick-fence contract, full
+placeholder substitution for all three profiles on the `ai-instructions.md` page, and that
+other pages / a placeholder-free page are left untouched (mirroring the existing timezone
+hook's test shape). 100% coverage restored on `scripts/mkdocs_hooks.py`. `docs/ai-instructions.md`'s
+"Keeping this in sync" section updated to note the new section regenerates automatically —
+editing `src/bumpcalver/assets/ai/*.md` is still the only manual step. 414/414 tests pass,
+`ruff`/`mypy` clean, `mkdocs build --strict` still shows only the same 4 pre-existing warnings.
+
 ---
 
 ## Suggested Priority Order
@@ -794,6 +913,10 @@ If tackling incrementally, the highest-leverage fixes are:
    version-bump path, tests, and docs) — both closed out **2026-07-25**. This section is
    fully closed.
 
-Everything in this document is now done except §6 (AI-assistant integration instructions),
-which was explicitly scoped as a separate, later initiative from the start (see its own
-section for the detailed plan) and was never part of this improvement pass's priority order.
+6. ✅ Packaged AI-Assistant Integration Instructions (§6) — explicitly scoped as a separate,
+   later initiative from the start rather than part of §1–5's priority order; closed out
+   **2026-07-26**. See its own section (including the "Implementation notes" at the end) for
+   what was actually built and two real bugs found only by running the built wheel.
+
+Every item in this document is now done. Future work belongs in a new review pass, not this
+document.

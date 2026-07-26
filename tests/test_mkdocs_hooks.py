@@ -1,9 +1,8 @@
 # tests/test_mkdocs_hooks.py
-"""Tests for scripts/mkdocs_hooks.py, which generates the timezone table
-
-injected into docs/timezones.md at `mkdocs build` time (see IMPROVEMENTS.md
-§3.3 — this replaced two hand-maintained, always-driftable copies of the
-same ~600-row table with one generated-on-demand copy).
+"""Tests for scripts/mkdocs_hooks.py, which generates build-time-only content
+injected into docs pages at `mkdocs build` time (see IMPROVEMENTS.md §3.3 —
+the timezones.md table — and §6 — the ai-instructions.md profile dumps),
+replacing hand-maintained copies that could silently drift out of sync.
 """
 
 from types import SimpleNamespace
@@ -11,10 +10,13 @@ from zoneinfo import available_timezones
 
 from scripts.mkdocs_hooks import (
     TIMEZONE_TABLE_PLACEHOLDER,
+    ai_instructions_placeholder,
+    generate_ai_instructions_block,
     generate_timezone_table_html,
     get_timezone_rows,
     on_page_markdown,
 )
+from src.bumpcalver import available_instruction_profiles, get_app_instructions
 
 
 def test_get_timezone_rows_covers_every_known_timezone():
@@ -64,5 +66,36 @@ def test_on_page_markdown_leaves_other_pages_untouched():
 def test_on_page_markdown_is_a_noop_without_the_placeholder():
     markdown = "# Timezones\n\nNo placeholder here.\n"
     result = on_page_markdown(markdown, _fake_page("timezones.md"), config={}, files=[])
+
+    assert result == markdown
+
+
+def test_generate_ai_instructions_block_wraps_literal_profile_content():
+    block = generate_ai_instructions_block("claude")
+
+    assert block.startswith("````markdown\n")
+    assert block.endswith("\n````")
+    assert get_app_instructions("claude") in block
+    # Confirms the outer fence is 4 backticks specifically because the
+    # profile content contains its own 3-backtick TOML fences — if this
+    # ever regresses to a 3-backtick outer fence, the inner ones would
+    # prematurely close it.
+    assert "```toml" in get_app_instructions("claude")
+
+
+def test_on_page_markdown_replaces_all_profile_placeholders_on_ai_instructions_page():
+    markdown = "# AI Assistant Instructions\n\n" + "\n\n".join(
+        ai_instructions_placeholder(profile) for profile in available_instruction_profiles()
+    )
+    result = on_page_markdown(markdown, _fake_page("ai-instructions.md"), config={}, files=[])
+
+    for profile in available_instruction_profiles():
+        assert ai_instructions_placeholder(profile) not in result
+        assert get_app_instructions(profile) in result
+
+
+def test_on_page_markdown_ai_instructions_page_without_placeholders_is_untouched():
+    markdown = "# AI Assistant Instructions\n\nNothing to substitute here.\n"
+    result = on_page_markdown(markdown, _fake_page("ai-instructions.md"), config={}, files=[])
 
     assert result == markdown

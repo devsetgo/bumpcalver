@@ -384,6 +384,16 @@ def test_your_format_handler_round_trip(tmp_path):
      generated from the code, so your new handler's docstring (and the
      `_HANDLER_REGISTRY` entry) will show up automatically next time the docs
      are built.
+   - **Update `src/bumpcalver/assets/ai/*.md`** (all three profiles) with
+     the new `file_type`'s row in the reference table — these ship as
+     package data for AI assistants configuring bumpcalver in other repos
+     (see [AI Assistant Instructions](ai-instructions.md)) and, unlike
+     `docs/modules.md`, are **not** generated from the code, so they drift
+     silently if forgotten. A regression test
+     (`test_get_app_instructions_documents_every_builtin_file_type`) catches
+     a missing `file_type` row, but not stale prose about existing ones —
+     review the three files by hand for any change to CLI flags or config
+     keys with real side effects, not just new file types.
 
 ### Distributing Your Handler as a Plugin
 
