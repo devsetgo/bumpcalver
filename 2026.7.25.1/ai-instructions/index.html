@@ -1,0 +1,2353 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Simple Calendar Versioning Library">
+      
+      
+        <meta name="author" content="Mike Ryan">
+      
+      
+      
+        <link rel="prev" href="../undo/">
+      
+      
+        <link rel="next" href="../mike-quickref/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>AI Assistant Instructions - BumpCalver Library</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../css/print-site.css">
+    
+      <link rel="stylesheet" href="../css/print-site-material.css">
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#ai-assistant-instructions" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="BumpCalver Library" class="md-header__button md-logo" aria-label="BumpCalver Library" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            BumpCalver Library
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              AI Assistant Instructions
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/devsetgo/bumpcalver" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    devsetgo/bumpcalver
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Introduction
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../quickstart/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  QuickStart
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../calendar-versioning-guide/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Calendar Versioning Guide
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../hybrid-versioning-guide/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Hybrid Versioning Guide
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../timezones/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Timezones
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../modules/" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../examples/configuration/" class="md-tabs__link">
+          
+  
+  
+  Examples
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../undo/" class="md-tabs__link">
+          
+  
+  
+  Documentation
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../development-guide/" class="md-tabs__link">
+          
+  
+  
+  Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../about/" class="md-tabs__link">
+          
+  
+  
+  About
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../release-notes/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Release Notes
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../print_page/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Print Site
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="BumpCalver Library" class="md-nav__button md-logo" aria-label="BumpCalver Library" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    BumpCalver Library
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/devsetgo/bumpcalver" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    devsetgo/bumpcalver
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QuickStart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../calendar-versioning-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calendar Versioning Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hybrid-versioning-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hybrid Versioning Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../timezones/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Timezones
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/filelayout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Filelayout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Documentation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../undo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Undo Functionality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Assistant Instructions
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Assistant Instructions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick start
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CLI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#full-instructions-by-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Full instructions by profile
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Full instructions by profile">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#claude" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Claude
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#copilot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Copilot
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-these-instructions-cover" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What these instructions cover
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-these-instructions-do-not-cover" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What these instructions do NOT cover
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#packaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Packaging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keeping-this-in-sync" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keeping this in sync
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mike-quickref/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Development
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    About
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../about/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contribute/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../release-notes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../print_page/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Print Site
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="ai-assistant-instructions">AI Assistant Instructions<a class="headerlink" href="#ai-assistant-instructions" title="Permanent link">&para;</a></h1>
+<p>BumpCalver ships app-integration guidance for AI assistants <strong>as package
+data</strong> — the same guidance an assistant would otherwise have to
+reverse-engineer from this documentation site, bundled directly with the
+version of <code>bumpcalver</code> you actually installed, so it can never drift out of
+sync with an externally copy-pasted snippet.</p>
+<p>This isn't guidance for <em>using</em> bumpcalver's own source code — it's guidance
+for an assistant helping a developer <strong>configure bumpcalver in their own
+project</strong>: authoring the <code>[tool.bumpcalver]</code> config block, picking the right
+<code>file_type</code> for each version-carrying file, and choosing one of the three
+versioning modes.</p>
+<h2 id="quick-start">Quick start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>bumpcalver.ai_instructions<span class="w"> </span>claude<span class="w"> </span>--write<span class="w">     </span><span class="c1"># writes ./CLAUDE.md</span>
+python<span class="w"> </span>-m<span class="w"> </span>bumpcalver.ai_instructions<span class="w"> </span>copilot<span class="w"> </span>--write<span class="w">    </span><span class="c1"># writes ./.github/copilot-instructions.md</span>
+python<span class="w"> </span>-m<span class="w"> </span>bumpcalver.ai_instructions<span class="w"> </span>generic<span class="w"> </span>&gt;<span class="w"> </span>AI_INSTRUCTIONS.md
+</code></pre></div>
+<p>Or in-process:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">bumpcalver</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">available_instruction_profiles</span><span class="p">,</span>
+    <span class="n">get_app_instructions</span><span class="p">,</span>
+    <span class="n">suggested_instruction_filename</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">available_instruction_profiles</span><span class="p">())</span>  <span class="c1"># (&#39;claude&#39;, &#39;copilot&#39;, &#39;generic&#39;)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">get_app_instructions</span><span class="p">(</span><span class="s2">&quot;claude&quot;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">suggested_instruction_filename</span><span class="p">(</span><span class="s2">&quot;claude&quot;</span><span class="p">))</span>  <span class="c1"># &quot;CLAUDE.md&quot;</span>
+</code></pre></div>
+<p>Aliases are accepted: <code>github-copilot</code> → <code>copilot</code>, <code>anthropic-claude</code> →
+<code>claude</code>, <code>default</code> → <code>generic</code>.</p>
+<p>See <a href="../modules/#ai-assistant-instructions">API Reference</a> for the full
+<code>get_app_instructions</code>/<code>available_instruction_profiles</code>/
+<code>suggested_instruction_filename</code> signatures.</p>
+<h2 id="cli">CLI<a class="headerlink" href="#cli" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>usage: python -m bumpcalver.ai_instructions [-h] [--write] [--output PATH]
+                                             [profile]
+</code></pre></div>
+<ul>
+<li><code>profile</code> — one of <code>claude</code>/<code>copilot</code>/<code>generic</code> (or an alias); defaults to
+  <code>generic</code>.</li>
+<li><code>--write</code> — write to the profile's suggested destination file (<code>CLAUDE.md</code>,
+  <code>.github/copilot-instructions.md</code>, or <code>AI_INSTRUCTIONS.md</code>) instead of
+  stdout.</li>
+<li><code>--output PATH</code> — write to an explicit path instead. <code>PATH</code> is validated
+  to stay within the current working directory (see "Security" below) —
+  this matters because the whole point of this CLI is that an AI assistant
+  may invoke it directly, not just a human typing a path by hand.</li>
+</ul>
+<h2 id="full-instructions-by-profile">Full instructions by profile<a class="headerlink" href="#full-instructions-by-profile" title="Permanent link">&para;</a></h2>
+<p>The three sections below are the <strong>exact, literal content</strong> of the packaged
+instruction files, generated into this page at build time from the same
+<code>get_app_instructions()</code> the CLI and Python API serve — not a manually
+copied snapshot that could drift out of sync with what
+<code>python -m bumpcalver.ai_instructions &lt;profile&gt;</code> actually outputs.</p>
+<h3 id="generic">Generic<a class="headerlink" href="#generic" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="gh"># Generic AI assistant instructions for apps using bumpcalver</span>
+
+Goal: correctly configure <span class="sb">`bumpcalver`</span> in an application repository —
+authoring its <span class="sb">`[tool.bumpcalver]`</span> config and choosing the right CLI
+invocation — without reverse-engineering the library&#39;s internals.
+
+<span class="sb">`bumpcalver`</span> is a CLI/config-driven tool, not a library your code imports
+and calls. &quot;Integration&quot; here means: get the config block right, pick the
+correct <span class="sb">`file_type`</span> for every file that carries a version string, and pick
+exactly one versioning mode.
+
+<span class="gu">## Setup: from zero to a working config</span>
+
+Follow this order — skipping steps (especially the &quot;seed an initial version&quot;
+step) is the most common way a first setup silently does nothing.
+
+<span class="gu">### 1. Install</span>
+
+<span class="sb">```bash</span>
+pip<span class="w"> </span>install<span class="w"> </span>bumpcalver
+<span class="c1"># or add &quot;bumpcalver&quot; to the project&#39;s dev dependencies</span>
+<span class="sb">```</span>
+
+<span class="gu">### 2. Decide where the config lives</span>
+
+<span class="k">-</span><span class="w"> </span><span class="gs">**If the project already has a `pyproject.toml`**</span> (almost always true for
+  a Python package): add a <span class="sb">`[tool.bumpcalver]`</span> table to it. This is the
+  default choice.
+<span class="k">-</span><span class="w"> </span><span class="gs">**If there is no `pyproject.toml`**</span>, or the project&#39;s owner wants
+  bumpcalver config kept separate: create a standalone <span class="sb">`bumpcalver.toml`</span> in
+  the project root instead.
+<span class="k">-</span><span class="w"> </span>If <span class="gs">**both**</span> exist in the same directory, bumpcalver uses <span class="sb">`pyproject.toml`</span>
+  and ignores <span class="sb">`bumpcalver.toml`</span> — never create both and expect the second
+  one to matter.
+
+⚠️ **The two files use different key nesting — this is a real, easy-to-miss
+trap:**
+
+| In <span class="sb">`pyproject.toml`</span> | In standalone <span class="sb">`bumpcalver.toml`</span> |
+|---|---|
+| <span class="sb">`[tool.bumpcalver]`</span> table | keys at the <span class="gs">**top level**</span> of the file |
+| <span class="sb">`[[tool.bumpcalver.file]]`</span> | <span class="sb">`[[file]]`</span> |
+
+Writing <span class="sb">`[[tool.bumpcalver.file]]`</span> inside a standalone <span class="sb">`bumpcalver.toml`</span>
+does not error — it just silently produces an empty file list, because
+<span class="sb">`bumpcalver.toml`</span> is parsed flat (no <span class="sb">`tool.bumpcalver`</span> nesting expected). If
+nothing gets updated after a <span class="sb">`--build`</span>, check this first.
+
+<span class="gu">### 3. Seed an initial version string in every target file</span>
+
+**bumpcalver finds and replaces an existing version string — it does not
+create files or insert a new key.** Before writing any config, make sure
+every file you intend to list already contains a literal version value in
+the right shape, e.g.:
+
+<span class="k">-</span><span class="w"> </span>Python: <span class="sb">`__version__ = &quot;2024.01.01&quot;`</span>
+<span class="k">-</span><span class="w"> </span>TOML (<span class="sb">`pyproject.toml`</span> itself): <span class="sb">`version = &quot;2024.01.01&quot;`</span> under <span class="sb">`[project]`</span>
+<span class="k">-</span><span class="w"> </span>JSON: <span class="sb">`&quot;version&quot;: &quot;2024.01.01&quot;`</span> as a top-level key
+<span class="k">-</span><span class="w"> </span>Dockerfile: <span class="sb">`ARG VERSION=2024.01.01`</span> and/or <span class="sb">`ENV APP_VERSION=2024.01.01`</span>
+
+If a file is missing the key entirely, bumpcalver&#39;s update for that file
+will fail (prints a &quot;not found&quot; message, doesn&#39;t write, doesn&#39;t error the
+whole run) — that&#39;s a config/file mismatch to fix, not something bumpcalver
+will fix for you.
+
+<span class="gu">### 4. Identify every file that needs updating, and map each to the table below</span>
+
+Walk the repo (or ask the user) for every file that carries this project&#39;s
+version: the package&#39;s own version attribute, <span class="sb">`pyproject.toml`</span>&#39;s
+<span class="sb">`project.version`</span>, a Dockerfile <span class="sb">`ARG`</span>/<span class="sb">`ENV`</span>, a <span class="sb">`package.json`</span>-style file, a
+docs page, etc. For each one, look up <span class="sb">`file_type`</span> in the table in the next
+section and write one <span class="sb">`[[tool.bumpcalver.file]]`</span> (or <span class="sb">`[[file]]`</span>) block.
+
+<span class="gu">### 5. Choose `version_format`, `date_format`, `timezone`</span>
+
+If unsure, these are sane, verified defaults:
+
+<span class="sb">```toml</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}.{build_count:03}&quot;</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%Y.%m.%d&quot;</span>
+<span class="n">timezone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;America/New_York&quot;</span>
+<span class="sb">```</span>
+
+(<span class="sb">`{current_date}`</span> uses whatever <span class="sb">`date_format`</span> you set; <span class="sb">`{build_count:03}`</span>
+zero-pads to 3 digits and only applies with <span class="sb">`--build`</span> — see &quot;Versioning
+modes&quot; below for the full placeholder set including hybrid semver.)
+
+<span class="gu">### 6. Decide `git_tag` / `auto_commit`, and set them explicitly</span>
+
+Default to <span class="sb">`false`</span> for both unless the user explicitly asked for git
+automation — see &quot;Security / side-effect contract&quot; below for why.
+
+<span class="gu">### 7. Add the `.gitignore` entries (see the dedicated section below)</span>
+
+<span class="gu">### 8. Verify before the first real run</span>
+
+Always run <span class="sb">`bumpcalver --dry-run`</span> (add <span class="sb">`--build`</span> too if using build-count or
+hybrid mode) immediately after writing the config, <span class="gs">**before**</span> running it for
+real. It prints exactly what would change without writing anything:
+
+<span class="sb">```</span>
+<span class="sb">[dry-run] Would bump version to 2024.01.02.001 in:</span>
+<span class="sb">[dry-run]   src/mypkg/__init__.py</span>
+<span class="sb">[dry-run]   pyproject.toml</span>
+<span class="sb">```</span>
+
+If instead it prints <span class="sb">`No files specified in the configuration.`</span>, the config
+wasn&#39;t found or parsed — check step 2&#39;s nesting trap first. If a file you
+expected is missing from the list, check step 3 (the file&#39;s current content
+doesn&#39;t match <span class="sb">`variable`</span>/<span class="sb">`pattern`</span>).
+
+<span class="gu">### Minimal working example (single file)</span>
+
+<span class="sb">```toml</span>
+<span class="k">[tool.bumpcalver]</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}.{build_count:03}&quot;</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%Y.%m.%d&quot;</span>
+<span class="n">timezone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;America/New_York&quot;</span>
+<span class="n">git_tag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+<span class="n">auto_commit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+
+<span class="k">[[tool.bumpcalver.file]]</span>
+<span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;src/mypkg/__init__.py&quot;</span>
+<span class="n">file_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;python&quot;</span>
+<span class="n">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;__version__&quot;</span>
+<span class="sb">```</span>
+
+<span class="gu">### Typical Python package (multiple files, the common real-world case)</span>
+
+<span class="sb">```toml</span>
+<span class="k">[tool.bumpcalver]</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}.{build_count:03}&quot;</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%Y.%m.%d&quot;</span>
+<span class="n">timezone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;America/New_York&quot;</span>
+<span class="n">git_tag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">auto_commit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+
+<span class="k">[[tool.bumpcalver.file]]</span>
+<span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;pyproject.toml&quot;</span>
+<span class="n">file_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;toml&quot;</span>
+<span class="n">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;project.version&quot;</span>
+<span class="n">version_standard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;python&quot;</span>
+
+<span class="k">[[tool.bumpcalver.file]]</span>
+<span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;src/mypkg/__init__.py&quot;</span>
+<span class="n">file_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;python&quot;</span>
+<span class="n">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;__version__&quot;</span>
+<span class="n">version_standard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;python&quot;</span>
+<span class="sb">```</span>
+
+Run <span class="sb">`bumpcalver --build --dry-run`</span> against this, confirm the preview looks
+right, then drop <span class="sb">`--dry-run`</span> to apply it for real.
+
+<span class="gu">## Completion contract (always deliver all items)</span>
+
+<span class="k">1.</span> A <span class="sb">`[tool.bumpcalver]`</span> table in <span class="sb">`pyproject.toml`</span> (or a standalone
+   <span class="sb">`bumpcalver.toml`</span>) with <span class="sb">`version_format`</span>, <span class="sb">`date_format`</span>, and <span class="sb">`timezone`</span>.
+<span class="k">2.</span> One <span class="sb">`[[tool.bumpcalver.file]]`</span> block **per file that carries a version
+   string**, with the correct <span class="sb">`file_type`</span> and the matching
+   <span class="sb">`variable`</span>/<span class="sb">`directive`</span>/<span class="sb">`pattern`</span> for that format (see the table below —
+   these are not interchangeable).
+<span class="k">3.</span> Exactly one versioning mode, chosen deliberately (see &quot;Versioning modes&quot;).
+<span class="k">4.</span> If pre-release suffixes (<span class="sb">`--beta`</span>/<span class="sb">`--rc`</span>/<span class="sb">`--release`</span>/<span class="sb">`--custom`</span>) are
+   needed, the corresponding <span class="sb">`beta_format`</span>/<span class="sb">`rc_format`</span>/<span class="sb">`release_format`</span> keys.
+<span class="k">5.</span> An explicit statement of whether <span class="sb">`git_tag`</span>/<span class="sb">`auto_commit`</span> are enabled, and
+   that enabling them causes a <span class="gs">**real git commit and tag**</span> — not a preview.
+<span class="k">6.</span> <span class="sb">`.bumpcalver/`</span> and <span class="sb">`bumpcalver-history.json`</span> added to <span class="sb">`.gitignore`</span>.
+<span class="k">7.</span> A short explanation of any non-obvious <span class="sb">`file_type`</span>/<span class="sb">`variable`</span> mapping choice.
+
+<span class="gu">## Supported file types (as of this bumpcalver version)</span>
+
+| <span class="sb">`file_type`</span> | <span class="sb">`variable`</span> means | Notes |
+|---|---|---|
+| <span class="sb">`python`</span> | Python variable name, e.g. <span class="sb">`__version__`</span> | Regex substitution |
+| <span class="sb">`toml`</span> | <span class="gs">**Dot-separated path**</span>, e.g. <span class="sb">`project.version`</span> | Style-preserving (comments/order survive) |
+| <span class="sb">`yaml`</span> | <span class="gs">**Dot-separated path**</span>, e.g. <span class="sb">`configuration.version`</span> | Style-preserving (comments/order survive) |
+| <span class="sb">`json`</span> | <span class="gs">**Plain top-level key**</span>, e.g. <span class="sb">`version`</span> — NOT a dot path | Nested keys are not supported |
+| <span class="sb">`xml`</span> | <span class="sb">`ElementTree.find()`</span> path, e.g. <span class="sb">`version`</span> or <span class="sb">`metadata/version`</span> | See XML caveat below |
+| <span class="sb">`dockerfile`</span> | Variable name | <span class="gs">**Requires `directive = &quot;ARG&quot;` or `&quot;ENV&quot;`**</span> |
+| <span class="sb">`makefile`</span> | Makefile variable name, e.g. <span class="sb">`APP_VERSION`</span> | |
+| <span class="sb">`properties`</span> | <span class="sb">`KEY`</span> in a <span class="sb">`KEY=value`</span> file | |
+| <span class="sb">`env`</span> | <span class="sb">`KEY`</span> in a <span class="sb">`KEY=value`</span> file (<span class="sb">`.env`</span>) | Quotes are stripped on read |
+| <span class="sb">`setup.cfg`</span> | Dot path (<span class="sb">`metadata.version`</span>) or a simple key | |
+| <span class="sb">`text`</span> | Not used — the whole file <span class="ge">*is*</span> the version | For a bare <span class="sb">`VERSION`</span> file |
+| <span class="sb">`regex`</span> | Any key name | <span class="gs">**Requires `pattern`**</span>: a regex with exactly one capture group around the version |
+
+Third-party file types can be added via the <span class="sb">`bumpcalver.handlers`</span> entry-point
+group without forking bumpcalver — see the plugin-authoring guide if a
+project needs a format not in this table.
+
+<span class="gs">**Do not confuse `json`&#39;s plain top-level key with `toml`/`yaml`&#39;s dot path**</span>
+— they look similar but are different mechanisms. Using a dot path for a
+JSON file&#39;s <span class="sb">`variable`</span> will silently fail to find the key.
+
+<span class="gu">## Versioning modes — pick exactly one</span>
+
+These are different mechanisms, not variations of one setting. Picking the
+wrong one silently produces a version scheme the developer didn&#39;t ask for.
+
+<span class="k">1.</span> <span class="gs">**Plain calendar**</span> (default): <span class="sb">`version_format`</span> uses only <span class="sb">`{current_date}`</span>.
+   Every invocation produces a fresh date-based version.
+<span class="k">2.</span> <span class="gs">**Calendar + build count**</span>: <span class="sb">`version_format`</span> includes <span class="sb">`{build_count}`</span>
+   (optionally <span class="sb">`{build_count:03}`</span> for zero-padding) and the CLI is invoked
+   with <span class="sb">`--build`</span>. The build count increments only when invoked again on
+   the same date; a new date resets it to 1.
+<span class="k">3.</span> <span class="gs">**Hybrid semver + calendar**</span>: <span class="sb">`version_format`</span> includes <span class="sb">`{major}`</span>,
+   <span class="sb">`{minor}`</span>, and/or <span class="sb">`{patch}`</span> alongside <span class="sb">`{current_date}`</span>/<span class="sb">`{build_count}`</span>,
+   and the config has integer <span class="sb">`major`</span>/<span class="sb">`minor`</span>/<span class="sb">`patch`</span> keys. Bump the
+   semantic prefix with <span class="sb">`--bump major|minor|patch`</span> (this both increments the
+   value in config and persists it back to the config file — a real write).
+
+<span class="gu">## Constraints vs. cosmetic — do not confuse these</span>
+
+<span class="k">-</span><span class="w"> </span><span class="sb">`version_standard = &quot;python&quot;`</span> on a <span class="sb">`[[tool.bumpcalver.file]]`</span> block is
+  <span class="gs">**enforced**</span>: it PEP-440-normalizes the version string before writing it
+  (e.g. strips leading zeros, converts separators). Any other value (or
+  omitting the key) is a no-op passthrough.
+<span class="k">-</span><span class="w"> </span><span class="gs">**`file_type` is never validated against the file&#39;s actual content.**</span>
+  Nothing stops a config from setting <span class="sb">`file_type = &quot;python&quot;`</span> on a Ruby file
+  — if the regex happens to match <span class="sb">`__version__ = &quot;...&quot;`</span>-shaped text it will
+  &quot;work&quot; by coincidence, not because Ruby is a supported format. For a
+  non-Python <span class="sb">`KEY = &quot;value&quot;`</span>-style file, use <span class="sb">`file_type = &quot;regex&quot;`</span> with an
+  explicit <span class="sb">`pattern`</span> instead of borrowing an unrelated handler.
+
+<span class="gu">## Known limitation</span>
+
+<span class="sb">`xml`</span>&#39;s <span class="sb">`update_version`</span> preserves the <span class="sb">`&lt;?xml ?&gt;`</span> declaration and comments
+nested <span class="ge">*inside*</span> the root element, but comments in the XML <span class="gs">**prolog**</span> (before
+the root element&#39;s opening tag) are dropped on write — a structural
+<span class="sb">`ElementTree`</span> limitation, not a bug. Flag this if a target XML file has
+prolog comments worth preserving.
+
+<span class="gu">## Security / side-effect contract</span>
+
+<span class="k">-</span><span class="w"> </span><span class="sb">`git_tag = true`</span> and <span class="sb">`auto_commit = true`</span> cause <span class="sb">`bumpcalver`</span> to create a
+  <span class="gs">**real git tag**</span> (and, with <span class="sb">`auto_commit`</span>, a <span class="gs">**real commit**</span>) on every
+  successful run — not a dry-run or a suggestion. State explicitly which of
+  these are enabled in any configuration you produce.
+<span class="k">-</span><span class="w"> </span><span class="sb">`--dry-run`</span> computes and prints what <span class="ge">*would*</span> change without writing
+  anything or touching git — use it to preview a config before committing
+  to it in CI.
+<span class="k">-</span><span class="w"> </span><span class="sb">`--json`</span> emits exactly one JSON object on stdout (log lines move to
+  stderr) — the machine-readable way to capture the computed version, e.g.
+  in a CI step: `` bumpcalver --build --json 2&gt;/dev/null | jq -r &#39;.version&#39; ``.
+<span class="k">-</span><span class="w"> </span><span class="sb">`--config-file PATH`</span> (or <span class="sb">`BUMPCALVER_CONFIG`</span> env var) points at a config
+  outside the current directory; file paths inside that config resolve
+  relative to the config file&#39;s own directory, not the invoking cwd.
+<span class="k">-</span><span class="w"> </span><span class="sb">`--undo`</span>, <span class="sb">`--undo-id`</span>, and <span class="sb">`--list-history`</span> restore previous state from
+  <span class="sb">`.bumpcalver/backups/`</span> + <span class="sb">`bumpcalver-history.json`</span> (both written to the
+  current working directory). These flags are mutually exclusive with every
+  version-bump option, including <span class="sb">`--dry-run`</span>, <span class="sb">`--config-file`</span>, and <span class="sb">`--json`</span>.
+
+<span class="gu">## `.gitignore` (always add this when configuring bumpcalver in a new repo)</span>
+
+<span class="sb">```gitignore</span>
+<span class="s"># BumpCalver backup and history files</span>
+<span class="s">.bumpcalver/</span>
+<span class="s">bumpcalver-history.json</span>
+<span class="sb">```</span>
+
+<span class="gu">## Common mistakes to avoid</span>
+
+<span class="k">-</span><span class="w"> </span>Do not use a dot path for a <span class="sb">`json`</span> file&#39;s <span class="sb">`variable`</span> — it must be a plain
+  top-level key.
+<span class="k">-</span><span class="w"> </span>Do not set <span class="sb">`file_type = &quot;dockerfile&quot;`</span> without a <span class="sb">`directive`</span> — it&#39;s
+  required, not optional.
+<span class="k">-</span><span class="w"> </span>Do not set <span class="sb">`file_type = &quot;regex&quot;`</span> without a <span class="sb">`pattern`</span> — and the pattern
+  must have exactly one capture group, or bumpcalver raises an error.
+<span class="k">-</span><span class="w"> </span>Do not enable <span class="sb">`git_tag`</span>/<span class="sb">`auto_commit`</span> in an example/demo config without
+  saying so explicitly — this is a real, not simulated, side effect.
+<span class="k">-</span><span class="w"> </span>Do not combine <span class="sb">`--dry-run`</span>/<span class="sb">`--config-file`</span>/<span class="sb">`--json`</span> with
+  <span class="sb">`--undo`</span>/<span class="sb">`--undo-id`</span>/<span class="sb">`--list-history`</span> — bumpcalver rejects this combination.
+<span class="k">-</span><span class="w"> </span>Do not forget <span class="sb">`.bumpcalver/`</span> and <span class="sb">`bumpcalver-history.json`</span> in <span class="sb">`.gitignore`</span>.
+
+<span class="gu">## Prompt starters</span>
+
+&quot;Set up bumpcalver for this Python package: bump <span class="sb">`__version__`</span> in
+<span class="sb">`src/mypkg/__init__.py`</span> and <span class="sb">`project.version`</span> in <span class="sb">`pyproject.toml`</span> together,
+using calendar + build count versioning, no git tagging.&quot;
+
+&quot;Add hybrid semver + calendar versioning to this repo: <span class="sb">`major`</span>/<span class="sb">`minor`</span>
+starting at <span class="sb">`1.0`</span>, calendar suffix, git tag and commit enabled, and update
+both <span class="sb">`pyproject.toml`</span> and a Dockerfile&#39;s <span class="sb">`ARG VERSION`</span>.&quot;
+</code></pre></div>
+<h3 id="claude">Claude<a class="headerlink" href="#claude" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="gh"># Claude instructions for apps using bumpcalver</span>
+
+You are configuring <span class="sb">`bumpcalver`</span>, a CLI/config-driven calendar-versioning
+tool, in an application repository. This is not a library you import and
+call from app code — the entire integration surface is a <span class="sb">`[tool.bumpcalver]`</span>
+config block plus the <span class="sb">`bumpcalver`</span> CLI invocation. Do not guess the schema;
+follow this contract.
+
+<span class="gu">## Setup procedure — follow in order</span>
+
+<span class="k">1.</span> <span class="gs">**Install**</span>: <span class="sb">`pip install bumpcalver`</span> (or add to dev dependencies).
+<span class="k">2.</span> <span class="gs">**Pick where the config lives**</span>:
+<span class="w">   </span><span class="k">-</span><span class="w"> </span>Project already has <span class="sb">`pyproject.toml`</span>? Add <span class="sb">`[tool.bumpcalver]`</span> to it.
+     This is the default choice.
+<span class="w">   </span><span class="k">-</span><span class="w"> </span>No <span class="sb">`pyproject.toml`</span>, or the user wants bumpcalver config separate?
+     Create a standalone <span class="sb">`bumpcalver.toml`</span> in the project root.
+<span class="w">   </span><span class="k">-</span><span class="w"> </span>If both exist, bumpcalver reads <span class="sb">`pyproject.toml`</span> and ignores
+     <span class="sb">`bumpcalver.toml`</span> entirely — never create both.
+<span class="w">   </span><span class="k">-</span><span class="w"> </span><span class="gs">**Nesting differs between the two**</span> and this is a real trap: in
+     <span class="sb">`pyproject.toml`</span> it&#39;s <span class="sb">`[tool.bumpcalver]`</span> + <span class="sb">`[[tool.bumpcalver.file]]`</span>;
+     in standalone <span class="sb">`bumpcalver.toml`</span> it&#39;s flat — keys at the top level, and
+     <span class="sb">`[[file]]`</span> (not <span class="sb">`[[tool.bumpcalver.file]]`</span>). Using the nested form in a
+     standalone file doesn&#39;t error, it just silently produces an empty file
+     list.
+<span class="k">3.</span> <span class="gs">**Confirm every target file already has a version string to replace.**</span>
+   bumpcalver finds-and-replaces an existing value; it does not create
+   files or insert a new key. If a file is missing the key, ask the user to
+   seed one first (e.g. <span class="sb">`__version__ = &quot;2024.01.01&quot;`</span>) — don&#39;t assume
+   bumpcalver will add it.
+<span class="k">4.</span> <span class="gs">**Enumerate every file that carries a version**</span> (package version
+   attribute, <span class="sb">`pyproject.toml`</span>&#39;s own <span class="sb">`project.version`</span>, Dockerfile
+   <span class="sb">`ARG`</span>/<span class="sb">`ENV`</span>, etc.) and write one <span class="sb">`[[tool.bumpcalver.file]]`</span>/<span class="sb">`[[file]]`</span>
+   block per file using the reference table below.
+<span class="k">5.</span> <span class="gs">**Set `version_format`/`date_format`/`timezone`.**</span> If unsure, use:
+   <span class="sb">`version_format = &quot;{current_date}.{build_count:03}&quot;`</span>,
+   <span class="sb">`date_format = &quot;%Y.%m.%d&quot;`</span>, <span class="sb">`timezone = &quot;America/New_York&quot;`</span>.
+<span class="k">6.</span> <span class="gs">**Set `git_tag`/`auto_commit` explicitly**</span> — default <span class="sb">`false`</span> unless the
+   user asked for git automation (real side effect, see below).
+<span class="k">7.</span> <span class="gs">**Add the `.gitignore` entries**</span> (below).
+<span class="k">8.</span> <span class="gs">**Verify with `bumpcalver --dry-run`**</span> (add <span class="sb">`--build`</span> if using build
+   count or hybrid mode) before running for real. It prints exactly what
+   would change, e.g. <span class="sb">`[dry-run] Would bump version to ... in: ...`</span>. If it
+   prints <span class="sb">`No files specified in the configuration.`</span>, re-check step 2&#39;s
+   nesting. If an expected file is missing from the preview, re-check step 3.
+
+<span class="gu">### Minimal example</span>
+
+<span class="sb">```toml</span>
+<span class="k">[tool.bumpcalver]</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}.{build_count:03}&quot;</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%Y.%m.%d&quot;</span>
+<span class="n">timezone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;America/New_York&quot;</span>
+<span class="n">git_tag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+<span class="n">auto_commit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+
+<span class="k">[[tool.bumpcalver.file]]</span>
+<span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;src/mypkg/__init__.py&quot;</span>
+<span class="n">file_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;python&quot;</span>
+<span class="n">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;__version__&quot;</span>
+<span class="sb">```</span>
+
+<span class="gu">### Typical Python package (the common real-world case)</span>
+
+<span class="sb">```toml</span>
+<span class="k">[tool.bumpcalver]</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}.{build_count:03}&quot;</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%Y.%m.%d&quot;</span>
+<span class="n">timezone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;America/New_York&quot;</span>
+<span class="n">git_tag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">auto_commit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+
+<span class="k">[[tool.bumpcalver.file]]</span>
+<span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;pyproject.toml&quot;</span>
+<span class="n">file_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;toml&quot;</span>
+<span class="n">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;project.version&quot;</span>
+<span class="n">version_standard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;python&quot;</span>
+
+<span class="k">[[tool.bumpcalver.file]]</span>
+<span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;src/mypkg/__init__.py&quot;</span>
+<span class="n">file_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;python&quot;</span>
+<span class="n">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;__version__&quot;</span>
+<span class="n">version_standard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;python&quot;</span>
+<span class="sb">```</span>
+
+<span class="gu">## Completion contract</span>
+
+When asked to configure bumpcalver, deliver all of the following, not a
+partial subset:
+
+<span class="k">1.</span> A <span class="sb">`[tool.bumpcalver]`</span> table in <span class="sb">`pyproject.toml`</span>, or a standalone
+   <span class="sb">`bumpcalver.toml`</span> if the project doesn&#39;t want bumpcalver config mixed
+   into <span class="sb">`pyproject.toml`</span> — with <span class="sb">`version_format`</span>, <span class="sb">`date_format`</span>, <span class="sb">`timezone`</span>.
+<span class="k">2.</span> One <span class="sb">`[[tool.bumpcalver.file]]`</span> block per file that carries a version
+   string, each with the correct <span class="sb">`file_type`</span> for that file&#39;s real format
+   (table below) and the matching <span class="sb">`variable`</span>/<span class="sb">`directive`</span>/<span class="sb">`pattern`</span>.
+<span class="k">3.</span> Exactly one versioning mode, chosen deliberately and stated in your
+   response — see &quot;Versioning modes.&quot;
+<span class="k">4.</span> <span class="sb">`.bumpcalver/`</span> and <span class="sb">`bumpcalver-history.json`</span> added to <span class="sb">`.gitignore`</span>.
+<span class="k">5.</span> If <span class="sb">`git_tag`</span>/<span class="sb">`auto_commit`</span> are set to <span class="sb">`true`</span>, say so explicitly in your
+   response — these are real git operations, not previewed ones.
+
+<span class="gu">## File type reference</span>
+
+| <span class="sb">`file_type`</span> | <span class="sb">`variable`</span> semantics | Required extra keys |
+|---|---|---|
+| <span class="sb">`python`</span> | Python variable name (<span class="sb">`__version__`</span>) | — |
+| <span class="sb">`toml`</span> | dot path (<span class="sb">`project.version`</span>) | — |
+| <span class="sb">`yaml`</span> | dot path (<span class="sb">`configuration.version`</span>) | — |
+| <span class="sb">`json`</span> | <span class="gs">**plain top-level key only**</span> — not a dot path | — |
+| <span class="sb">`xml`</span> | <span class="sb">`ElementTree.find()`</span> path (<span class="sb">`version`</span>, <span class="sb">`metadata/version`</span>) | — |
+| <span class="sb">`dockerfile`</span> | variable name | <span class="sb">`directive = &quot;ARG&quot;`</span> or <span class="sb">`&quot;ENV&quot;`</span> (mandatory) |
+| <span class="sb">`makefile`</span> | Makefile variable name | — |
+| <span class="sb">`properties`</span> | <span class="sb">`KEY=value`</span> key | — |
+| <span class="sb">`env`</span> | <span class="sb">`.env`</span> <span class="sb">`KEY=value`</span> key | — |
+| <span class="sb">`setup.cfg`</span> | dot path or simple key | — |
+| <span class="sb">`text`</span> | none — whole file is the version | — |
+| <span class="sb">`regex`</span> | any name | <span class="sb">`pattern`</span> (mandatory, exactly one capture group) |
+
+If a target file&#39;s format isn&#39;t in this table, do not force-fit
+<span class="sb">`file_type = &quot;python&quot;`</span> or another close-enough handler onto it just because
+its regex happens to match — that&#39;s coincidental, not supported, behavior
+(see &quot;Enforced vs. coincidental&quot; below). Prefer <span class="sb">`file_type = &quot;regex&quot;`</span> with
+an explicit <span class="sb">`pattern`</span> for <span class="sb">`KEY = &quot;value&quot;`</span>-style files (Ruby, Rust, Go,
+Java, etc.), or point the user at bumpcalver&#39;s <span class="sb">`bumpcalver.handlers`</span>
+entry-point plugin mechanism if they want a real, reusable handler for their
+own tooling.
+
+<span class="gu">## Versioning modes — pick exactly one, and say which one you picked</span>
+
+<span class="k">1.</span> <span class="gs">**Plain calendar**</span> (default) — <span class="sb">`version_format`</span> uses only
+   <span class="sb">`{current_date}`</span>.
+<span class="k">2.</span> <span class="gs">**Calendar + build count**</span> — <span class="sb">`version_format`</span> includes <span class="sb">`{build_count}`</span>
+   (e.g. <span class="sb">`{build_count:03}`</span>), CLI invocation uses <span class="sb">`--build`</span>.
+<span class="k">3.</span> <span class="gs">**Hybrid semver + calendar**</span> — <span class="sb">`version_format`</span> includes <span class="sb">`{major}`</span>/
+   <span class="sb">`{minor}`</span>/<span class="sb">`{patch}`</span>, config has integer <span class="sb">`major`</span>/<span class="sb">`minor`</span>/<span class="sb">`patch`</span> keys, and
+   <span class="sb">`--bump major|minor|patch`</span> bumps the semantic prefix (this writes the new
+   value back into the config file — a real, persistent change).
+
+Do not mix these up: adding <span class="sb">`{build_count}`</span> to a hybrid <span class="sb">`version_format`</span>
+without also documenting <span class="sb">`--build`</span> usage, or vice versa, produces a config
+that silently behaves differently than the developer expects.
+
+<span class="gu">## Enforced vs. coincidental — the trap to avoid</span>
+
+<span class="sb">`version_standard = &quot;python&quot;`</span> is enforced: bumpcalver PEP-440-normalizes the
+version string on write. Everything else about <span class="sb">`file_type`</span> matching is
+<span class="gs">**not validated**</span> — bumpcalver will happily run a Python-file regex against
+a Ruby file and &quot;succeed&quot; if the text shape happens to match. Do not present
+that coincidence as intentional support for a format bumpcalver doesn&#39;t
+actually have a handler for.
+
+<span class="gu">## Known, permanent limitation</span>
+
+XML comments in the prolog (before the root <span class="sb">`&lt;element&gt;`</span> opens) are dropped
+on <span class="sb">`update_version`</span> — an <span class="sb">`ElementTree`</span> structural limitation. Comments
+nested inside the root element, and the <span class="sb">`&lt;?xml ?&gt;`</span> declaration, are
+preserved. Mention this if the target XML file has prolog comments.
+
+<span class="gu">## Side effects — state these explicitly in your response</span>
+
+<span class="k">-</span><span class="w"> </span><span class="sb">`git_tag = true`</span> / <span class="sb">`auto_commit = true`</span> → real git tag / real git commit
+  on every successful bump. Not a preview.
+<span class="k">-</span><span class="w"> </span><span class="sb">`--dry-run`</span> → preview only, writes nothing, no git operations.
+<span class="k">-</span><span class="w"> </span><span class="sb">`--json`</span> → single JSON object on stdout, all log lines on stderr. Use for
+  CI: `` bumpcalver --build --json 2&gt;/dev/null | jq -r &#39;.version&#39; ``.
+<span class="k">-</span><span class="w"> </span><span class="sb">`--config-file PATH`</span> / <span class="sb">`BUMPCALVER_CONFIG`</span> env var → use a config outside
+  the cwd; file paths inside it resolve relative to <span class="ge">*that file&#39;s*</span> directory.
+<span class="k">-</span><span class="w"> </span><span class="sb">`--undo`</span> / <span class="sb">`--undo-id`</span> / <span class="sb">`--list-history`</span> → reads/restores from
+  <span class="sb">`.bumpcalver/backups/`</span> + <span class="sb">`bumpcalver-history.json`</span> in the cwd. Mutually
+  exclusive with every version-bump flag, including <span class="sb">`--dry-run`</span>/<span class="sb">`--json`</span>/
+  <span class="sb">`--config-file`</span>.
+
+<span class="gu">## `.gitignore` — add whenever you configure bumpcalver in a repo that doesn&#39;t already have it</span>
+
+<span class="sb">```gitignore</span>
+<span class="s"># BumpCalver backup and history files</span>
+<span class="s">.bumpcalver/</span>
+<span class="s">bumpcalver-history.json</span>
+<span class="sb">```</span>
+
+<span class="gu">## Common mistakes to avoid</span>
+
+<span class="k">-</span><span class="w"> </span>Using a dot path for <span class="sb">`json`</span>&#39;s <span class="sb">`variable`</span> (it must be a plain top-level key).
+<span class="k">-</span><span class="w"> </span>Omitting <span class="sb">`directive`</span> on a <span class="sb">`dockerfile`</span> entry.
+<span class="k">-</span><span class="w"> </span>Omitting <span class="sb">`pattern`</span> on a <span class="sb">`regex`</span> entry, or writing a pattern with more/fewer
+  than one capture group.
+<span class="k">-</span><span class="w"> </span>Silently enabling <span class="sb">`git_tag`</span>/<span class="sb">`auto_commit`</span> without telling the user this
+  produces real repository state changes.
+<span class="k">-</span><span class="w"> </span>Suggesting <span class="sb">`--dry-run`</span> (or <span class="sb">`--json`</span>/<span class="sb">`--config-file`</span>) alongside
+  <span class="sb">`--undo`</span>/<span class="sb">`--undo-id`</span>/<span class="sb">`--list-history`</span> — bumpcalver rejects that combination.
+<span class="k">-</span><span class="w"> </span>Forgetting <span class="sb">`.gitignore`</span> entries for <span class="sb">`.bumpcalver/`</span>/<span class="sb">`bumpcalver-history.json`</span>.
+
+<span class="gu">## Prompt starters</span>
+
+&quot;Configure bumpcalver for this repo: bump <span class="sb">`__version__`</span> in
+<span class="sb">`src/mypkg/__init__.py`</span> and <span class="sb">`project.version`</span> in <span class="sb">`pyproject.toml`</span> together,
+calendar + build count, no git tagging.&quot;
+
+&quot;Add hybrid semver + calendar versioning: major/minor starting at 1.0,
+calendar build suffix, git tag and commit enabled, updating both
+<span class="sb">`pyproject.toml`</span> and a Dockerfile&#39;s <span class="sb">`ARG VERSION`</span>.&quot;
+</code></pre></div>
+<h3 id="copilot">Copilot<a class="headerlink" href="#copilot" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="gh"># GitHub Copilot instructions for apps using bumpcalver</span>
+
+<span class="sb">`bumpcalver`</span> is a CLI/config-driven calendar-versioning tool — there is no
+class or function to import and call from application code. Integration
+means authoring a correct <span class="sb">`[tool.bumpcalver]`</span> config block and choosing the
+right CLI invocation.
+
+<span class="gu">## Setup checklist (in order)</span>
+
+<span class="k">- [ ]</span> <span class="gs">**Install**</span>: <span class="sb">`pip install bumpcalver`</span> (or add to dev dependencies).
+<span class="k">- [ ]</span> <span class="gs">**Pick config location**</span>: <span class="sb">`pyproject.toml`</span>&#39;s <span class="sb">`[tool.bumpcalver]`</span> if
+      the project has one (default choice); otherwise a standalone
+      <span class="sb">`bumpcalver.toml`</span>. If both exist, <span class="sb">`pyproject.toml`</span> wins and
+      <span class="sb">`bumpcalver.toml`</span> is ignored — never create both.
+<span class="k">- [ ]</span> ⚠️ <span class="gs">**Nesting differs by file**</span>: <span class="sb">`pyproject.toml`</span> uses
+      <span class="sb">`[tool.bumpcalver]`</span> + <span class="sb">`[[tool.bumpcalver.file]]`</span>; standalone
+      <span class="sb">`bumpcalver.toml`</span> is flat — top-level keys + <span class="sb">`[[file]]`</span>. Using the
+      nested form in a standalone file silently produces an empty file list
+      (no error).
+<span class="k">- [ ]</span> <span class="gs">**Seed an initial version string**</span> in every target file first —
+      bumpcalver replaces an existing value, it does not create files or
+      insert new keys. Missing key → that file&#39;s update silently fails
+      (others still succeed).
+<span class="k">- [ ]</span> <span class="gs">**List every file that carries a version**</span> (package version
+      attribute, <span class="sb">`pyproject.toml`</span>&#39;s own <span class="sb">`project.version`</span>, Dockerfile
+      <span class="sb">`ARG`</span>/<span class="sb">`ENV`</span>, etc.) as one <span class="sb">`[[tool.bumpcalver.file]]`</span>/<span class="sb">`[[file]]`</span> block
+      each, using the reference table below.
+<span class="k">- [ ]</span> <span class="gs">**Set `version_format`/`date_format`/`timezone`**</span> — if unsure:
+      <span class="sb">`&quot;{current_date}.{build_count:03}&quot;`</span> / <span class="sb">`&quot;%Y.%m.%d&quot;`</span> /
+      <span class="sb">`&quot;America/New_York&quot;`</span>.
+<span class="k">- [ ]</span> <span class="gs">**Set `git_tag`/`auto_commit` explicitly**</span> — default <span class="sb">`false`</span> unless
+      asked for git automation.
+<span class="k">- [ ]</span> <span class="gs">**Add `.gitignore` entries**</span> (below).
+<span class="k">- [ ]</span> <span class="gs">**Verify with `bumpcalver --dry-run`**</span> before a real run. Prints
+      <span class="sb">`No files specified in the configuration.`</span> → recheck the nesting
+      trap. Expected file missing from preview → recheck the seeded-version
+      step.
+
+<span class="gu">### Minimal example</span>
+
+<span class="sb">```toml</span>
+<span class="k">[tool.bumpcalver]</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}.{build_count:03}&quot;</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%Y.%m.%d&quot;</span>
+<span class="n">timezone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;America/New_York&quot;</span>
+<span class="n">git_tag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+<span class="n">auto_commit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+
+<span class="k">[[tool.bumpcalver.file]]</span>
+<span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;src/mypkg/__init__.py&quot;</span>
+<span class="n">file_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;python&quot;</span>
+<span class="n">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;__version__&quot;</span>
+<span class="sb">```</span>
+
+<span class="gu">### Typical Python package</span>
+
+<span class="sb">```toml</span>
+<span class="k">[tool.bumpcalver]</span>
+<span class="n">version_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{current_date}.{build_count:03}&quot;</span>
+<span class="n">date_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;%Y.%m.%d&quot;</span>
+<span class="n">timezone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;America/New_York&quot;</span>
+<span class="n">git_tag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">auto_commit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+
+<span class="k">[[tool.bumpcalver.file]]</span>
+<span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;pyproject.toml&quot;</span>
+<span class="n">file_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;toml&quot;</span>
+<span class="n">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;project.version&quot;</span>
+<span class="n">version_standard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;python&quot;</span>
+
+<span class="k">[[tool.bumpcalver.file]]</span>
+<span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;src/mypkg/__init__.py&quot;</span>
+<span class="n">file_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;python&quot;</span>
+<span class="n">variable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;__version__&quot;</span>
+<span class="n">version_standard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;python&quot;</span>
+<span class="sb">```</span>
+
+<span class="gu">## Checklist (complete every item)</span>
+
+<span class="k">- [ ]</span> <span class="sb">`[tool.bumpcalver]`</span> table added to <span class="sb">`pyproject.toml`</span>, or a standalone
+      <span class="sb">`bumpcalver.toml`</span>, with <span class="sb">`version_format`</span>, <span class="sb">`date_format`</span>, <span class="sb">`timezone`</span>.
+<span class="k">- [ ]</span> One <span class="sb">`[[tool.bumpcalver.file]]`</span> block per file that carries a version
+      string, each with the correct <span class="sb">`file_type`</span> and matching
+      <span class="sb">`variable`</span>/<span class="sb">`directive`</span>/<span class="sb">`pattern`</span> (see table).
+<span class="k">- [ ]</span> Exactly one versioning mode chosen (plain calendar / calendar+build /
+      hybrid semver+calendar) — not a mix.
+<span class="k">- [ ]</span> If pre-release suffixes are needed: <span class="sb">`beta_format`</span>/<span class="sb">`rc_format`</span>/
+      <span class="sb">`release_format`</span> config keys added.
+<span class="k">- [ ]</span> <span class="sb">`git_tag`</span>/<span class="sb">`auto_commit`</span> values stated explicitly — <span class="sb">`true`</span> means a
+      <span class="gs">**real git tag/commit**</span> on every run, not a preview.
+<span class="k">- [ ]</span> <span class="sb">`.bumpcalver/`</span> and <span class="sb">`bumpcalver-history.json`</span> added to <span class="sb">`.gitignore`</span>.
+
+<span class="gu">## `file_type` → `variable` reference table</span>
+
+| <span class="sb">`file_type`</span> | <span class="sb">`variable`</span> is... | Extra required key |
+|---|---|---|
+| <span class="sb">`python`</span> | a Python variable name, e.g. <span class="sb">`__version__`</span> | — |
+| <span class="sb">`toml`</span> | a dot path, e.g. <span class="sb">`project.version`</span> | — |
+| <span class="sb">`yaml`</span> | a dot path, e.g. <span class="sb">`configuration.version`</span> | — |
+| <span class="sb">`json`</span> | a <span class="gs">**plain top-level key**</span> — not a dot path | — |
+| <span class="sb">`xml`</span> | an <span class="sb">`ElementTree.find()`</span> path, e.g. <span class="sb">`version`</span> | — |
+| <span class="sb">`dockerfile`</span> | a variable name | <span class="sb">`directive`</span> = <span class="sb">`&quot;ARG&quot;`</span> or <span class="sb">`&quot;ENV&quot;`</span> |
+| <span class="sb">`makefile`</span> | a Makefile variable name | — |
+| <span class="sb">`properties`</span> | a <span class="sb">`KEY=value`</span> key | — |
+| <span class="sb">`env`</span> | a <span class="sb">`.env`</span> <span class="sb">`KEY=value`</span> key | — |
+| <span class="sb">`setup.cfg`</span> | a dot path or simple key | — |
+| <span class="sb">`text`</span> | not used (whole file is the version) | — |
+| <span class="sb">`regex`</span> | any name | <span class="sb">`pattern`</span> = regex, exactly one capture group |
+
+⚠️ <span class="gs">**`json` and `toml`/`yaml` look similar but differ**</span>: JSON&#39;s <span class="sb">`variable`</span>
+is a plain top-level key, TOML/YAML&#39;s is a dot-separated path. Using a dot
+path for JSON silently fails to find the key.
+
+<span class="gu">## Versioning modes (pick one)</span>
+
+<span class="k">1.</span> <span class="gs">**Plain calendar**</span> (default) — <span class="sb">`version_format`</span> uses only <span class="sb">`{current_date}`</span>.
+<span class="k">2.</span> <span class="gs">**Calendar + build count**</span> — add <span class="sb">`{build_count}`</span> to <span class="sb">`version_format`</span>,
+   invoke with <span class="sb">`--build`</span>.
+<span class="k">3.</span> <span class="gs">**Hybrid semver + calendar**</span> — add <span class="sb">`{major}`</span>/<span class="sb">`{minor}`</span>/<span class="sb">`{patch}`</span> to
+   <span class="sb">`version_format`</span>, add integer <span class="sb">`major`</span>/<span class="sb">`minor`</span>/<span class="sb">`patch`</span> config keys, bump
+   with <span class="sb">`--bump major|minor|patch`</span> (writes the new value back to config).
+
+<span class="gu">## Enforced vs. cosmetic</span>
+
+<span class="k">-</span><span class="w"> </span><span class="sb">`version_standard = &quot;python&quot;`</span> → <span class="gs">**enforced**</span> PEP-440 normalization on write.
+<span class="k">-</span><span class="w"> </span><span class="sb">`file_type`</span> → <span class="gs">**not validated**</span> against the file&#39;s real content. A
+  &quot;working&quot; mismatched <span class="sb">`file_type`</span> (e.g. <span class="sb">`python`</span> on a Ruby file) is
+  coincidental regex overlap, not real support — use <span class="sb">`file_type = &quot;regex&quot;`</span>
+  with an explicit <span class="sb">`pattern`</span> for unsupported <span class="sb">`KEY = &quot;value&quot;`</span> formats instead.
+
+<span class="gu">## Known limitation</span>
+
+<span class="sb">`xml`</span> drops comments in the prolog (before the root element opens) on
+write — preserves the <span class="sb">`&lt;?xml ?&gt;`</span> declaration and comments nested inside the
+root element. <span class="sb">`ElementTree`</span> structural limitation, not a bug.
+
+<span class="gu">## Side effects to call out explicitly</span>
+
+<span class="k">-</span><span class="w"> </span><span class="sb">`git_tag = true`</span> / <span class="sb">`auto_commit = true`</span> — real git tag / real git commit.
+<span class="k">-</span><span class="w"> </span><span class="sb">`--dry-run`</span> — preview only, no writes, no git operations.
+<span class="k">-</span><span class="w"> </span><span class="sb">`--json`</span> — one JSON object on stdout, log lines move to stderr; use for
+  CI: <span class="sb">`bumpcalver --build --json 2&gt;/dev/null | jq -r &#39;.version&#39;`</span>.
+<span class="k">-</span><span class="w"> </span><span class="sb">`--config-file PATH`</span> / <span class="sb">`BUMPCALVER_CONFIG`</span> — config outside cwd; paths in
+  it resolve relative to <span class="ge">*its own*</span> directory.
+<span class="k">-</span><span class="w"> </span><span class="sb">`--undo`</span> / <span class="sb">`--undo-id`</span> / <span class="sb">`--list-history`</span> — mutually exclusive with every
+  version-bump flag (including <span class="sb">`--dry-run`</span>/<span class="sb">`--json`</span>/<span class="sb">`--config-file`</span>).
+
+<span class="gu">## `.gitignore` snippet</span>
+
+<span class="sb">```gitignore</span>
+<span class="s"># BumpCalver backup and history files</span>
+<span class="s">.bumpcalver/</span>
+<span class="s">bumpcalver-history.json</span>
+<span class="sb">```</span>
+
+<span class="gu">## Common mistakes to avoid</span>
+
+<span class="k">-</span><span class="w"> </span>❌ Dot path for a <span class="sb">`json`</span> file&#39;s <span class="sb">`variable`</span>.
+<span class="k">-</span><span class="w"> </span>❌ <span class="sb">`dockerfile`</span> entry missing <span class="sb">`directive`</span>.
+<span class="k">-</span><span class="w"> </span>❌ <span class="sb">`regex`</span> entry missing <span class="sb">`pattern`</span>, or a pattern without exactly one
+  capture group.
+<span class="k">-</span><span class="w"> </span>❌ Enabling <span class="sb">`git_tag`</span>/<span class="sb">`auto_commit`</span> without flagging the real side effect.
+<span class="k">-</span><span class="w"> </span>❌ Combining <span class="sb">`--dry-run`</span>/<span class="sb">`--json`</span>/<span class="sb">`--config-file`</span> with the undo flags.
+<span class="k">-</span><span class="w"> </span>❌ Forgetting the <span class="sb">`.gitignore`</span> entries.
+
+<span class="gu">## Prompt starters</span>
+
+&quot;Set up bumpcalver: bump <span class="sb">`__version__`</span> in <span class="sb">`src/mypkg/__init__.py`</span> and
+<span class="sb">`project.version`</span> in <span class="sb">`pyproject.toml`</span> together, calendar + build count, no
+git tagging.&quot;
+
+&quot;Add hybrid semver + calendar versioning: major/minor at 1.0, calendar
+suffix, git tag and commit on, updating <span class="sb">`pyproject.toml`</span> and a Dockerfile&#39;s
+<span class="sb">`ARG VERSION`</span>.&quot;
+</code></pre></div>
+<h2 id="what-these-instructions-cover">What these instructions cover<a class="headerlink" href="#what-these-instructions-cover" title="Permanent link">&para;</a></h2>
+<ul>
+<li>A step-by-step setup procedure from a blank repo: install, decide between
+  <code>pyproject.toml</code> and a standalone <code>bumpcalver.toml</code> (including the flat-vs-
+  nested key trap between the two), seed an initial version string in every
+  target file (bumpcalver replaces existing values, it does not create files
+  or insert keys), map every file to a <code>file_type</code>, pick sane
+  <code>version_format</code>/<code>date_format</code>/<code>timezone</code> defaults, and verify with
+  <code>--dry-run</code> before a real run — plus copy-paste-ready minimal and
+  "typical Python package" example configs, both verified against the real
+  CLI.</li>
+<li>All 12 built-in <code>file_type</code>s and what <code>variable</code> means for each (a plain
+  key vs. a dot path vs. an <code>ElementTree.find()</code> path — these are genuinely
+  different mechanisms, not variations of one setting).</li>
+<li>The three versioning modes (plain calendar, calendar + build count,
+  hybrid semver + calendar) and how to pick one.</li>
+<li>Pre-release suffix flags and their config keys.</li>
+<li>Which config keys have <strong>real side effects</strong> (<code>git_tag</code>/<code>auto_commit</code>
+  create an actual git tag/commit, not a preview).</li>
+<li><code>--dry-run</code>, <code>--json</code>, and <code>--config-file</code> for previewing, scripting, and
+  monorepo/cross-directory use.</li>
+<li>The undo/backup system and the <code>.gitignore</code> entries a new bumpcalver
+  integration should add.</li>
+<li>One permanent, structural limitation (XML prolog comments) worth knowing
+  about up front.</li>
+</ul>
+<h2 id="what-these-instructions-do-not-cover">What these instructions do NOT cover<a class="headerlink" href="#what-these-instructions-do-not-cover" title="Permanent link">&para;</a></h2>
+<p>Being explicit about gaps matters more than it might seem — an AI assistant
+reading documentation will trust silence as "not applicable," which is worse
+than an honest "not covered yet":</p>
+<ul>
+<li><strong>The <code>bumpcalver.handlers</code> plugin/entry-point mechanism</strong> for registering
+  a custom <code>file_type</code> from a third-party package is mentioned in passing
+  but not walked through step by step — see the
+  <a href="../development-guide/#distributing-your-handler-as-a-plugin">development guide</a>
+  for the full recipe if a project needs a file format with no built-in or
+  regex-compatible handler.</li>
+<li><strong>Undo internals</strong> (backup file naming, <code>bumpcalver-history.json</code>'s exact
+  schema) beyond "these two paths exist and should be gitignored" — see the
+  <a href="../undo/">Undo documentation</a> for the full mechanics.</li>
+<li><strong>CI/CD recipes</strong> beyond the single <code>--json</code>/<code>jq</code> example already in the
+  instructions — see the <a href="../cli-reference/#machine-readable-output-json">CLI Reference</a>
+  for the full <code>--json</code> payload shape per case.</li>
+</ul>
+<h2 id="security">Security<a class="headerlink" href="#security" title="Permanent link">&para;</a></h2>
+<p><code>--output</code> is treated as untrusted input, not a trusted human-typed path —
+the entire premise of this feature is that an AI assistant may invoke this
+CLI directly, and a misdirected instruction, a reasoning bug, or a prompt
+injection could produce an adversarial path argument. <code>_resolve_output_path</code>
+resolves the destination (following symlinks) and rejects anything that
+isn't a descendant of the current working directory, using <code>Path.parents</code>
+containment rather than a string-prefix check (a prefix check would wrongly
+treat a sibling directory like <code>project-evil/</code> as being inside <code>project/</code>).
+This is covered by dedicated regression tests
+(<code>tests/test_ai_instructions.py</code>) that must not be weakened or removed.</p>
+<h2 id="packaging">Packaging<a class="headerlink" href="#packaging" title="Permanent link">&para;</a></h2>
+<p>The three profile <code>.md</code> files ship as package data under
+<code>bumpcalver/assets/ai/</code> — verified with a real <code>python -m build</code> +
+install-into-a-clean-venv check, not just editable-mode testing, since
+packaging misconfiguration is easy to miss in dev mode and only surfaces for
+someone doing a real <code>pip install</code>.</p>
+<h2 id="keeping-this-in-sync">Keeping this in sync<a class="headerlink" href="#keeping-this-in-sync" title="Permanent link">&para;</a></h2>
+<p>If you're changing bumpcalver's public config schema (a new <code>file_type</code>, a
+new CLI flag, a new config key with a real side effect), update
+<code>src/bumpcalver/assets/ai/*.md</code> in the same change — the "Full instructions
+by profile" section above regenerates from those files automatically at
+<code>mkdocs build</code> time (via <code>scripts/mkdocs_hooks.py</code>), so there's no separate
+docs-page edit to remember; editing the source files is the whole job.
+A regression test
+(<code>test_get_app_instructions_documents_every_builtin_file_type</code>) asserts
+every <code>file_type</code> in <code>_HANDLER_REGISTRY</code> is mentioned in the generic
+profile, but that only catches missing file types — it can't catch stale
+prose about CLI flags or config keys, so this has to be a deliberate habit,
+not something a test alone will enforce.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2024 - 2026 Mike Ryan
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/devsetgo" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M202.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M496 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://twitter.com/_devsetgo" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M459.4 151.7c.3 4.5.3 9.1.3 13.6 0 138.7-105.6 298.6-298.6 298.6-59.5 0-114.7-17.2-161.1-47.1 8.4 1 16.6 1.3 25.3 1.3 49.1 0 94.2-16.6 130.3-44.8-46.1-1-84.8-31.2-98.1-72.8 6.5 1 13 1.6 19.8 1.6 9.4 0 18.8-1.3 27.6-3.6-48.1-9.7-84.1-52-84.1-103v-1.3c14 7.8 30.2 12.7 47.4 13.3-28.3-18.8-46.8-51-46.8-87.4 0-19.5 5.2-37.4 14.3-53C87.4 130.8 165 172.4 252.1 176.9c-1.6-7.8-2.6-15.9-2.6-24C249.5 95.1 296.3 48 354.4 48c30.2 0 57.5 12.7 76.7 33.1 23.7-4.5 46.5-13.3 66.6-25.3-7.8 24.4-24.4 44.8-46.1 57.8 21.1-2.3 41.6-8.1 60.4-16.2-14.3 20.8-32.2 39.3-52.6 54.3"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.instant", "navigation.tabs.sticky", "toc.integrate", "toc.follow", "navigation.top"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../js/print-site.js"></script>
+      
+    
+  </body>
+</html>
