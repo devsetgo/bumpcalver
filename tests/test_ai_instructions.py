@@ -1,10 +1,10 @@
 # tests/test_ai_instructions.py
 """Tests for the packaged AI-assistant integration instructions feature.
 
-See IMPROVEMENTS.md §6 / ADD_AI_INSTRUCTIONS.md for the full rationale —
-this ships app-integration guidance as package data (src/bumpcalver/assets/ai/)
-with a small API + CLI to read/bootstrap it, so it can't drift out of sync
-with an externally copy-pasted snippet.
+See docs/ai-instructions.md for the full rationale — this ships
+app-integration guidance as package data (src/bumpcalver/assets/ai/) with a
+small API + CLI to read/bootstrap it, so it can't drift out of sync with an
+externally copy-pasted snippet.
 """
 
 import pytest

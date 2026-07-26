@@ -1,11 +1,10 @@
 # tests/test_tooling_config.py
 """Regression tests that keep the dev-tooling config from re-fragmenting.
 
-Ruff is the single tool for linting, import sorting, and formatting (see
-IMPROVEMENTS.md §2.9) — these assert that consolidation doesn't quietly
-drift back apart (e.g. someone re-adding isort/black/flake8/autoflake as a
-"quick fix" for some new complaint, recreating the exact overlap this was
-meant to remove).
+Ruff is the single tool for linting, import sorting, and formatting — these
+assert that consolidation doesn't quietly drift back apart (e.g. someone
+re-adding isort/black/flake8/autoflake as a "quick fix" for some new
+complaint, recreating the exact overlap this was meant to remove).
 """
 
 from pathlib import Path
@@ -48,5 +47,5 @@ def test_requirements_txt_has_no_retired_formatting_linting_tools():
     overlap = declared_packages & RETIRED_TOOLS
     assert not overlap, (
         f"requirements.txt re-declares tool(s) {sorted(overlap)} that ruff "
-        "already covers (lint + import-sort + format) — see IMPROVEMENTS.md §2.9."
+        "already covers (lint + import-sort + format)."
     )

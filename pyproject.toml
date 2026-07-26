@@ -132,7 +132,7 @@ indent-width = 4
 unsafe-fixes = true
 target-version = "py312"
 src = [ "bumpcalver", "tests",]
-exclude = [ "unreleased/*", "scripts/*", "coverage.xml", "coverage-badge.svg",]
+exclude = [ "scripts/*", "coverage.xml", "coverage-badge.svg",]
 
 [tool.ruff.lint]
 select = [ "C", "F", "E", "W", "B", "I",]
@@ -143,7 +143,7 @@ indent-style = "space"
 quote-style = "double"
 
 [tool.hatch.build]
-exclude = [ "*.json", "pkg/_compat.py", "tests/", "htmlcov/", "_venv/", ".venv/", "__pycache__/", "*.pyc", "*.pyo", "*.pyd", ".pytest_cache/", ".coverage", "coverage.xml", "coverage-badge.svg", "tests-badge.svg", "report.xml", "report.html", "htmlcovreport.html", "htmlreport.html", "docs/", "site/", "latest/", "stable/", "dev/", "v*/", "20*/", "*.*/", ".nojekyll", ".git/", ".github/", ".gitignore", ".gitattributes", "scripts/", "examples/", "makefile", "Makefile", ".pylintrc", "sonar-project.properties", "CONTRIBUTING.md", "CHANGELOG.md", "DOCUMENTATION_MIGRATION.md", "mkdocs.yml", ".vscode/", ".idea/", "*.swp", "*.swo", "*~",]
+exclude = [ "*.json", "pkg/_compat.py", "tests/", "htmlcov/", "_venv/", ".venv/", "__pycache__/", "*.pyc", "*.pyo", "*.pyd", ".pytest_cache/", ".coverage", "coverage.xml", "coverage-badge.svg", "tests-badge.svg", "report.xml", "report.html", "htmlcovreport.html", "htmlreport.html", "docs/", "site/", "latest/", "stable/", "dev/", "v*/", "20*/", "*.*/", ".nojekyll", ".git/", ".github/", ".gitignore", ".gitattributes", "scripts/", "examples/", "makefile", "Makefile", "sonar-project.properties", "CONTRIBUTING.md", "CHANGELOG.md", "mkdocs.yml", ".vscode/", ".idea/", "*.swp", "*.swo", "*~",]
 
 [tool.mypy]
 # Floor is the oldest Python actually exercised in CI (testing.yml's matrix);

@@ -209,7 +209,7 @@ class TestParseHybridVersionFailure:
 # ---------------------------------------------------------------------------
 # parse_version — non-hybrid current_date + build_count with a non-dot
 # separator (real bug found while writing hypothesis property tests for this
-# module: see IMPROVEMENTS.md Testing §4.5)
+# module)
 # ---------------------------------------------------------------------------
 
 

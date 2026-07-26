@@ -2,7 +2,7 @@
 
 Two build-time content generators, both existing to avoid a hand-maintained
 copy of something that already lives elsewhere and would silently drift out
-of sync (see IMPROVEMENTS.md §3.3 and §6):
+of sync:
 
 - The timezone reference table injected into docs/timezones.md — previously
   hand-copied into both docs/timezones.md *and* a separate, unreferenced
