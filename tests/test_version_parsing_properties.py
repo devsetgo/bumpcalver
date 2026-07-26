@@ -43,10 +43,9 @@ def test_dot_separated_calver_round_trips(the_date, build_count):
 @given(the_date=_REASONABLE_DATES, build_count=_BUILD_COUNTS)
 @settings(max_examples=200)
 def test_dash_separated_calver_with_dot_date_round_trips(the_date, build_count):
-    # Regression coverage for the bug fixed alongside these tests (see
-    # IMPROVEMENTS.md Testing §4.5): bumpcalver's own CLI built-in
-    # zero-config defaults are exactly this combination
-    # (version_format="{current_date}-{build_count:03}",
+    # Regression coverage for a real bug found while writing these tests:
+    # bumpcalver's own CLI built-in zero-config defaults are exactly this
+    # combination (version_format="{current_date}-{build_count:03}",
     # date_format="%Y.%m.%d"), and it used to never round-trip at all.
     version_format = "{current_date}-{build_count:03}"
     date_format = "%Y.%m.%d"

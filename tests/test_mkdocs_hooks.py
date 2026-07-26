@@ -1,8 +1,8 @@
 # tests/test_mkdocs_hooks.py
 """Tests for scripts/mkdocs_hooks.py, which generates build-time-only content
-injected into docs pages at `mkdocs build` time (see IMPROVEMENTS.md §3.3 —
-the timezones.md table — and §6 — the ai-instructions.md profile dumps),
-replacing hand-maintained copies that could silently drift out of sync.
+injected into docs pages at `mkdocs build` time (the timezones.md table and
+the ai-instructions.md profile dumps), replacing hand-maintained copies that
+could silently drift out of sync.
 """
 
 from types import SimpleNamespace

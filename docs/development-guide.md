@@ -103,8 +103,8 @@ bumpcalver/
 [Ruff](https://docs.astral.sh/ruff/) is the single tool for linting, import
 sorting, unused-import/variable removal, and formatting — it replaced a
 previous stack of isort/black/autoflake/flake8/autopep8 that all did
-overlapping parts of the same job with separate, easy-to-drift configs (see
-IMPROVEMENTS.md §2.9). `[tool.ruff.lint]` in `pyproject.toml` selects rule
+overlapping parts of the same job with separate, easy-to-drift configs.
+`[tool.ruff.lint]` in `pyproject.toml` selects rule
 groups `C`/`F`/`E`/`W`/`B`/`I` (the `I` group is ruff's isort-compatible
 import sorter); `[tool.ruff.format]` configures its Black-compatible
 formatter.

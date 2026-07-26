@@ -49,7 +49,7 @@ MAKEFLAGS += --warn-undefined-variables
 # =============================================================================
 .PHONY: help all build bump check-deps clean cleanup create-docs create-docs-dev \
         create-docs-local delete-version dev-setup format install list-docs \
-        migrate-legacy-docs mypy pre-commit quick-test rebase reinstall ruff serve-docs \
+        mypy pre-commit quick-test rebase reinstall ruff serve-docs \
         set-default-version sync-docs-branch test test-coverage tests validate
 
 # =============================================================================
@@ -149,10 +149,6 @@ delete-version: ## Delete a specific documentation version (requires VERSION par
 
 list-docs: ## List all deployed documentation versions
 	python3 scripts/deploy_docs.py list
-
-migrate-legacy-docs: ## Migrate legacy documentation to version 2025.4.12.1 (run once)
-	@echo "🚀 Migrating legacy documentation..."
-	@python3 scripts/migrate_legacy_docs.py
 
 serve-docs: ## Serve all documentation versions locally
 	python3 scripts/deploy_docs.py serve
