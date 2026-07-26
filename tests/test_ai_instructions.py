@@ -103,8 +103,9 @@ def test_cli_output_flag_rejects_absolute_path_outside_cwd(tmp_path, monkeypatch
     outside.mkdir(exist_ok=True)
     escape_target = outside / "escaped.md"
     escape_target.unlink(missing_ok=True)
+    args = ["generic", "--output", str(escape_target)]
     with pytest.raises(SystemExit) as exc_info:
-        main(["generic", "--output", str(escape_target)])
+        main(args)
     assert exc_info.value.code == 2
     assert not escape_target.exists()
 
@@ -119,6 +120,6 @@ def test_cli_output_flag_allows_dotdot_that_stays_inside_cwd(tmp_path, monkeypat
 def test_resolve_output_path_rejects_sibling_directory_with_shared_prefix(tmp_path):
     base = tmp_path / "project"
     base.mkdir()
-    sibling = tmp_path / "project-evil" / "file.md"
+    sibling_path = str(tmp_path / "project-evil" / "file.md")
     with pytest.raises(ValueError, match="Refusing to write outside"):
-        _resolve_output_path(str(sibling), base_dir=base)
+        _resolve_output_path(sibling_path, base_dir=base)
