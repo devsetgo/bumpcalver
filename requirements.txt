@@ -20,5 +20,5 @@ ruamel.yaml==0.19.1 # Vulnerabilities: None
 ruff==0.15.12 # From 0.15.4 | Vulnerabilities: None
 toml==0.10.2 # Vulnerabilities: None
 tomlkit==0.15.1 # Vulnerabilities: None
-twine==6.2.0 # Vulnerabilities: None
+twine==7.0.0 # Vulnerabilities: None
 types-toml==0.10.8.20260518 # Vulnerabilities: None
