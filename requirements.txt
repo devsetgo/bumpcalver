@@ -11,7 +11,7 @@ mkdocstrings[python,shell]==1.0.3 # Vulnerabilities: None
 mypy==2.3.0 # Vulnerabilities: None
 packaging==26.2 # Vulnerabilities: None
 pre-commit==4.5.1 # Vulnerabilities: None
-pytest==9.0.2 # Vulnerabilities: None
+pytest==9.1.1 # Vulnerabilities: None
 pytest-cov==7.1.0 # From 7.0.0 | Vulnerabilities: None
 pytest-html==4.2.0 # Vulnerabilities: None
 pytest-mock==3.15.1 # Vulnerabilities: None
