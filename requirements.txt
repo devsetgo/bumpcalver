@@ -17,7 +17,7 @@ pytest-html==4.2.0 # Vulnerabilities: None
 pytest-mock==3.15.1 # Vulnerabilities: None
 pytest-xdist==3.8.0 # Vulnerabilities: None
 ruamel.yaml==0.19.1 # Vulnerabilities: None
-ruff==0.15.12 # From 0.15.4 | Vulnerabilities: None
+ruff==0.16.5 # From 0.15.4 | Vulnerabilities: None
 toml==0.10.2 # Vulnerabilities: None
 tomlkit==0.15.1 # Vulnerabilities: None
 twine==7.0.0 # Vulnerabilities: None
