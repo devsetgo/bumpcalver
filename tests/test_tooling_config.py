@@ -59,6 +59,6 @@ def test_repo_dogfoods_changelog_config():
         "enabled": True,
         "path": "CHANGELOG.md",
         "heading": "## Latest Changes",
-        "ai_provider": "openai",
+        "ai_provider": "none",
         "ai_model": "gpt-4.1-2025-04-14",
     }
