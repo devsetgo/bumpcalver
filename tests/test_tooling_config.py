@@ -49,3 +49,16 @@ def test_requirements_txt_has_no_retired_formatting_linting_tools():
         f"requirements.txt re-declares tool(s) {sorted(overlap)} that ruff "
         "already covers (lint + import-sort + format)."
     )
+
+
+def test_repo_dogfoods_changelog_config():
+    config = _load_pyproject()
+    changelog = config["tool"]["bumpcalver"]["changelog"]
+
+    assert changelog == {
+        "enabled": True,
+        "path": "CHANGELOG.md",
+        "heading": "## Latest Changes",
+        "ai_provider": "none",
+        "ai_model": "gpt-4.1-2025-04-14",
+    }

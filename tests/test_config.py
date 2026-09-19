@@ -264,6 +264,44 @@ def test_load_config_suffix_format_defaults(monkeypatch):
     assert config["beta_format"] == ".beta"
     assert config["rc_format"] == ".rc"
     assert config["release_format"] == ".release"
+    assert config["changelog"] == {
+        "enabled": False,
+        "path": "CHANGELOG.md",
+        "heading": "## Latest Changes",
+        "ai_provider": "none",
+        "ai_model": None,
+    }
+
+
+def test_load_config_reads_changelog_defaults(monkeypatch):
+    monkeypatch.setattr(os.path, "exists", lambda x: x == "pyproject.toml")
+    content = {
+        "tool": {
+            "bumpcalver": {
+                "version_format": "{current_date}.{build_count}",
+                "file": [],
+                "changelog": {
+                    "enabled": True,
+                    "path": "docs/CHANGELOG.md",
+                    "heading": "## Unreleased",
+                    "ai_provider": "openai",
+                    "ai_model": "gpt-4.1-2025-04-14",
+                },
+            }
+        }
+    }
+    monkeypatch.setattr(toml, "load", lambda f: content)
+    monkeypatch.setattr("src.bumpcalver.config.parse_dot_path", lambda x, y: x)
+
+    config = load_config()
+
+    assert config["changelog"] == {
+        "enabled": True,
+        "path": "docs/CHANGELOG.md",
+        "heading": "## Unreleased",
+        "ai_provider": "openai",
+        "ai_model": "gpt-4.1-2025-04-14",
+    }
 
 
 # ---------------------------------------------------------------------------
