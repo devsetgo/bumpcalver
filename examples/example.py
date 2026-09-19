@@ -1,4 +1,4 @@
-__version__ = "2026.7.25.1"
+__version__ = "2026.9.19.1"
 # Standalone snippet showing how to build a timezone/UTC-offset table with
 # zoneinfo. Not the real docs pipeline — docs/timezones.md is generated at
 # `mkdocs build` time by scripts/mkdocs_hooks.py.
