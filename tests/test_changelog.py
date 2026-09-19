@@ -1,9 +1,7 @@
-import io
 import json
 import subprocess
 
 import pytest
-
 import src.bumpcalver.changelog as changelog
 from src.bumpcalver.changelog import build_changelog_update, splice_changelog_entry
 
@@ -213,7 +211,9 @@ def test_rewrite_entry_with_openai_rejects_non_object_response(monkeypatch):
         def read(self):
             return json.dumps(["not-an-object"]).encode("utf-8")
 
-    monkeypatch.setattr("src.bumpcalver.changelog.urllib_request.urlopen", lambda _request: Response())
+    monkeypatch.setattr(
+        "src.bumpcalver.changelog.urllib_request.urlopen", lambda _request: Response()
+    )
 
     with pytest.raises(ValueError, match="non-object response"):
         changelog._rewrite_entry_with_openai(
@@ -239,7 +239,9 @@ def test_rewrite_entry_with_openai_rejects_empty_content(monkeypatch):
             payload = {"choices": [{"message": {"content": ""}}]}
             return json.dumps(payload).encode("utf-8")
 
-    monkeypatch.setattr("src.bumpcalver.changelog.urllib_request.urlopen", lambda _request: Response())
+    monkeypatch.setattr(
+        "src.bumpcalver.changelog.urllib_request.urlopen", lambda _request: Response()
+    )
 
     with pytest.raises(ValueError, match="returned no content"):
         changelog._rewrite_entry_with_openai(
@@ -265,7 +267,9 @@ def test_rewrite_entry_with_openai_rejects_invalid_markdown(monkeypatch):
             payload = {"choices": [{"message": {"content": "Not markdown"}}]}
             return json.dumps(payload).encode("utf-8")
 
-    monkeypatch.setattr("src.bumpcalver.changelog.urllib_request.urlopen", lambda _request: Response())
+    monkeypatch.setattr(
+        "src.bumpcalver.changelog.urllib_request.urlopen", lambda _request: Response()
+    )
 
     with pytest.raises(ValueError, match="did not return a valid changelog entry"):
         changelog._rewrite_entry_with_openai(
@@ -289,7 +293,11 @@ def test_rewrite_entry_with_openai_returns_rewritten_markdown(monkeypatch):
             return False
 
         def read(self):
-            payload = {"choices": [{"message": {"content": "### 2026.09.19\n\n#### What's Changed\n* Rewritten\n"}}]}
+            payload = {
+                "choices": [
+                    {"message": {"content": "### 2026.09.19\n\n#### What's Changed\n* Rewritten\n"}}
+                ]
+            }
             return json.dumps(payload).encode("utf-8")
 
     def _urlopen(request):
