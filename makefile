@@ -218,3 +218,11 @@ test-coverage: ## Run tests and generate coverage report
 	@printf "\033[0;32m✅ Coverage report generated in htmlcov/\033[0m\n"
 
 tests: test ## Alias for test target
+
+
+git-cleanup: ## Fetch + prune from origin, then delete local branches whose upstream is gone
+	@echo "Fetching from origin and pruning stale remote-tracking branches..."
+	git fetch origin --prune
+	@echo "Removing local branches whose upstream branch no longer exists..."
+	@git branch -vv | grep ': gone\]' | sed 's/^\*//' | awk '{print $$1}' | grep -vE '^(main|master|dev)$$' | xargs -r git branch -D
+	@echo "git-cleanup complete."
