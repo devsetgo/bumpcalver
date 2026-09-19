@@ -7,13 +7,13 @@ optionally rewrites that draft with OpenAI, and splices the result into a
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import datetime
 import json
 import os
-from pathlib import Path
 import re
 import subprocess
+from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib import error as urllib_error
 from urllib import request as urllib_request
@@ -159,7 +159,11 @@ def write_changelog_update(update: ChangelogUpdate) -> None:
 
 
 def _default_changelog_content(heading: str) -> str:
-    return "# Changelog\nAll notable changes to this project will be documented in this file.\n\n" + heading + "\n\n"
+    return (
+        "# Changelog\nAll notable changes to this project will be documented in this file.\n\n"
+        + heading
+        + "\n\n"
+    )
 
 
 def _ensure_heading(existing_content: str, heading: str) -> str:
@@ -243,7 +247,7 @@ def _rewrite_entry_with_openai(
 
     system_prompt = (
         "You rewrite markdown changelog entries. Respond with ONLY markdown for a single changelog "
-        "entry, with no code fences. Preserve the top heading line, keep exactly one '#### What\'s "
+        "entry, with no code fences. Preserve the top heading line, keep exactly one '#### What's "
         "Changed' section, summarize repetitive commit bullets when appropriate, and do not invent "
         "changes that are not present in the provided commit subjects or draft entry."
     )
