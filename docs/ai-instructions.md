@@ -146,6 +146,10 @@ someone doing a real `pip install`.
 
 ## Keeping this in sync
 
+Policy: when documentation changes in this repository, AI notes must be
+reviewed and updated in the same change set. Treat this as a required part of
+docs maintenance, not an optional follow-up.
+
 If you're changing bumpcalver's public config schema (a new `file_type`, a
 new CLI flag, a new config key with a real side effect), update
 `src/bumpcalver/assets/ai/*.md` in the same change — the "Full instructions
