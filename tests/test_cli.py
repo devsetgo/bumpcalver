@@ -8,6 +8,7 @@ from unittest import mock
 
 from click.testing import CliRunner
 from src.bumpcalver import __version__
+from src.bumpcalver.changelog import ChangelogUpdate
 from src.bumpcalver.cli import main
 
 
@@ -617,12 +618,142 @@ def test_git_tag_subprocess_exception(
     mock_subprocess_run.side_effect = subprocess.CalledProcessError(1, "git rev-parse HEAD")
 
     runner = CliRunner()
-    result = runner.invoke(main, [])
+    runner.invoke(main, [])
 
-    # Should complete successfully despite git operation failure (line 186)
+
+def test_update_changelog_uses_config_defaults_in_dry_run(monkeypatch):
+    mock_config = {
+        "version_format": "{current_date}",
+        "date_format": "%Y.%m.%d",
+        "file_configs": [{"path": "test.py", "file_type": "python", "variable": "__version__"}],
+        "timezone": "UTC",
+        "git_tag": False,
+        "auto_commit": False,
+        "changelog": {
+            "enabled": True,
+            "path": "CHANGELOG.md",
+            "heading": "## Latest Changes",
+            "ai_provider": "none",
+            "ai_model": None,
+        },
+    }
+    monkeypatch.setattr("src.bumpcalver.cli.load_config", lambda *args, **kwargs: mock_config)
+    monkeypatch.setattr(
+        "src.bumpcalver.cli.get_current_datetime_version", lambda *a, **k: "2026.09.19"
+    )
+
+    mock_handler = mock.Mock()
+    mock_handler.read_version.return_value = "0.0.1"
+    monkeypatch.setattr("src.bumpcalver.cli.get_version_handler", lambda ft: mock_handler)
+
+    mock_update = ChangelogUpdate(
+        path=os.path.join(os.getcwd(), "CHANGELOG.md"),
+        version="2026.09.19",
+        heading="## Latest Changes",
+        previous_tag="v2026.09.18.001",
+        commit_subjects=["Add changelog option"],
+        entry_markdown="### 2026.09.19\n\n#### What's Changed\n* Add changelog option\n",
+        updated_content="content",
+        changed=True,
+    )
+    monkeypatch.setattr("src.bumpcalver.cli.build_changelog_update", lambda **kwargs: mock_update)
+
+    runner = CliRunner()
+    result = runner.invoke(main, ["--dry-run"])
+
     assert result.exit_code == 0
-    # Verify store_operation_history was called (lines 190-192)
-    mock_backup_instance.store_operation_history.assert_called_once()
+    assert "Would update changelog" in result.output
+    assert "Add changelog option" in result.output
+
+
+def test_update_changelog_missing_openai_key_fails(monkeypatch):
+    mock_config = {
+        "version_format": "{current_date}",
+        "date_format": "%Y.%m.%d",
+        "file_configs": [{"path": "test.py", "file_type": "python", "variable": "__version__"}],
+        "timezone": "UTC",
+        "git_tag": False,
+        "auto_commit": False,
+        "changelog": {
+            "enabled": False,
+            "path": "CHANGELOG.md",
+            "heading": "## Latest Changes",
+            "ai_provider": "none",
+            "ai_model": None,
+        },
+    }
+    monkeypatch.setattr("src.bumpcalver.cli.load_config", lambda *args, **kwargs: mock_config)
+    monkeypatch.setattr(
+        "src.bumpcalver.cli.get_current_datetime_version", lambda *a, **k: "2026.09.19"
+    )
+
+    mock_handler = mock.Mock()
+    mock_handler.read_version.return_value = "0.0.1"
+    monkeypatch.setattr("src.bumpcalver.cli.get_version_handler", lambda ft: mock_handler)
+
+    def _raise_missing_key(**kwargs):
+        raise ValueError("OPENAI_API_KEY must be set when changelog AI provider is 'openai'.")
+
+    monkeypatch.setattr("src.bumpcalver.cli.build_changelog_update", _raise_missing_key)
+
+    runner = CliRunner()
+    result = runner.invoke(main, ["--update-changelog", "--changelog-ai-provider", "openai"])
+
+    assert result.exit_code == 1
+    assert "OPENAI_API_KEY must be set" in result.output
+
+
+def test_update_changelog_path_resolves_from_config_file(monkeypatch, tmp_path):
+    config_file = tmp_path / "project" / "pyproject.toml"
+    config_file.parent.mkdir(parents=True)
+    config_file.write_text("[tool.bumpcalver]\nfile = []\n", encoding="utf-8")
+
+    mock_config = {
+        "version_format": "{current_date}",
+        "date_format": "%Y.%m.%d",
+        "file_configs": [{"path": "test.py", "file_type": "python", "variable": "__version__"}],
+        "timezone": "UTC",
+        "git_tag": False,
+        "auto_commit": False,
+        "changelog": {
+            "enabled": True,
+            "path": "docs/CHANGELOG.md",
+            "heading": "## Latest Changes",
+            "ai_provider": "none",
+            "ai_model": None,
+        },
+    }
+    monkeypatch.setattr("src.bumpcalver.cli.load_config", lambda *args, **kwargs: mock_config)
+    monkeypatch.setattr(
+        "src.bumpcalver.cli.get_current_datetime_version", lambda *a, **k: "2026.09.19"
+    )
+
+    mock_handler = mock.Mock()
+    mock_handler.read_version.return_value = "0.0.1"
+    monkeypatch.setattr("src.bumpcalver.cli.get_version_handler", lambda ft: mock_handler)
+
+    captured = {}
+
+    def _build_update(**kwargs):
+        captured["path"] = kwargs["changelog_path"]
+        return ChangelogUpdate(
+            path=kwargs["changelog_path"],
+            version=kwargs["version"],
+            heading=kwargs["heading"],
+            previous_tag=None,
+            commit_subjects=["Add changelog option"],
+            entry_markdown="### 2026.09.19\n\n#### What's Changed\n* Add changelog option\n",
+            updated_content="content",
+            changed=False,
+        )
+
+    monkeypatch.setattr("src.bumpcalver.cli.build_changelog_update", _build_update)
+
+    runner = CliRunner()
+    result = runner.invoke(main, ["--dry-run", "--config-file", str(config_file)])
+
+    assert result.exit_code == 0
+    assert captured["path"] == os.path.join(str(config_file.parent), "docs/CHANGELOG.md")
 
 
 @mock.patch("src.bumpcalver.cli.get_version_handler")

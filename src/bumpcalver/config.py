@@ -79,6 +79,17 @@ def load_config(config_path: Optional[str] = None) -> Dict[str, Any]:
             config["rc_format"] = bumpcalver_config.get("rc_format", ".rc")
             config["release_format"] = bumpcalver_config.get("release_format", ".release")
 
+            changelog_config = bumpcalver_config.get("changelog", {})
+            if not isinstance(changelog_config, dict):
+                changelog_config = {}
+            config["changelog"] = {
+                "enabled": changelog_config.get("enabled", False),
+                "path": changelog_config.get("path", "CHANGELOG.md"),
+                "heading": changelog_config.get("heading", "## Latest Changes"),
+                "ai_provider": changelog_config.get("ai_provider", "none"),
+                "ai_model": changelog_config.get("ai_model"),
+            }
+
             for file_config in config["file_configs"]:
                 original_path = file_config["path"]
                 file_type = file_config.get("file_type", "")

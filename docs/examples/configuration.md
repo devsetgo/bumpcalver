@@ -28,6 +28,13 @@ timezone = "UTC"
 git_tag = true
 auto_commit = true
 
+[tool.bumpcalver.changelog]
+enabled = true
+path = "CHANGELOG.md"
+heading = "## Latest Changes"
+ai_provider = "none"
+ai_model = "gpt-4.1-2025-04-14"
+
 [[tool.bumpcalver.file]]
 path = "pyproject.toml"
 file_type = "toml"
@@ -46,6 +53,8 @@ version_standard = "python"
 __version__ = "0.1.0"
 __version__ = "26.05.24.001"
 ```
+
+This recipe keeps changelog generation deterministic and local by default, so no external API key is required. If you want AI rewriting instead, change `ai_provider` to `"openai"` and export `OPENAI_API_KEY` before running `bumpcalver`.
 
 ---
 

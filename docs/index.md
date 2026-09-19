@@ -117,6 +117,12 @@ As an alternative, you can use configuration file named `bumpcalver.toml`. The C
 - `beta_format` (string, optional): Suffix appended when `--beta` is used. Supports a `{beta_count}` placeholder for auto-incrementing. Defaults to `.beta`.
 - `rc_format` (string, optional): Suffix appended when `--rc` is used. Supports a `{rc_count}` placeholder. Defaults to `.rc`.
 - `release_format` (string, optional): Suffix appended when `--release` is used. Defaults to `.release`.
+- `changelog` (table, optional): Defaults for changelog generation during a bump.
+  - `enabled` (boolean): Whether bumpcalver should update the changelog by default.
+  - `path` (string): Path to the changelog file, resolved relative to the config file.
+  - `heading` (string): Markdown heading under which the latest entry is inserted or replaced.
+  - `ai_provider` (string): `none` for deterministic local-git drafts or `openai` to rewrite the draft with AI.
+  - `ai_model` (string, optional): Model name used when `ai_provider = "openai"`.
 - `file` (list of tables): Specifies which files to update and how to find the version string.
   - `path` (string): Path to the file to be updated.
   - `file_type` (string): Type of the file (e.g., `python`, `toml`, `yaml`, `json`, `xml`, `dockerfile`, `makefile`, `properties`, `env`, `setup.cfg`, `text`, `regex`).
@@ -135,6 +141,13 @@ date_format = "%y.%m.%d"
 timezone = "America/New_York"
 git_tag = true
 auto_commit = true
+
+[tool.bumpcalver.changelog]
+enabled = true
+path = "CHANGELOG.md"
+heading = "## Latest Changes"
+ai_provider = "none"
+ai_model = "gpt-4.1-2025-04-14"
 
 [[tool.bumpcalver.file]]
 path = "pyproject.toml"
@@ -194,6 +207,34 @@ file_type = "regex"
 variable = "VERSION"
 pattern = 'VERSION = "(.+?)"'
 ```
+
+This example uses the deterministic local changelog draft by default, so no external API key is required. If you want AI-assisted rewriting instead, change `ai_provider` to `"openai"` and set `OPENAI_API_KEY` in your environment before running `bumpcalver`.
+
+### Optional: enable OpenAI rewrite for changelog entries
+
+1. Open your project config, typically `pyproject.toml`.
+2. Find the `[tool.bumpcalver.changelog]` section.
+3. Change `ai_provider = "none"` to `ai_provider = "openai"`.
+4. Keep `ai_model` set to the model you want, for example `gpt-4.1-2025-04-14`.
+5. In the same shell or terminal where you will run `bumpcalver`, export the key:
+
+   ```bash
+   export OPENAI_API_KEY="your-api-key-here"
+   ```
+
+6. Verify it is available:
+
+   ```bash
+   echo "$OPENAI_API_KEY"
+   ```
+
+7. Run your bump command normally:
+
+   ```bash
+   bumpcalver --build
+   ```
+
+8. Do not store the key in `pyproject.toml`, `.env`, or git-tracked files; keep it in the environment or a local untracked `.env` file that is ignored by Git.
 
 ### Date Format Examples
 

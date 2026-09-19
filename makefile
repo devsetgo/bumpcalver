@@ -122,7 +122,6 @@ validate: ## Validate code style and types without making changes
 ##@ Documentation Management
 create-docs: sync-docs-branch ## Build and deploy the project's documentation with versioning
 	python3 scripts/update_docs.py
-	python3 scripts/changelog.py
 	cp /workspaces/$(REPONAME)/README.md /workspaces/$(REPONAME)/docs/index.md
 	cp /workspaces/$(REPONAME)/CONTRIBUTING.md /workspaces/$(REPONAME)/docs/contribute.md
 	cp /workspaces/$(REPONAME)/CHANGELOG.md /workspaces/$(REPONAME)/docs/release-notes.md
@@ -130,7 +129,6 @@ create-docs: sync-docs-branch ## Build and deploy the project's documentation wi
 
 create-docs-dev: sync-docs-branch ## Build and deploy a development version of the documentation
 	python3 scripts/update_docs.py
-	python3 scripts/changelog.py
 	cp /workspaces/$(REPONAME)/README.md /workspaces/$(REPONAME)/docs/index.md
 	cp /workspaces/$(REPONAME)/CONTRIBUTING.md /workspaces/$(REPONAME)/docs/contribute.md
 	cp /workspaces/$(REPONAME)/CHANGELOG.md /workspaces/$(REPONAME)/docs/release-notes.md
@@ -138,7 +136,6 @@ create-docs-dev: sync-docs-branch ## Build and deploy a development version of t
 
 create-docs-local: ## Build and deploy the project's documentation locally with versioning
 	python3 scripts/update_docs.py
-	python3 scripts/changelog.py
 	cp /workspaces/$(REPONAME)/README.md /workspaces/$(REPONAME)/docs/index.md
 	cp /workspaces/$(REPONAME)/CONTRIBUTING.md /workspaces/$(REPONAME)/docs/contribute.md
 	cp /workspaces/$(REPONAME)/CHANGELOG.md /workspaces/$(REPONAME)/docs/release-notes.md

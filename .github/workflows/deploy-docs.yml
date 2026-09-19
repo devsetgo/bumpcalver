@@ -54,7 +54,6 @@ jobs:
       - name: Prepare documentation files
         run: |
           python3 scripts/update_docs.py
-          python3 scripts/changelog.py
           cp README.md docs/index.md
           cp CONTRIBUTING.md docs/contribute.md
           cp CHANGELOG.md docs/release-notes.md

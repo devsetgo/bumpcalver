@@ -20,6 +20,13 @@ timezone = "America/New_York"
 git_tag = true
 auto_commit = true
 
+[tool.bumpcalver.changelog]
+enabled = true
+path = "CHANGELOG.md"
+heading = "## Latest Changes"
+ai_provider = "none"
+ai_model = "gpt-4.1-2025-04-14"
+
 [[tool.bumpcalver.file]]
 path = "pyproject.toml"
 file_type = "toml"
@@ -51,7 +58,37 @@ variable = "metadata.version"
 version_standard = "python"
 ```
 
-This configuration tells **BumpCalver** how to format your version strings, which timezone to use, and which files to update.
+This configuration tells **BumpCalver** how to format your version strings, which timezone to use, which files to update, and that `CHANGELOG.md` should be refreshed automatically on each bump using the deterministic local git summary. No external API key is required unless you explicitly set `ai_provider = "openai"`.
+
+### Optional OpenAI setup
+
+1. Edit your project config and set:
+
+   ```toml
+   [tool.bumpcalver.changelog]
+   ai_provider = "openai"
+   ai_model = "gpt-4.1-2025-04-14"
+   ```
+
+2. Export the API key in the shell that runs `bumpcalver`:
+
+   ```bash
+   export OPENAI_API_KEY="your-api-key-here"
+   ```
+
+3. Confirm the variable is present:
+
+   ```bash
+   echo "$OPENAI_API_KEY"
+   ```
+
+4. Run your bump command:
+
+   ```bash
+   bumpcalver --build
+   ```
+
+5. Keep the key out of source control; do not commit it into `pyproject.toml` or any tracked config file.
 
 #### Basic Version Bump
 
