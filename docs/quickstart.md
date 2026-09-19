@@ -20,6 +20,13 @@ timezone = "America/New_York"
 git_tag = true
 auto_commit = true
 
+[tool.bumpcalver.changelog]
+enabled = true
+path = "CHANGELOG.md"
+heading = "## Latest Changes"
+ai_provider = "none"
+ai_model = "gpt-4.1-2025-04-14"
+
 [[tool.bumpcalver.file]]
 path = "pyproject.toml"
 file_type = "toml"
@@ -51,7 +58,7 @@ variable = "metadata.version"
 version_standard = "python"
 ```
 
-This configuration tells **BumpCalver** how to format your version strings, which timezone to use, and which files to update.
+This configuration tells **BumpCalver** how to format your version strings, which timezone to use, which files to update, and that `CHANGELOG.md` should be refreshed automatically on each bump. If you want AI rewriting for the changelog entry, change `ai_provider` to `openai` and set `OPENAI_API_KEY` in your shell or CI environment.
 
 #### Basic Version Bump
 

@@ -50,6 +50,7 @@ import click
 
 from . import __version__
 from .backup_utils import BackupManager, backup_files_before_update, generate_operation_id
+from .changelog import build_changelog_update, write_changelog_update
 from .config import load_config
 from .git_utils import create_git_tag
 from .handlers import get_version_handler, update_version_in_files
@@ -263,6 +264,22 @@ def _create_git_tag_and_commit(
     "resolved relative to the config file's own directory, not the current directory.",
 )
 @click.option(
+    "--update-changelog/--no-update-changelog",
+    default=None,
+    help="Update the configured changelog as part of the version bump",
+)
+@click.option(
+    "--changelog-ai-provider",
+    type=click.Choice(["none", "openai"]),
+    default=None,
+    help="Rewrite the generated changelog entry with the selected AI provider",
+)
+@click.option(
+    "--changelog-ai-model",
+    default=None,
+    help="Model name to use for AI-backed changelog rewriting",
+)
+@click.option(
     "--json",
     "json_output",
     is_flag=True,
@@ -285,6 +302,9 @@ def main(
     bump: Optional[str],
     dry_run: bool,
     config_file: Optional[str],
+    update_changelog: Optional[bool],
+    changelog_ai_provider: Optional[str],
+    changelog_ai_model: Optional[str],
     json_output: bool,
 ) -> None:
     """Bump this project's version and write it to every configured file.
@@ -370,6 +390,7 @@ def main(
         version_format: str = config.get("version_format", "{current_date}-{build_count:03}")
         date_format: str = config.get("date_format", "%Y.%m.%d")
         file_configs: List[Dict[str, Any]] = config.get("file_configs", [])
+        changelog_config: Dict[str, Any] = config.get("changelog", {})
         config_timezone: str = config.get("timezone", default_timezone)
         config_git_tag: bool = config.get("git_tag", False)
         config_auto_commit: bool = config.get("auto_commit", False)
@@ -403,6 +424,17 @@ def main(
             project_root = os.getcwd()
         for file_config in file_configs:
             file_config["path"] = os.path.join(project_root, file_config["path"])
+
+        if update_changelog is None:
+            update_changelog = bool(changelog_config.get("enabled", False))
+        changelog_heading = changelog_config.get("heading", "## Latest Changes")
+        changelog_path = changelog_config.get("path", "CHANGELOG.md")
+        if not os.path.isabs(changelog_path):
+            changelog_path = os.path.join(project_root, changelog_path)
+        if changelog_ai_provider is None:
+            changelog_ai_provider = changelog_config.get("ai_provider", "none")
+        if changelog_ai_model is None:
+            changelog_ai_model = changelog_config.get("ai_model")
 
         # Cache each file's current version per (path, variable, directive) so it's read
         # at most once per invocation, even though it's needed both for the pre-release
@@ -442,6 +474,18 @@ def main(
             files_that_would_change = _files_that_would_change(
                 file_configs, new_version, _cached_current_version
             )
+            changelog_update = None
+            changelog_would_change = False
+            if update_changelog:
+                changelog_update = build_changelog_update(
+                    changelog_path=changelog_path,
+                    version=new_version,
+                    heading=changelog_heading,
+                    timezone=timezone,
+                    ai_provider=changelog_ai_provider or "none",
+                    ai_model=changelog_ai_model,
+                )
+                changelog_would_change = changelog_update.changed
 
             if dry_run:
                 if not files_that_would_change:
@@ -455,12 +499,20 @@ def main(
                     if git_tag:
                         action = "commit and create" if auto_commit else "create"
                         print(f"[dry-run] Would {action} git tag '{new_version}'")
+                if changelog_update and changelog_would_change:
+                    print(f"[dry-run] Would update changelog: {changelog_update.path}")
+                    print("[dry-run] Changelog entry preview:")
+                    print(changelog_update.entry_markdown.rstrip())
+                elif changelog_update:
+                    print(f"[dry-run] Changelog already up to date: {changelog_update.path}")
                 if json_output:
                     _emit_json(
                         {
                             "dry_run": True,
                             "version": new_version,
                             "files_that_would_change": files_that_would_change,
+                            "changelog_path": changelog_update.path if changelog_update else None,
+                            "changelog_would_change": changelog_would_change,
                             "git_tag_would_create": new_version
                             if (git_tag and files_that_would_change)
                             else None,
@@ -473,17 +525,18 @@ def main(
 
             # No-op guard: if all configured files already contain the computed version,
             # do not create backups, write undo history, or attempt git operations.
-            if not files_that_would_change:
+            if not files_that_would_change and not changelog_would_change:
                 print(f"Version already set to {new_version}; no files to update.")
                 if json_output:
-                    _emit_json(
-                        {
-                            "version": new_version,
-                            "files_updated": [],
-                            "operation_id": None,
-                            "no_op": True,
-                        }
-                    )
+                    payload: Dict[str, Any] = {
+                        "version": new_version,
+                        "files_updated": [],
+                        "operation_id": None,
+                        "no_op": True,
+                    }
+                    if changelog_update is not None:
+                        payload["changelog_updated"] = False
+                    _emit_json(payload)
                 return
 
             # Create backup manager and backup files before making changes. Rooted
@@ -498,9 +551,17 @@ def main(
             )
             operation_id = generate_operation_id()
             backups, _ = backup_files_before_update(file_configs, backup_manager)
+            if changelog_update and changelog_would_change:
+                changelog_backup = backup_manager.create_backup(changelog_update.path)
+                if changelog_backup:
+                    backups[changelog_update.path] = changelog_backup
 
             print(f"Calling update_version_in_files with version: {new_version}")
             files_updated: List[str] = update_version_in_files(new_version, file_configs)
+            if changelog_update and changelog_would_change:
+                write_changelog_update(changelog_update)
+                if changelog_update.path not in files_updated:
+                    files_updated.append(changelog_update.path)
             print(f"Files updated: {files_updated}")
 
             if not files_updated:
@@ -546,15 +607,16 @@ def main(
             print(f"Operation ID: {operation_id} (use 'bumpcalver --undo' to undo)")
 
             if json_output:
-                _emit_json(
-                    {
-                        "version": new_version,
-                        "files_updated": files_updated,
-                        "operation_id": operation_id,
-                        "git_tag": git_tag_name,
-                        "git_commit_hash": git_commit_hash,
-                    }
-                )
+                payload = {
+                    "version": new_version,
+                    "files_updated": files_updated,
+                    "operation_id": operation_id,
+                    "git_tag": git_tag_name,
+                    "git_commit_hash": git_commit_hash,
+                }
+                if changelog_update is not None:
+                    payload["changelog_updated"] = changelog_would_change
+                _emit_json(payload)
 
         except (ValueError, KeyError) as e:
             if json_output:

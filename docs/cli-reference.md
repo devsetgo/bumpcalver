@@ -46,6 +46,14 @@ Options:
                                   paths inside it are resolved relative to the
                                   config file's own directory, not the current
                                   directory.
+  --update-changelog / --no-update-changelog
+                                  Update the configured changelog as part of the
+                                  version bump
+  --changelog-ai-provider [none|openai]
+                                  Rewrite the generated changelog entry with the
+                                  selected AI provider
+  --changelog-ai-model TEXT       Model name to use for AI-backed changelog
+                                  rewriting
   --json                          Emit a single JSON object with the result to
                                   stdout instead of human-readable log lines
                                   (those move to stderr). Not compatible with
@@ -69,6 +77,12 @@ Options:
   current directory. File paths inside that config — and the undo
   backups/history for the resulting operation — resolve relative to the
   config file's own directory, not wherever `bumpcalver` was invoked from.
+- `--update-changelog` opts the current bump into updating the configured
+  changelog file. You can set the default in `[tool.bumpcalver.changelog]`
+  so the flag is not required on every run.
+- `--changelog-ai-provider openai` rewrites the deterministic changelog draft
+  using the `OPENAI_API_KEY` environment variable. Keep the provider/model in
+  config if you want, but keep the secret in the environment.
 - `--json` emits exactly one JSON object on stdout and moves every other log
   line to stderr — see [Machine-Readable Output](#machine-readable-output-json)
   below for the payload shape and examples. Not compatible with
