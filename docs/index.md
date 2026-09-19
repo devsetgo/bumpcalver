@@ -146,7 +146,7 @@ auto_commit = true
 enabled = true
 path = "CHANGELOG.md"
 heading = "## Latest Changes"
-ai_provider = "none"
+ai_provider = "openai"
 ai_model = "gpt-4.1-2025-04-14"
 
 [[tool.bumpcalver.file]]
@@ -208,7 +208,7 @@ variable = "VERSION"
 pattern = 'VERSION = "(.+?)"'
 ```
 
-Switch `ai_provider` to `openai` when you want the generated changelog draft rewritten with AI, and supply `OPENAI_API_KEY` in the environment. Keep the API key out of `pyproject.toml`.
+This example enables OpenAI rewriting for the generated changelog draft, so `OPENAI_API_KEY` must be present in the environment when `bumpcalver` runs. Keep the API key out of `pyproject.toml`.
 
 ### Date Format Examples
 

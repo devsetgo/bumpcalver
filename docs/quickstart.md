@@ -24,7 +24,7 @@ auto_commit = true
 enabled = true
 path = "CHANGELOG.md"
 heading = "## Latest Changes"
-ai_provider = "none"
+ai_provider = "openai"
 ai_model = "gpt-4.1-2025-04-14"
 
 [[tool.bumpcalver.file]]
@@ -58,7 +58,7 @@ variable = "metadata.version"
 version_standard = "python"
 ```
 
-This configuration tells **BumpCalver** how to format your version strings, which timezone to use, which files to update, and that `CHANGELOG.md` should be refreshed automatically on each bump. If you want AI rewriting for the changelog entry, change `ai_provider` to `openai` and set `OPENAI_API_KEY` in your shell or CI environment.
+This configuration tells **BumpCalver** how to format your version strings, which timezone to use, which files to update, and that `CHANGELOG.md` should be refreshed automatically on each bump using OpenAI rewriting. Set `OPENAI_API_KEY` in your shell or CI environment before running `bumpcalver` with this configuration.
 
 #### Basic Version Bump
 
