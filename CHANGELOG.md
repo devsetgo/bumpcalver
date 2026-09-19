@@ -4,6 +4,52 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## Latest Changes
+### 2026.09.19.001
+
+_Changes since v2026.7.25.1._
+
+#### What's Changed
+* fix: default local changelog to deterministic mode
+* tests
+* test: strengthen changelog regression coverage
+* testst
+* chore: default repo changelog provider to openai
+* run of tests
+* feat: integrate changelog updates into bumpcalver
+* Merge pull request #178 from devsetgo/dependabot/pip/build-1.6.0
+* Merge pull request #177 from devsetgo/dependabot/pip/hypothesis-6.165.10
+* Merge pull request #176 from devsetgo/dependabot/pip/ruff-0.16.5
+* pip(deps): bump build from 1.4.4 to 1.6.0
+* Merge pull request #179 from devsetgo/dependabot/pip/click-8.5.0
+* Merge pull request #180 from devsetgo/dependabot/pip/pre-commit-4.6.2
+* pip(deps): bump pre-commit from 4.5.1 to 4.6.2
+* pip(deps): bump click from 8.4.2 to 8.5.0
+* pip(deps): bump hypothesis from 6.161.2 to 6.165.10
+* pip(deps): bump ruff from 0.15.12 to 0.16.5
+* Merge pull request #166 from devsetgo/dependabot/pip/mkdocs-material-9.7.7
+* Merge pull request #167 from devsetgo/dependabot/pip/mkdocstrings-1.0.6
+* Merge pull request #168 from devsetgo/dependabot/pip/click-8.4.2
+* Merge pull request #169 from devsetgo/dependabot/pip/pytest-9.1.1
+* Merge pull request #170 from devsetgo/dependabot/pip/twine-7.0.0
+* Merge pull request #171 from devsetgo/dependabot/github_actions/actions/checkout-7
+* Merge pull request #172 from devsetgo/dependabot/github_actions/actions/setup-python-7
+* Merge pull request #173 from devsetgo/dependabot/github_actions/release-drafter/release-drafter-7.7.0
+* Merge pull request #174 from devsetgo/dependabot/github_actions/SonarSource/sonarqube-scan-action-8.2.1
+* github actions(deps): bump SonarSource/sonarqube-scan-action
+* github actions(deps): bump release-drafter/release-drafter
+* github actions(deps): bump actions/setup-python from 6 to 7
+* github actions(deps): bump actions/checkout from 6 to 7
+* pip(deps): bump twine from 6.2.0 to 7.0.0
+* pip(deps): bump pytest from 9.0.2 to 9.1.1
+* pip(deps): bump click from 8.3.2 to 8.4.2
+* pip(deps): bump mkdocstrings from 1.0.3 to 1.0.6
+* pip(deps): bump mkdocs-material from 9.7.6 to 9.7.7
+* Remove redundant Actions-based Pages deployment from deploy-docs.yml
+* Merge pull request #165 from devsetgo/dev
+* Fix mkdocs_hooks.py import that broke docs deploy under mike
+
+Generated Date: 2026 September 19, 15:09
+
 ### <span style='color:blue'>Hybrid Versioning and Code Cleanup</span> ([v2026.05.24.001](https://github.com/devsetgo/bumpcalver/releases/tag/v2026.05.24.001))
 
 #### What's Changed
