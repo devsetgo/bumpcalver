@@ -1,0 +1,70 @@
+name: AI PR Assistant
+
+on: pull_request
+
+# Least-privilege token scope for this job: contents:read to check out the
+# repo, plus write on issues/pull-requests since PR description/title
+# updates and label creation both go through those two REST surfaces
+# (issues:write alone was insufficient in practice - see git history).
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  ai-pr-assistant:
+    runs-on: ubuntu-latest
+    # Dependabot PRs get a read-only GITHUB_TOKEN and no custom secrets on the
+    # pull_request event, so OPENAI_API_KEY would be empty here. allowed_users
+    # already excludes dependabot[bot] before any OpenAI call is made, but
+    # this guard makes that explicit rather than incidental (matches sonar.yaml).
+    if: github.actor != 'dependabot[bot]'
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # This is the showcase usage of the action - every input it accepts
+      # (see action.yml) is listed below, active or not. Anything this repo
+      # doesn't need is commented out with its default value shown, so this
+      # file also serves as a working reference for every option.
+      - name: Autofill PR title, description, and labels using OpenAI
+        uses: devsetgo/ai-pr-assistant@26.09.19-002
+        with:
+          # ---- Required ----
+          github_token: ${{ secrets.GITHUB_TOKEN }}    # token used for all GitHub API calls (read PR/files, write description/title/labels)
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }} # OpenAI (or Azure OpenAI) API key
+
+          # ---- Core behavior ----
+          # pull_request_id: ''                # which PR to act on; auto-extracted from the event payload, only needed for manual/workflow_dispatch-style runs
+          allowed_users: devsetgo               # only run for PRs authored by this account; empty would mean "run for everyone"
+          overwrite_description: true           # regenerate the description on every push, not just once when it's empty - this repo is actively dogfooding the action
+          openai_model: 'gpt-5-mini'          # default model; any chat-completions-compatible model works (gpt-4o-mini, gpt-4.1, etc.)
+          temperature: '0.6'                  # creativity for classic (non-reasoning) models; ignored for reasoning models like our default gpt-5-mini
+          max_tokens: '2000'                  # output token budget; reasoning models spend part of this on hidden reasoning before any visible output
+          max_diff_tokens: '6000'             # how much of the PR diff (by real token count) gets sent to the model
+          exclude_patterns: '*.lock,package-lock.json,yarn.lock,pnpm-lock.yaml,*.min.js,*.svg,*.png,*.jpg,*.jpeg,*.gif,*.ico,dist/*,build/*'  # default noise filter for the diff
+
+          # ---- Prompt customization ----
+          # sample_prompt/sample_response only apply in classic mode (see docs/CONFIGURATION.md);
+          # unused here since generate_title/enable_labels/detect_breaking_changes below
+          # switch this repo into structured mode.
+          # sample_prompt: ''
+          # sample_response: ''
+          # completion_prompt: ''               # default task instructions prepended to the diff content, for both modes
+
+          # ---- Title ----
+          generate_title: true                  # ask the model to also propose an improved title
+          overwrite_title: true                 # actually apply it, rather than only logging the suggestion
+
+          # ---- Labels ----
+          enable_labels: true                   # ask the model to choose and apply labels, creating any that don't exist yet
+          label_taxonomy: 'bug,feature,enhancement,documentation,dependencies,refactor,test,chore'  # shown explicitly since enable_labels is active (this is also the default)
+
+          # ---- Breaking-change detection ----
+          detect_breaking_changes: true         # flag likely breaking changes with a note in the description + a breaking-change label
+
+          # ---- Azure OpenAI ----
+          # Mutually exclusive with the public OpenAI API used above - setting
+          # azure_endpoint switches the action to Azure OpenAI entirely.
+          # azure_endpoint: ''
+          # azure_openai_api_version: ''
