@@ -28,7 +28,7 @@ jobs:
       # doesn't need is commented out with its default value shown, so this
       # file also serves as a working reference for every option.
       - name: Autofill PR title, description, and labels using OpenAI
-        uses: devsetgo/ai-pr-assistant@26.09.19-002
+        uses: devsetgo/ai-pr-assistant@26.09.20
         with:
           # ---- Required ----
           github_token: ${{ secrets.GITHUB_TOKEN }}    # token used for all GitHub API calls (read PR/files, write description/title/labels)
