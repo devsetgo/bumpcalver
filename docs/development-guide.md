@@ -28,7 +28,7 @@ git remote add upstream https://github.com/devsetgo/bumpcalver.git
 
 #### Prerequisites
 
-- Python 3.9 or higher
+- Python 3.10 or higher
 - Git
 - Make (optional, for using the Makefile)
 
